@@ -1,0 +1,14 @@
+version: "3"
+services:
+ musidex-db:
+   image: postgres:13
+   environment:
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=pass
+     - POSTGRES_DB=postgres
+   ports:
+     - "5433:5432"
+   volumes:
+     - pgdata:/var/lib/postgresql/data
+volumes: 
+ pgdata:
