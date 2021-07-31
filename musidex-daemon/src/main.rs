@@ -9,18 +9,18 @@ use std::{env, io};
 use std::sync::{Mutex, Arc};
 use migrate::migrate;
 use include_dir::{include_dir, Dir};
+use actix_web::web::Data;
+use sqlx::postgres::{PgPoolOptions};
+use sqlx::{Postgres, Pool, Row};
 
-// see https://github.com/actix/examples/blob/master/basics/basics/src/main.rs
+type MyPool = Pool<Postgres>;
 
 /// simple index handler
 #[get("/welcome")]
-async fn welcome(req: HttpRequest, data: web::Data<Arc<Mutex<i32>>>) -> Result<HttpResponse> {
+async fn welcome(req: HttpRequest, pool: Data<MyPool>) -> Result<HttpResponse> {
         println!("{:?}", req);
 
-        let mut g = data.lock().unwrap();
-        *g += 1;
-        let v = *g;
-        drop(g);
+        let v = incr_and_get(&*pool).await;
 
         // response
         Ok(HttpResponse::build(StatusCode::OK)
@@ -28,20 +28,39 @@ async fn welcome(req: HttpRequest, data: web::Data<Arc<Mutex<i32>>>) -> Result<H
             .body(format!("Hello, world! {}",  v)))
 }
 
+async fn incr_and_get(pool: &MyPool) -> i32 {
+        sqlx::query("\
+        INSERT INTO test (id, value) \
+        VALUES (1, 1)\
+        ON CONFLICT (id) DO UPDATE \
+        SET value = test.value+1\
+        RETURNING value;")
+            .fetch_one(pool)
+            .await
+            .unwrap()
+            .try_get("value")
+            .unwrap()
+}
+
 static MIGRATIONS: Dir = include_dir!("migrations");
-static DB_URL: &'static str = "postgresql://postgres:pass@127.0.0.1:5433/";
+static DB_URL: &'static str = "postgresql://postgres:pass@127.0.0.1:5433/musidex";
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
-        env::set_var("RUST_LOG", "actix_web=debug,actix_server=info");
+        env::set_var("RUST_LOG", "actix_web=warn,actix_server=warn,warn");
         env_logger::init();
 
         migrate(DB_URL, &MIGRATIONS).await.unwrap();
 
+        let pool = PgPoolOptions::new()
+            .max_connections(5)
+            .connect(DB_URL).await.unwrap();
+
         let v = Arc::new(Mutex::new(0i32));
         HttpServer::new(move || {
                 App::new()
-                    .data(v.clone())
+                    .app_data(Data::new(v.clone()))
+                    .app_data(Data::new(pool.clone()))
                     // enable logger - always register actix-web Logger middleware last
                     .wrap(middleware::Logger::default())
                     // register simple route, handle all methods
@@ -63,7 +82,7 @@ async fn main() -> io::Result<()> {
                     .service(web::resource("/").route(web::get().to(|req: HttpRequest| {
                             println!("{:?}", req);
                             HttpResponse::Found()
-                                .header(header::LOCATION, "/welcome")
+                                .append_header((header::LOCATION, "/welcome"))
                                 .finish()
                     })))
         })

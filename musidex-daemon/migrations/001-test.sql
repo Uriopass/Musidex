@@ -1,4 +1,5 @@
 CREATE TABLE test
 (
-    id uuid
+    id int primary key,
+    value int
 );
