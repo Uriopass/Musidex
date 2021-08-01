@@ -15,30 +15,10 @@ type MyPool = Pool<Postgres>;
 /// simple index handler
 #[get("/welcome")]
 async fn welcome(req: HttpRequest, pool: Data<MyPool>) -> Result<HttpResponse> {
-    println!("{:?}", req);
-
-    let v = incr_and_get(&*pool).await;
-
     // response
     Ok(HttpResponse::build(StatusCode::OK)
         .content_type("text/html; charset=utf-8")
-        .body(format!("Hello, world! {}", v)))
-}
-
-async fn incr_and_get(pool: &MyPool) -> i32 {
-    sqlx::query(
-        "\
-        INSERT INTO test (id, value) \
-        VALUES (1, 1)\
-        ON CONFLICT (id) DO UPDATE \
-        SET value = test.value+1\
-        RETURNING value;",
-    )
-    .fetch_one(pool)
-    .await
-    .unwrap()
-    .try_get("value")
-    .unwrap()
+        .body(format!("Hello, world! {}", 3)))
 }
 
 static MIGRATIONS: Dir = include_dir!("migrations");
@@ -46,13 +26,13 @@ static DB_URL: &'static str = "postgresql://postgres:pass@127.0.0.1:5433/musidex
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
-    env::set_var("RUST_LOG", "actix_web=warn,actix_server=warn,warn");
+    env::set_var("RUST_LOG", "actix_web=info,actix_server=info,info");
     env_logger::init();
 
     migrate(DB_URL, &MIGRATIONS).await.unwrap();
 
     let pool = PgPoolOptions::new()
-        .max_connections(5)
+        .max_connections(10)
         .connect(DB_URL)
         .await
         .unwrap();

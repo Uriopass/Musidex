@@ -10,5 +10,13 @@ services:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200"
+      - "9300"
 volumes:
   pgdata:
