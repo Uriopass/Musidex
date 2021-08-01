@@ -121,8 +121,8 @@ pub async fn migrate(url: &str, dir: &Dir<'_>) -> Result<()> {
                 );
             "#,
         )
-            .execute(&mut tx)
-            .await?;
+        .execute(&mut tx)
+        .await?;
     }
     let mut files: Vec<_> = dir.files().iter().collect();
     if migrated.len() > files.len() {
@@ -153,27 +153,4 @@ pub async fn migrate(url: &str, dir: &Dir<'_>) -> Result<()> {
     }
     tx.commit().await?;
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::migrate;
-    use include_dir::{include_dir, Dir};
-
-    static MIGRATIONS: Dir = include_dir!("migrations");
-
-    #[async_attributes::test]
-    async fn it_works() -> std::result::Result<(), super::Error> {
-        let url = std::env::var("DATABASE_URL").unwrap_or(String::from(
-            "postgresql://localhost/sqlxpgmigrate1?sslmode=disable",
-        ));
-        // run it twice, second time should be a no-op
-        for _ in 0..2 {
-            match migrate(&url, &MIGRATIONS).await {
-                Err(err) => panic!("migrate failed with: {}", err),
-                _ => (),
-            };
-        }
-        Ok(())
-    }
 }
