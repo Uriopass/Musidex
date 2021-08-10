@@ -13,6 +13,11 @@ impl Pg {
         cfg.password = Some("pass".to_string());
         cfg.port = Some(5433);
         cfg.host = Some("127.0.0.1".to_string());
+        #[cfg(test)]
+        {
+            cfg.host = Some("musidex-db".to_string());
+            cfg.port = Some(5432);
+        }
         cfg.manager = Some(ManagerConfig {
             recycling_method: RecyclingMethod::Fast,
         });
@@ -22,5 +27,23 @@ impl Pg {
 
     pub async fn get(&self) -> Result<Client> {
         self.0.get().await.context("failed getting connection")
+    }
+}
+
+#[cfg(test)]
+impl Pg {
+    pub async fn clean(&self) -> Result<()> {
+        let v = self.get().await?;
+        let (a, b, c, d) = futures::join!(
+            v.query("TRUNCATE music CASCADE", &[]),
+            v.query("TRUNCATE mtag CASCADE", &[]),
+            v.query("TRUNCATE config CASCADE", &[]),
+            v.query("TRUNCATE source CASCADE", &[])
+        );
+        a?;
+        b?;
+        c?;
+        d?;
+        Ok(())
     }
 }

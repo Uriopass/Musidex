@@ -10,13 +10,26 @@ services:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-  elastic:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
+#  elastic:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
+#    environment:
+#      - discovery.type=single-node
+#      - xpack.security.enabled=false
+#    ports:
+#      - "9200"
+#      - "9300"
+  test:
+    image: rust:1.54
+    volumes:
+      - ./:/Musidex
+    working_dir: /Musidex/musidex-daemon
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    ports:
-      - "9200"
-      - "9300"
+      - GO_INTEGRATION_TESTS=1
+      - GOFLAGS=-mod=vendor
+    command: >-
+      cargo test
+    depends_on:
+      - musidex-db
+
 volumes:
   pgdata:

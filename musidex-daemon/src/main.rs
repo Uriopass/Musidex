@@ -13,6 +13,8 @@ extern crate anyhow;
 
 mod domain;
 mod infrastructure;
+#[cfg(test)]
+mod tests;
 
 use crate::domain::handlers;
 use anyhow::Context;
