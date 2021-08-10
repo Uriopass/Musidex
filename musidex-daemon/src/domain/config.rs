@@ -42,6 +42,13 @@ async fn insert_if_not_exist(c: &Client, key: &str, value: &str) -> Result<()> {
     .map(|_| ())
 }
 
+pub async fn get_all(c: &Client) -> Result<Vec<(String, String)>> {
+    let v = c.query("SELECT key,value FROM config", &[]).await?;
+    Ok(v.into_iter()
+        .map(|x| (x.get("key"), x.get("value")))
+        .collect())
+}
+
 #[allow(dead_code)]
 pub async fn get(c: &Client, key: &str) -> Result<Option<String>> {
     let v = c

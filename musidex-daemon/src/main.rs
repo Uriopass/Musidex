@@ -38,7 +38,10 @@ async fn start() -> anyhow::Result<()> {
     config::init(&pg).await?;
 
     let mut router = Router::new();
-    router.state(pg).get("/api/metadata", handlers::metadata);
+    router
+        .state(pg)
+        .get("/api/metadata", handlers::metadata)
+        .get("/api/config", handlers::get_config);
 
     let addr = ([127, 0, 0, 1], 3000).into();
     let server = Server::bind(&addr).serve(router.into_service());
