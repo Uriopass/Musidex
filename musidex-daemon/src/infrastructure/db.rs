@@ -1,3 +1,4 @@
+use crate::utils::env_or;
 use anyhow::{Context, Result};
 use deadpool_postgres::tokio_postgres::NoTls;
 use deadpool_postgres::{Client, Config, ManagerConfig, RecyclingMethod};
@@ -10,14 +11,9 @@ impl Pg {
         let mut cfg = Config::new();
         cfg.user = Some("postgres".to_string());
         cfg.dbname = Some("musidex".to_string());
-        cfg.password = Some("pass".to_string());
-        cfg.port = Some(5433);
-        cfg.host = Some("127.0.0.1".to_string());
-        #[cfg(test)]
-        {
-            cfg.host = Some("musidex-db".to_string());
-            cfg.port = Some(5432);
-        }
+        cfg.password = Some(env_or("DB_PASS", "pass".to_string()));
+        cfg.port = Some(env_or("DB_PORT", 5433));
+        cfg.host = Some(env_or("DB_URL", "localhost".to_string()));
         cfg.manager = Some(ManagerConfig {
             recycling_method: RecyclingMethod::Fast,
         });

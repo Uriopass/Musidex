@@ -24,8 +24,8 @@ services:
       - ./:/Musidex
     working_dir: /Musidex/musidex-daemon
     environment:
-      - GO_INTEGRATION_TESTS=1
-      - GOFLAGS=-mod=vendor
+      - DB_URL=musidex-db
+      - DB_PORT=5432
     command: >-
       cargo test
     depends_on:

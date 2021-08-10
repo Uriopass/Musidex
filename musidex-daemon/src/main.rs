@@ -1,15 +1,8 @@
-#[allow(unused_macros)]
-macro_rules! unwrap_ret {
-    ($e: expr, $ret: expr) => {
-        match $e {
-            Ok(x) => x,
-            Err(err) => return $ret(err),
-        }
-    };
-}
-
 #[macro_use]
 extern crate anyhow;
+
+#[macro_use]
+mod utils;
 
 mod domain;
 mod infrastructure;
