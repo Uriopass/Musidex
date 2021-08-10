@@ -1,9 +1,9 @@
-CREATE TABLE music
+CREATE TABLE IF NOT EXISTS music
 (
     id int primary key
-);
+) ;
 
-CREATE TABLE tags
+CREATE TABLE IF NOT EXISTS mtag
 (
     music_id int references music(id),
     key text not null,
@@ -17,9 +17,7 @@ CREATE TABLE tags
     primary key (music_id, key)
 );
 
-CREATE INDEX ON tags (music_id);
-
-CREATE TABLE sources
+CREATE TABLE IF NOT EXISTS source
 (
     music_id int references music(id),
 
@@ -29,7 +27,7 @@ CREATE TABLE sources
     primary key (music_id, format)
 );
 
-CREATE TABLE config
+CREATE TABLE IF NOT EXISTS  config
 (
     key text primary key,
     value text not null

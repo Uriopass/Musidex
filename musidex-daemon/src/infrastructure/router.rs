@@ -194,7 +194,7 @@ impl Service<Request<Body>> for RouterService {
             match fut.await {
                 Ok(x) => Ok(x),
                 Err(e) => {
-                    log::error!("got error in request: {}", e);
+                    log::error!("got error in request: {:?}", e);
                     Ok(Response::builder()
                         .status(500)
                         .body(Body::from(format!("{}", e)))
@@ -252,6 +252,7 @@ impl<T> Unpin for Ready<T> {}
 pub struct Params(Option<Box<route_recognizer::Params>>);
 
 impl Params {
+    #[allow(dead_code)]
     pub(crate) fn find(&self, key: &str) -> Option<&str> {
         self.0.as_ref()?.find(key)
     }

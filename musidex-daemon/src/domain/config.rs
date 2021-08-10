@@ -42,6 +42,7 @@ async fn insert_if_not_exist(c: &Client, key: &str, value: &str) -> Result<()> {
     .map(|_| ())
 }
 
+#[allow(dead_code)]
 pub async fn get(c: &Client, key: &str) -> Result<Option<String>> {
     let v = c
         .query_one("SELECT value FROM config WHERE key= $1", &[&key])

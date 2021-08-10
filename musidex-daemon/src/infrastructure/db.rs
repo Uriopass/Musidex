@@ -1,4 +1,4 @@
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use deadpool_postgres::tokio_postgres::NoTls;
 use deadpool_postgres::{Client, Config, ManagerConfig, RecyclingMethod};
 
