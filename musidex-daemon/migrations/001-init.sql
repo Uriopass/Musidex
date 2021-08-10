@@ -1,3 +1,8 @@
+CREATE TABLE music
+(
+    id int primary key
+);
+
 CREATE TABLE tags
 (
     music_id int references music(id),
@@ -13,11 +18,6 @@ CREATE TABLE tags
 );
 
 CREATE INDEX ON tags (music_id);
-
-CREATE TABLE music
-(
-    id int primary key
-);
 
 CREATE TABLE sources
 (

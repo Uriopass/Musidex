@@ -1,104 +1,56 @@
+use anyhow::{Context, Result};
+use deadpool_postgres::tokio_postgres::error::SqlState;
+use deadpool_postgres::tokio_postgres::{Client, NoTls, Row};
 use include_dir::Dir;
-use sqlx::postgres::PgRow;
-use sqlx::{Connection, Executor, PgConnection, Row};
-use thiserror::Error;
-
-/// The various kinds of errors that can arise when running the migrations.
-#[derive(Error, Debug)]
-pub enum Error {
-    #[error("expected migration `{0}` to already have been run")]
-    MissingMigration(String),
-
-    #[error("invalid URL `{0}`: could not determine DB name")]
-    InvalidURL(String),
-
-    #[error("error connecting to existing database: {}", .source)]
-    ExistingConnectError { source: sqlx::Error },
-
-    #[error("error connecting to base URL `{}` to create DB: {}", .url, .source)]
-    BaseConnect { url: String, source: sqlx::Error },
-
-    #[error("error finding current migrations: {}", .source)]
-    CurrentMigrations { source: sqlx::Error },
-
-    #[error("invalid utf-8 bytes in migration content: {0}")]
-    InvalidMigrationContent(std::path::PathBuf),
-
-    #[error("invalid utf-8 bytes in migration path: {0}")]
-    InvalidMigrationPath(std::path::PathBuf),
-
-    #[error("more migrations run than are known indicating possibly deleted migrations")]
-    DeletedMigrations,
-
-    #[error(transparent)]
-    DB(#[from] sqlx::Error),
-}
-
-type Result<T> = std::result::Result<T, Error>;
 
 fn base_and_db(url: &str) -> Result<(&str, &str)> {
     let base_split: Vec<&str> = url.rsplitn(2, '/').collect();
     if base_split.len() != 2 {
-        return Err(Error::InvalidURL(url.to_string()));
+        bail!("invalid url: {}", url)
     }
     let qmark_split: Vec<&str> = base_split[0].splitn(2, '?').collect();
     Ok((base_split[1], qmark_split[0]))
 }
 
 async fn maybe_make_db(url: &str) -> Result<()> {
-    match PgConnection::connect(url).await {
+    match deadpool_postgres::tokio_postgres::connect(url, NoTls).await {
         Ok(_) => return Ok(()), // it exists, we're done
         Err(err) => {
-            if let sqlx::Error::Database(dberr) = err {
-                // this indicates the database doesn't exist
-                if let Some("3D000") = dberr.code().as_deref() {
-                    Ok(()) // it doesn't exist, continue to create it
-                } else {
-                    Err(Error::ExistingConnectError {
-                        source: sqlx::Error::Database(dberr),
-                    })
-                }
+            if let Some(&SqlState::UNDEFINED_DATABASE) = err.code() {
+                () // it doesn't exist, continue to create it
             } else {
-                Err(Error::ExistingConnectError { source: err })
+                return Err(err).context("could not connect to db");
             }
         }
-    }?;
+    };
 
     let (base_url, db_name) = base_and_db(url)?;
-    let mut db = match PgConnection::connect(&format!("{}/postgres", base_url)).await {
-        Ok(db) => db,
-        Err(err) => {
-            return Err(Error::BaseConnect {
-                url: base_url.to_string(),
-                source: err,
-            })
+    let (client, connection) =
+        deadpool_postgres::tokio_postgres::connect(&format!("{}/postgres", base_url), NoTls)
+            .await?;
+    tokio::spawn(async move {
+        if let Err(e) = connection.await {
+            eprintln!("connection error: {}", e);
         }
-    };
-    sqlx::query(&format!(r#"CREATE DATABASE "{}""#, db_name))
-        .execute(&mut db)
+    });
+    client
+        .execute(&*format!(r#"CREATE DATABASE "{}""#, db_name), &[])
         .await?;
     Ok(())
 }
 
-async fn get_migrated(db: &mut PgConnection) -> Result<Vec<String>> {
-    let migrated = sqlx::query("SELECT migration FROM sqlx_pg_migrate ORDER BY id")
-        .try_map(|row: PgRow| row.try_get("migration"))
-        .fetch_all(db)
-        .await;
+async fn get_migrated(db: &mut Client) -> Result<Vec<String>> {
+    let migrated = db
+        .query("SELECT migration FROM sqlx_pg_migrate ORDER BY id;", &[])
+        .await
+        .map(|x| x.into_iter().map(|row: Row| row.get("migration")).collect());
     match migrated {
         Ok(migrated) => Ok(migrated),
         Err(err) => {
-            if let sqlx::Error::Database(dberr) = err {
-                // this indicates the table doesn't exist
-                if let Some("42P01") = dberr.code().as_deref() {
-                    Ok(vec![])
-                } else {
-                    Err(Error::CurrentMigrations {
-                        source: sqlx::Error::Database(dberr),
-                    })
-                }
+            if let Some(&SqlState::UNDEFINED_TABLE) = err.code() {
+                Ok(vec![])
             } else {
-                Err(Error::CurrentMigrations { source: err })
+                bail!("error, cant get current migrations")
             }
         }
     }
@@ -107,12 +59,34 @@ async fn get_migrated(db: &mut PgConnection) -> Result<Vec<String>> {
 /// Runs the migrations contained in the directory. See module documentation for
 /// more information.
 pub async fn migrate(url: &str, dir: &Dir<'_>) -> Result<()> {
-    maybe_make_db(url).await?;
-    let mut db = PgConnection::connect(url).await?;
-    let migrated = get_migrated(&mut db).await?;
-    let mut tx = db.begin().await?;
+    log::info!("running migrations");
+    maybe_make_db(url)
+        .await
+        .context("error checking db exists")?;
+    log::info!("database exists");
+
+    let (mut db, connection) = deadpool_postgres::tokio_postgres::connect(url, NoTls)
+        .await
+        .context("error connecting to db")?;
+    tokio::spawn(async move {
+        if let Err(e) = connection.await {
+            eprintln!("connection error: {}", e);
+        }
+    });
+
+    let migrated = get_migrated(&mut db)
+        .await
+        .context("error getting migrations")?;
+    log::info!("got existing migrations from table");
+
+    let tx = db
+        .transaction()
+        .await
+        .context("error creating transaction")?;
     if migrated.is_empty() {
-        sqlx::query(
+        log::info!("no migration table, creating it");
+
+        tx.execute(
             r#"
                 CREATE TABLE IF NOT EXISTS sqlx_pg_migrate (
                     id SERIAL PRIMARY KEY,
@@ -120,37 +94,37 @@ pub async fn migrate(url: &str, dir: &Dir<'_>) -> Result<()> {
                     created TIMESTAMP NOT NULL DEFAULT current_timestamp
                 );
             "#,
+            &[],
         )
-        .execute(&mut tx)
-        .await?;
+        .await
+        .context("error creating migration table")?;
     }
     let mut files: Vec<_> = dir.files().iter().collect();
     if migrated.len() > files.len() {
-        return Err(Error::DeletedMigrations);
+        bail!("some migrations were deleted")
     }
     files.sort_by(|a, b| a.path().partial_cmp(b.path()).unwrap());
     for (pos, f) in files.iter().enumerate() {
-        let path = f
-            .path()
-            .to_str()
-            .ok_or_else(|| Error::InvalidMigrationPath(f.path().to_owned()))?;
+        let path = f.path().to_str().context("invalid path")?;
 
         if pos < migrated.len() {
             if migrated[pos] != path {
-                return Err(Error::MissingMigration(path.to_owned()));
+                bail!("migration is missing: {}", path)
             }
             continue;
         }
+        log::info!("running and inserting migration: {}", path);
 
-        let content = f
-            .contents_utf8()
-            .ok_or_else(|| Error::InvalidMigrationContent(f.path().to_owned()))?;
-        tx.execute(content).await?;
-        sqlx::query("INSERT INTO sqlx_pg_migrate (migration) VALUES ($1)")
-            .bind(path)
-            .execute(&mut tx)
-            .await?;
+        let content = f.contents_utf8().context("invalid file content")?;
+        tx.batch_execute(content).await?;
+        tx.execute(
+            "INSERT INTO sqlx_pg_migrate (migration) VALUES ($1)",
+            &[&path],
+        )
+        .await
+        .context("error running transaction")?;
     }
-    tx.commit().await?;
+    tx.commit().await.context("error commiting transaction")?;
+    log::info!("sucessfully ran migrations");
     Ok(())
 }
