@@ -10,8 +10,11 @@ mod infrastructure;
 mod tests;
 
 use crate::domain::handlers;
+use crate::infrastructure::tls::TlsConfigBuilder;
+use crate::utils::env_or;
 use anyhow::Context;
 use domain::config;
+use hyper::server::conn::AddrIncoming;
 use hyper::Server;
 use include_dir::{include_dir, Dir};
 use infrastructure::db::Pg;
@@ -39,12 +42,28 @@ async fn start() -> anyhow::Result<()> {
         .get("/api/config", handlers::get_config);
 
     let addr = ([127, 0, 0, 1], 3000).into();
-    let server = Server::bind(&addr).serve(router.into_service());
+    let incoming = AddrIncoming::bind(&addr).unwrap_or_else(|e| {
+        panic!("error binding to {}: {}", addr, e);
+    });
 
+    let service = router.into_service();
+    if env_or("USE_HTTPS", false) {
+        let tls_accept = infrastructure::tls::TlsAcceptor::new(
+            TlsConfigBuilder::new()
+                .cert_path(env_or("CERT_PATH", "./cert.pem".to_string()))
+                .key_path(env_or("CERT_KEY_PATH", "./cert.rsa".to_string()))
+                .build()?,
+            incoming,
+        );
+        let server = Server::builder(tls_accept).serve(service);
+        println!("Listening on https://{}", addr);
+        server.await?;
+        return Ok(());
+    }
+
+    let server = Server::builder(incoming).serve(service);
     println!("Listening on http://{}", addr);
-
     server.await?;
-
     Ok(())
 }
 

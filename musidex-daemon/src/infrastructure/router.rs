@@ -1,4 +1,4 @@
-// Based on https://github.com/giraffate/keiro/blob/master/src/lib.rs
+// Partly based on https://github.com/giraffate/keiro/blob/master/src/lib.rs
 // MIT License
 //
 // Copyright (c) 2021 Takayuki Nakata
