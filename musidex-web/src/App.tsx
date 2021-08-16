@@ -1,5 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 import API from "./api";
+import Navbar from "./components/navbar";
 
 function App() {
     let pRef = useRef<HTMLParagraphElement>(null);
@@ -13,12 +14,8 @@ function App() {
     });
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <p ref={pRef}>
-
-        </p>
-      </header>
+    <div className="color-bg bg">
+        <Navbar />
     </div>
   );
 }
