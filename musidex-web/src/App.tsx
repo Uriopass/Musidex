@@ -1,6 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import API from "./api";
 import Navbar from "./components/navbar";
+import Explorer from "./components/explorer";
 
 function App() {
     let pRef = useRef<HTMLParagraphElement>(null);
@@ -16,6 +17,7 @@ function App() {
   return (
     <div className="color-bg bg">
         <Navbar />
+        <Explorer title="salut"/>
     </div>
   );
 }
