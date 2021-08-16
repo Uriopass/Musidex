@@ -41,7 +41,7 @@ async fn start() -> anyhow::Result<()> {
         .get("/api/metadata", handlers::metadata)
         .get("/api/config", handlers::get_config);
 
-    let addr = ([127, 0, 0, 1], 3000).into();
+    let addr = ([127, 0, 0, 1], 3200).into();
     let incoming = AddrIncoming::bind(&addr).unwrap_or_else(|e| {
         panic!("error binding to {}: {}", addr, e);
     });

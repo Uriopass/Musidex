@@ -30,10 +30,11 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 
-use hyper::http::Extensions;
+use hyper::http::{Extensions};
 use hyper::service::Service;
 use hyper::{Body, Method, Request, Response};
 use route_recognizer::Router as InnerRouter;
+use hyper::header::{ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ALLOW_METHODS};
 
 #[derive(Default)]
 pub(crate) struct Router {
@@ -192,7 +193,15 @@ impl Service<Request<Body>> for RouterService {
         let fut = router.serve(req);
         let fut = async {
             match fut.await {
-                Ok(x) => Ok(x),
+                Ok(mut x) => {
+                    #[cfg(debug_assertions)]
+                        {
+                            x.headers_mut().insert(ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
+                            x.headers_mut().insert(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true".parse().unwrap());
+                            x.headers_mut().insert(ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, OPTIONS".parse().unwrap());
+                        }
+                    Ok(x)
+                },
                 Err(e) => {
                     log::error!("got error in request: {:?}", e);
                     Ok(Response::builder()
