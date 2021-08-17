@@ -61,10 +61,10 @@ impl From<Row> for Tag {
             key: row.get("key"),
             text: row.get("text"),
             integer: row.get("integer"),
-            date: row
-                .get::<_, Option<String>>("date")
-                .and_then(|x| DateTime::parse_from_rfc3339(&*x).ok().map(Into::into)),
-            vector: row.get("vector"),
+            date: row.get("date"),
+            vector: row
+                .get::<_, Option<&[u8]>>("vector")
+                .map(|x| x.iter().map(|&x| x as f32).collect()),
         }
     }
 }
