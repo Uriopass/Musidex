@@ -5,12 +5,12 @@ body {
 }
 
 :root {
-    --primary: #6a4188;
+    --primary: #8761a2;
     --secondary: #3f7a51;
-    --bg: #1b1c1e;
-    --fg: #2e3242;
-    --color-fg: azure;
-    --color-bg: #2e3242;
+    --bg: #151517;
+    --fg: #1b1d21;
+    --color-fg: #e0e0e0;
+    --color-bg: #495165;
 }
 
 .container {

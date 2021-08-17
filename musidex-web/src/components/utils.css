@@ -1,0 +1,11 @@
+
+.progress-outer {
+    background-color: var(--color-bg);
+    height: 3px;
+    width: 100%;
+}
+
+.progress-bar {
+    background-color: var(--primary);
+    height: 3px;
+}

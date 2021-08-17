@@ -1,16 +1,17 @@
 import './navbar.css'
 import TextInput from "./input";
+import {MaterialIcon} from "./utils";
 
 const Navbar = () => {
     return (
         <ul className="navbar bg color-fg">
             <NavbarElement size="1">
-                <span className="material-icons">home</span>
+                <MaterialIcon name="home" />
             </NavbarElement>
             <NavbarElement size="5">
                 <div style={{display: "flex", minWidth: "100%"}}>
                     <TextInput name="Search" minWidth="50%" />
-                    <span className="material-icons" style={{marginLeft: "25px"}}>search</span>
+                    <MaterialIcon name="search" style={{marginLeft: "25px"}} />
                 </div>
             </NavbarElement>
         </ul>

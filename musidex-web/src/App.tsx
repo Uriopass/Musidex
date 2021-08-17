@@ -1,28 +1,40 @@
-import React, {useEffect, useRef} from 'react';
-import API from "./api";
+import React, {useEffect, useReducer, useState} from 'react';
+import API, {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/api";
 import Navbar from "./components/navbar";
 import Explorer from "./components/explorer";
+import Player from "./components/player";
+import {applyTracklist, emptyTracklist, TracklistCtx} from "./domain/tracklist";
 
 function App() {
-    let pRef = useRef<HTMLParagraphElement>(null);
+    let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
 
     useEffect(() => {
         API.getMetadata().then((metadata) => {
             if (metadata == null) return;
-            if (pRef.current == null) return;
-            pRef.current.textContent = JSON.stringify(metadata, undefined, 2);
+            setMetadata(metadata);
         })
-    });
+    }, []);
 
-  return (
-    <div className="color-bg bg" style={{textAlign: "center"}}>
-        <Navbar />
+    let [tracklist, dispatch] = useReducer(applyTracklist, emptyTracklist())
 
-        <div className="container">
-            <Explorer title="salut"/>
+    useEffect(() => {
+        setInterval(() =>  dispatch({action: "audioTick"}), 1000);
+    }, [])
+
+    return (
+        <div className="color-bg bg" style={{textAlign: "center"}}>
+            <Navbar/>
+
+            <MetadataCtx.Provider value={metadata}>
+                <TracklistCtx.Provider value={[tracklist, dispatch]}>
+                    <div className="container">
+                        <Explorer title="Musics" metadata={metadata}/>
+                    </div>
+                    <Player track={tracklist.current}/>
+                </TracklistCtx.Provider>
+            </MetadataCtx.Provider>
         </div>
-    </div>
-  );
+    );
 }
 
 export default App;

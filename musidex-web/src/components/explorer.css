@@ -3,3 +3,13 @@
     max-width: 1000px;
     text-align: left;
 }
+
+.song-elem {
+    min-height: 80px;
+    display: flex;
+    background-color: var(--fg);
+    border-radius: 5px;
+    margin-top: 10px;
+    padding: 10px;
+    align-items: center;
+}
