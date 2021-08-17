@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 #[serde(transparent)]
-pub struct MusicID(i64);
+pub struct MusicID(i32);
 
 #[derive(Serialize, Deserialize)]
 pub struct Music {

@@ -26,6 +26,7 @@ static MIGRATIONS: Dir = include_dir!("migrations");
 async fn start() -> anyhow::Result<()> {
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
+    std::fs::create_dir_all("./storage/").context("could not create storage")?;
 
     let pg = Pg::connect().await.context("error connecting to pg")?;
     migrate(&pg, &MIGRATIONS)
