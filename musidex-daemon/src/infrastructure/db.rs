@@ -1,8 +1,8 @@
 use crate::utils::env_or;
 use anyhow::{Context, Result};
-use deadpool_postgres::tokio_postgres::NoTls;
-use deadpool_postgres::{Client, Config, ManagerConfig, RecyclingMethod, PoolError};
 use deadpool_postgres::tokio_postgres::error::SqlState;
+use deadpool_postgres::tokio_postgres::NoTls;
+use deadpool_postgres::{Client, Config, ManagerConfig, PoolError, RecyclingMethod};
 
 #[derive(Clone)]
 pub struct Pg(deadpool_postgres::Pool);
@@ -19,7 +19,9 @@ impl Pg {
             recycling_method: RecyclingMethod::Fast,
         });
         let pool = Pg(cfg.create_pool(NoTls).context("can't create pool")?);
-        maybe_make_db(cfg, &pool).await.context("error trying to make db")?;
+        maybe_make_db(cfg, &pool)
+            .await
+            .context("error trying to make db")?;
         Ok(pool)
     }
 
@@ -45,9 +47,7 @@ async fn maybe_make_db(mut cfg: Config, pool: &Pg) -> Result<()> {
     let pool = cfg.create_pool(NoTls).context("can't create pool")?;
     let client = pool.get().await?;
 
-    client
-        .execute("CREATE DATABASE musidex", &[])
-        .await?;
+    client.execute("CREATE DATABASE musidex", &[]).await?;
     Ok(())
 }
 

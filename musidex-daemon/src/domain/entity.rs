@@ -2,9 +2,9 @@ use chrono::{DateTime, Utc};
 use deadpool_postgres::tokio_postgres::Row;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(transparent)]
-pub struct MusicID(i32);
+pub struct MusicID(pub i32);
 
 #[derive(Serialize, Deserialize)]
 pub struct Music {
@@ -17,7 +17,7 @@ pub struct Tag {
     pub key: String,
 
     pub text: Option<String>,
-    pub integer: Option<i64>,
+    pub integer: Option<i32>,
     pub date: Option<DateTime<Utc>>,
     pub vector: Option<Vec<f32>>,
 }

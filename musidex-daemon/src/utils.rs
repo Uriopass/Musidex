@@ -1,3 +1,5 @@
+use std::io::{BufReader, Read, Seek, SeekFrom};
+use std::path::Path;
 use std::str::FromStr;
 
 pub fn env_or<T: FromStr>(key: &str, default: T) -> T {
@@ -15,4 +17,20 @@ macro_rules! unwrap_ret {
             Err(err) => return $ret(err),
         }
     };
+}
+
+pub fn get_file_range<P: AsRef<Path>>(
+    file_path: P,
+    (start, end): (u64, u64),
+) -> std::io::Result<Vec<u8>> {
+    if end < start {
+        return Err(std::io::Error::from(std::io::ErrorKind::InvalidInput));
+    }
+    let mut f = std::fs::File::open(file_path)?;
+    let mut buffer = Vec::new();
+    f.seek(SeekFrom::Start(start))?;
+    BufReader::new(f)
+        .take(end - start + 1)
+        .read_to_end(&mut buffer)?;
+    Ok(buffer)
 }

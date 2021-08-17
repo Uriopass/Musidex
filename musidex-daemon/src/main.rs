@@ -39,6 +39,7 @@ async fn start() -> anyhow::Result<()> {
     router
         .state(pg)
         .get("/api/metadata", handlers::metadata)
+        .get("/api/stream/:musicid", handlers::stream)
         .get("/api/config", handlers::get_config);
 
     let addr = ([127, 0, 0, 1], 3200).into();

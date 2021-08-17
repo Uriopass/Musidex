@@ -30,11 +30,13 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 
-use hyper::http::{Extensions};
+use hyper::header::{
+    ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_ALLOW_ORIGIN,
+};
+use hyper::http::Extensions;
 use hyper::service::Service;
 use hyper::{Body, Method, Request, Response};
 use route_recognizer::Router as InnerRouter;
-use hyper::header::{ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ALLOW_METHODS};
 
 #[derive(Default)]
 pub(crate) struct Router {
@@ -192,27 +194,33 @@ impl Service<Request<Body>> for RouterService {
         let router = self.0.clone();
         let fut = router.serve(req);
         let fut = async {
-            match fut.await {
-                Ok(mut x) => {
-                    #[cfg(debug_assertions)]
-                        {
-                            x.headers_mut().insert(ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
-                            x.headers_mut().insert(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true".parse().unwrap());
-                            x.headers_mut().insert(ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, OPTIONS".parse().unwrap());
-                        }
-                    Ok(x)
-                },
+            let mut response = match fut.await {
+                Ok(x) => x,
                 Err(e) => {
                     log::error!("got error in request: {:?}", e);
-                    Ok(Response::builder()
+                    Response::builder()
                         .status(500)
                         .body(Body::from(format!("{}", e)))
-                        .unwrap())
+                        .unwrap()
                 }
-            }
+            };
+            #[cfg(debug_assertions)]
+            set_cors(&mut response);
+            Ok(response)
         };
         Box::pin(fut)
     }
+}
+
+fn set_cors(req: &mut Response<Body>) {
+    req.headers_mut()
+        .insert(ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
+    req.headers_mut()
+        .insert(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true".parse().unwrap());
+    req.headers_mut().insert(
+        ACCESS_CONTROL_ALLOW_METHODS,
+        "GET, POST, OPTIONS".parse().unwrap(),
+    );
 }
 
 impl RouterService {
@@ -261,8 +269,7 @@ impl<T> Unpin for Ready<T> {}
 pub struct Params(Option<Box<route_recognizer::Params>>);
 
 impl Params {
-    #[allow(dead_code)]
-    pub(crate) fn find(&self, key: &str) -> Option<&str> {
+    pub(crate) fn get(&self, key: &str) -> Option<&str> {
         self.0.as_ref()?.find(key)
     }
 }
