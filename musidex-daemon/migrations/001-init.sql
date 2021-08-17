@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS music
 (
-    id int primary key
-) ;
+    id serial primary key
+);
 
 CREATE TABLE IF NOT EXISTS mtag
 (
