@@ -1,46 +1,11 @@
 use anyhow::{Context, Result};
 use deadpool_postgres::tokio_postgres::error::SqlState;
-use deadpool_postgres::tokio_postgres::{Client, NoTls, Row};
+use deadpool_postgres::tokio_postgres::{Client, Row};
 use include_dir::Dir;
+use crate::infrastructure::db::Pg;
 
-fn base_and_db(url: &str) -> Result<(&str, &str)> {
-    let base_split: Vec<&str> = url.rsplitn(2, '/').collect();
-    if base_split.len() != 2 {
-        bail!("invalid url: {}", url)
-    }
-    let qmark_split: Vec<&str> = base_split[0].splitn(2, '?').collect();
-    Ok((base_split[1], qmark_split[0]))
-}
-
-async fn maybe_make_db(url: &str) -> Result<()> {
-    match deadpool_postgres::tokio_postgres::connect(url, NoTls).await {
-        Ok(_) => return Ok(()), // it exists, we're done
-        Err(err) => {
-            if let Some(&SqlState::UNDEFINED_DATABASE) = err.code() {
-                () // it doesn't exist, continue to create it
-            } else {
-                return Err(err).context("could not connect to db");
-            }
-        }
-    };
-
-    let (base_url, db_name) = base_and_db(url)?;
-    let (client, connection) =
-        deadpool_postgres::tokio_postgres::connect(&format!("{}/postgres", base_url), NoTls)
-            .await?;
-    tokio::spawn(async move {
-        if let Err(e) = connection.await {
-            eprintln!("connection error: {}", e);
-        }
-    });
-    client
-        .execute(&*format!(r#"CREATE DATABASE "{}""#, db_name), &[])
-        .await?;
-    Ok(())
-}
-
-async fn get_migrated(db: &mut Client) -> Result<Vec<String>> {
-    let migrated = db
+async fn get_migrated(pg: &Client) -> Result<Vec<String>> {
+    let migrated = pg
         .query("SELECT migration FROM sqlx_pg_migrate ORDER BY id;", &[])
         .await
         .map(|x| x.into_iter().map(|row: Row| row.get("migration")).collect());
@@ -58,28 +23,16 @@ async fn get_migrated(db: &mut Client) -> Result<Vec<String>> {
 
 /// Runs the migrations contained in the directory. See module documentation for
 /// more information.
-pub async fn migrate(url: &str, dir: &Dir<'_>) -> Result<()> {
+pub async fn migrate(pg: &Pg, dir: &Dir<'_>) -> Result<()> {
     log::info!("running migrations");
-    maybe_make_db(url)
-        .await
-        .context("error checking db exists")?;
-    log::info!("database exists");
 
-    let (mut db, connection) = deadpool_postgres::tokio_postgres::connect(url, NoTls)
-        .await
-        .context("error connecting to db")?;
-    tokio::spawn(async move {
-        if let Err(e) = connection.await {
-            eprintln!("connection error: {}", e);
-        }
-    });
-
-    let migrated = get_migrated(&mut db)
+    let mut client = pg.get().await?;
+    let migrated = get_migrated(&client)
         .await
         .context("error getting migrations")?;
     log::info!("got existing migrations from table");
 
-    let tx = db
+    let tx = client
         .transaction()
         .await
         .context("error creating transaction")?;

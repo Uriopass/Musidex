@@ -15,7 +15,7 @@ pub fn tstart() {
 }
 
 pub async fn init() {
-    let db = Pg::connect().unwrap();
+    let db = Pg::connect().await.unwrap();
 
     test_get_config(&db).await.unwrap();
 }

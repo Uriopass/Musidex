@@ -22,17 +22,16 @@ use infrastructure::migrate::migrate;
 use infrastructure::router::Router;
 
 static MIGRATIONS: Dir = include_dir!("migrations");
-static DB_URL: &'static str = "postgresql://postgres:pass@127.0.0.1:5433/musidex";
 
 async fn start() -> anyhow::Result<()> {
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
 
-    migrate(DB_URL, &MIGRATIONS)
+    let pg = Pg::connect().await.context("error connecting to pg")?;
+    migrate(&pg, &MIGRATIONS)
         .await
         .context("error running migrations")?;
 
-    let pg = Pg::connect()?;
     config::init(&pg).await?;
 
     let mut router = Router::new();
