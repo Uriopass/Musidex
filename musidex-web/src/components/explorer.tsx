@@ -7,7 +7,7 @@ type ExplorerProps = {
 const Explorer = (props: ExplorerProps) => {
     return (
         <div className="explorer color-fg">
-            <div className="explorer-title">{props.title}</div>
+            <div className="explorer-title title">{props.title}</div>
         </div>
     )
 }

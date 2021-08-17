@@ -15,9 +15,12 @@ function App() {
     });
 
   return (
-    <div className="color-bg bg">
+    <div className="color-bg bg" style={{textAlign: "center"}}>
         <Navbar />
-        <Explorer title="salut"/>
+
+        <div className="container">
+            <Explorer title="salut"/>
+        </div>
     </div>
   );
 }

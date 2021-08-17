@@ -9,8 +9,8 @@ const Navbar = () => {
             </NavbarElement>
             <NavbarElement size="5">
                 <div style={{display: "flex", minWidth: "100%"}}>
-                <TextInput name="Search" minWidth="50%" />
-                <span className="material-icons" style={{marginLeft: "25px"}}>search</span>
+                    <TextInput name="Search" minWidth="50%" />
+                    <span className="material-icons" style={{marginLeft: "25px"}}>search</span>
                 </div>
             </NavbarElement>
         </ul>
