@@ -17,9 +17,11 @@ function App() {
 
     let [tracklist, dispatch] = useReducer(applyTracklist, emptyTracklist())
 
-    useEffect(() => {
-        setInterval(() =>  dispatch({action: "audioTick"}), 1000);
-    }, [])
+    tracklist.audio.onloadeddata = () => dispatch({action: "audioTick"});
+    tracklist.audio.onplaying = () => dispatch({action: "audioTick"});
+    tracklist.audio.onpause = () => dispatch({action: "audioTick"});
+
+    console.log("rerender app", tracklist)
 
     return (
         <div className="color-bg bg" style={{textAlign: "center"}}>
@@ -30,7 +32,7 @@ function App() {
                     <div className="container">
                         <Explorer title="Musics" metadata={metadata}/>
                     </div>
-                    <Player track={tracklist.current}/>
+                    <Player />
                 </TracklistCtx.Provider>
             </MetadataCtx.Provider>
         </div>

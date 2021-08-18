@@ -7,15 +7,11 @@ export type Track = {
     duration?: number;
 }
 
-export type PlayingTrack = {
-    track: Track;
-    curtime: number;
+type Tracklist = {
+    current: Track | null;
+    duration: number;
     paused: boolean;
     loading: boolean;
-}
-
-type Tracklist = {
-    current: PlayingTrack | null;
     audio: HTMLAudioElement;
 }
 
@@ -27,6 +23,9 @@ export function emptyTracklist(): Tracklist {
     return {
         current: null,
         audio: new Audio(),
+        duration: 0,
+        paused: true,
+        loading: false
     }
 }
 
@@ -37,36 +36,33 @@ export function applyTracklist(tracklist: Tracklist, action: TrackAction): Track
     switch (action.action) {
         case "play":
             if (action.track.id < 0) return tracklist;
-
-            if (tracklist.current && (tracklist.current.track.id === action.track.id)) {
-                if (tracklist.current.paused) {
+            if (tracklist.current && (tracklist.current.id === action.track.id)) {
+                if (tracklist.paused) {
                     tracklist.audio.play();
                 } else {
                     tracklist.audio.pause();
                 }
                 return {
                     ...tracklist,
-                    current: {...tracklist.current, paused: !tracklist.current.paused}
+                    loading: tracklist.paused,
+                    paused: !tracklist.paused,
                 }
             }
             tracklist.audio.src = API.getStreamSrc(action.track.id);
             tracklist.audio.play();
             return {
                 ...tracklist,
-                current: {track: action.track, curtime: 0, paused: false, loading: true}
+                current: action.track,
+                duration: action.track.duration || 0,
+                loading: true,
             }
         case "audioTick":
             if (tracklist.current === null) return tracklist;
             return {
                 ...tracklist,
-                current: {
-                    ...tracklist.current,
-                    track: {
-                        ...tracklist.current.track,
-                        duration: tracklist.audio.duration,
-                    },
-                    curtime: tracklist.audio.currentTime,
-                }
+                duration: tracklist.audio.duration,
+                paused: tracklist.audio.paused,
+                loading: tracklist.loading && tracklist.audio.paused,
             }
     }
     return tracklist

@@ -8,4 +8,5 @@
 .progress-bar {
     background-color: var(--primary);
     height: 3px;
+    transition: 0.25s linear;
 }

@@ -1,8 +1,9 @@
 import './navbar.css'
 import TextInput from "./input";
 import {MaterialIcon} from "./utils";
+import React from "react";
 
-const Navbar = () => {
+const Navbar = React.memo(() => {
     return (
         <ul className="navbar bg color-fg">
             <NavbarElement size="1">
@@ -16,7 +17,7 @@ const Navbar = () => {
             </NavbarElement>
         </ul>
     )
-}
+})
 
 const NavbarElement = (props: any) => {
     return (

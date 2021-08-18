@@ -1,11 +1,10 @@
 import {MaterialIcon, ProgressBar} from "./utils";
 import './player.css'
-import {PlayingTrack} from "../domain/tracklist";
+import {TracklistCtx} from "../domain/tracklist";
 import {PlayButton} from "./explorer";
+import {useContext, useEffect, useState} from "react";
 
-type PlayerProps = {
-    track: PlayingTrack | null,
-};
+type PlayerProps = {};
 
 function timeFormat(total: number): string {
     let minutes = Math.floor(total / 60);
@@ -14,10 +13,17 @@ function timeFormat(total: number): string {
 }
 
 const Player = (props: PlayerProps) => {
-    let curtime = props.track?.curtime || 0
-    let duration = props.track?.track.duration || 0
+    let tracklist = useContext(TracklistCtx)[0];
+    let forceUpdate = useState(1)[1];
+
+    useEffect(() => {
+        setInterval(() => forceUpdate((v) => v+1), 250);
+    }, [])
+
+    let curtime = tracklist.audio.currentTime || 0;
+    let duration = tracklist.duration || 0;
     let progress = duration > 0 ? curtime / duration : 0;
-    let title = (props.track != null) ? (props.track.track.tags.get("title")?.text || "No Title") : "";
+    let title = (tracklist.current != null) ? (tracklist.current.tags.get("title")?.text || "No Title") : "";
     return (
         <div className="player fg color-fg">
             <div className="player-current-track">
@@ -26,7 +32,7 @@ const Player = (props: PlayerProps) => {
             <div className="player-central-menu">
                 <div className="player-controls">
                     <button className="player-button" onClick={() => console.log("hi")}><MaterialIcon size={20} name="skip_previous"/></button>
-                    <PlayButton musicID={props.track?.track.id || -2} />
+                    <PlayButton musicID={tracklist.current?.id || -2} />
                     <button className=" player-button" onClick={() => console.log(" hi")}><MaterialIcon size={20} name=" skip_next"/></button>
                 </div>
                 <div className=" player-track-bar">
