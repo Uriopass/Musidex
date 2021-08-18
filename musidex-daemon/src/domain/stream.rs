@@ -9,7 +9,10 @@ pub async fn stream_path(c: &Client, id: MusicID) -> Result<String> {
 
     for row in sources {
         let source = Source::from(row);
-        if source.format == "local_mp3" || source.format == "local_ogg" {
+        if source.format == "local_mp3"
+            || source.format == "local_ogg"
+            || source.format == "local_m4a"
+        {
             return Ok(source.url);
         }
     }

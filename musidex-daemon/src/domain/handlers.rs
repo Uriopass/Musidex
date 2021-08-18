@@ -51,6 +51,8 @@ pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {
         "audio/mpeg"
     } else if source_path.ends_with("ogg") {
         "audio/ogg"
+    } else if source_path.ends_with("m4a") {
+        "audio/mp4"
     } else {
         ""
     };
