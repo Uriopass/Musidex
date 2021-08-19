@@ -3,7 +3,7 @@ import API, {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/api";
 import Navbar from "./components/navbar";
 import Explorer from "./components/explorer";
 import Player from "./components/player";
-import {applyTracklist, emptyTracklist, TracklistCtx} from "./domain/tracklist";
+import {applyTracklist, emptyTracklist, setupListeners, TracklistCtx} from "./domain/tracklist";
 
 function App() {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
@@ -16,10 +16,7 @@ function App() {
     }, []);
 
     let [tracklist, dispatch] = useReducer(applyTracklist, emptyTracklist())
-
-    tracklist.audio.onloadeddata = () => dispatch({action: "audioTick"});
-    tracklist.audio.onplaying = () => dispatch({action: "audioTick"});
-    tracklist.audio.onpause = () => dispatch({action: "audioTick"});
+    setupListeners(tracklist, dispatch)
 
     return (
         <div className="color-bg bg" style={{textAlign: "center"}}>

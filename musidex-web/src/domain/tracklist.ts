@@ -30,13 +30,26 @@ export function emptyTracklist(): Tracklist {
     }
 }
 
+export function setupListeners(tracklist: Tracklist, dispatch: React.Dispatch<TrackAction>) {
+    tracklist.audio.onloadeddata = () => dispatch({action: "audioTick"});
+    tracklist.audio.onplaying = () => dispatch({action: "audioTick"});
+    tracklist.audio.onpause = () => dispatch({action: "audioTick"});
+    tracklist.audio.oncanplay = () => {
+        tracklist.loading = false;
+        if(!tracklist.paused) {
+            console.log("playing after oncanplay")
+            tracklist.audio.play().catch((e) => console.log(e));
+        }
+    }
+}
+
 export function applyTracklist(tracklist: Tracklist, action: TrackAction): Tracklist {
     switch (action.action) {
         case "play":
             if (action.track.id < 0) return tracklist;
             if (tracklist.current && (tracklist.current.id === action.track.id)) {
                 if (tracklist.paused) {
-                    tracklist.audio.play();
+                    tracklist.audio.play().catch((e) => console.log(e));
                 } else {
                     tracklist.audio.pause();
                 }
@@ -47,12 +60,13 @@ export function applyTracklist(tracklist: Tracklist, action: TrackAction): Track
                 }
             }
             tracklist.audio.src = API.getStreamSrc(action.track.id);
-            tracklist.audio.play();
+            tracklist.audio.load();
             return {
                 ...tracklist,
                 current: action.track,
                 duration: action.track.duration || 0,
                 loading: true,
+                paused: false,
             }
         case "setTime":
             tracklist.audio.currentTime = action.time;
@@ -64,7 +78,6 @@ export function applyTracklist(tracklist: Tracklist, action: TrackAction): Track
             return {
                 ...tracklist,
                 duration: tracklist.audio.duration,
-                paused: tracklist.audio.paused,
                 loading: tracklist.loading && tracklist.audio.paused,
             }
     }
