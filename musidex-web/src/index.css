@@ -13,10 +13,22 @@ body {
     --color-bg: #495165;
 }
 
-.container {
-    max-width: 1000px;
+#root {
+    background-color: var(--bg);
+    color: var(--color-bg);
+    height: 100vh;
+    width: 100%;
+    display: grid;
+    grid-template-rows: 90px 1fr 90px;
+}
+
+.content {
+    width: 100%;
     text-align: center;
-    margin: 20px auto auto;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .title {

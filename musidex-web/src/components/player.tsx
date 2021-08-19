@@ -7,7 +7,7 @@ import React, {useContext, useEffect, useState} from "react";
 function timeFormat(total: number): string {
     let minutes = Math.floor(total / 60);
     let seconds = Math.floor(total % 60);
-    return `${minutes}:${seconds < 10 ? "0": ""}${seconds}`
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
 }
 
 const Player = () => {
@@ -15,21 +15,34 @@ const Player = () => {
     let forceUpdate = useState(1)[1];
 
     useEffect(() => {
-        setInterval(() => forceUpdate((v) => v+1), 250);
-    }, [forceUpdate])
+        let h = () => forceUpdate((v) => v + 1);
+        tracklist.audio.addEventListener("timeupdate", h);
+        return () => tracklist.audio.removeEventListener("timeupdate", h);
+    }, [forceUpdate, tracklist.audio])
 
     let curtime = tracklist.audio.currentTime || 0;
     let duration = tracklist.duration || 0;
-    let progress = duration > 0 ? curtime / duration : 0;
+    let trackProgress = duration > 0 ? curtime / duration : 0;
     let title = (tracklist.current != null) ? (tracklist.current.tags.get("title")?.text || "No Title") : "";
 
-    let pBarOnClick = (ev: React.MouseEvent<HTMLDivElement>) => {
+    let trackBarOnMove = (ev: React.MouseEvent<HTMLDivElement>) => {
+        if (ev.buttons !== 1) return;
         let x = ev.pageX - ev.currentTarget.offsetLeft;
         if (ev.currentTarget.offsetWidth <= 1 || duration <= 1) {
             return;
         }
         let p = (x * duration) / ev.currentTarget.offsetWidth;
         dispatch({action: "setTime", time: p});
+    }
+
+    let volumeOnMove = (ev: React.MouseEvent<HTMLDivElement>) => {
+        if (ev.buttons !== 1) return;
+        let x = ev.pageX - ev.currentTarget.offsetLeft;
+        if (ev.currentTarget.offsetWidth <= 1) {
+            return;
+        }
+        let p = x / ev.currentTarget.offsetWidth;
+        dispatch({action: "setVolume", volume: p});
     }
 
     return (
@@ -39,22 +52,32 @@ const Player = () => {
             </div>
             <div className="player-central-menu">
                 <div className="player-controls">
-                    <button className="player-button" onClick={() => console.log("prev")}><MaterialIcon size={20} name="skip_previous"/></button>
-                    <PlayButton musicID={tracklist.current?.id || -2} />
-                    <button className=" player-button" onClick={() => console.log("next")}><MaterialIcon size={20} name=" skip_next"/></button>
+                    <button className="player-button" onClick={() => console.log("prev")}><MaterialIcon size={20}
+                                                                                                        name="skip_previous"/>
+                    </button>
+                    <PlayButton musicID={tracklist.current?.id || -2}/>
+                    <button className=" player-button" onClick={() => console.log("next")}><MaterialIcon size={20}
+                                                                                                         name=" skip_next"/>
+                    </button>
                 </div>
-                <div className=" player-track-bar">
-                    <span className=" player-track-info">
+                <div className="player-track-bar">
+                    <span className="player-track-info">
                         {timeFormat(curtime)}
                     </span>
-                    <ProgressBar onClick={pBarOnClick} progress={progress}/>
-                    <span className=" player-track-info">
+                    <ProgressBar onMouseMove={trackBarOnMove} progress={trackProgress}/>
+                    <span className="player-track-info">
                         {timeFormat(duration)}
                     </span>
                 </div>
             </div>
-            <div className=" player-global-controls">
-
+            <div className="player-global-controls">
+                <div className="player-volume">
+                    <span className="player-track-info">
+                        <MaterialIcon size={15} name="volume_up"/>
+                    </span>
+                    <ProgressBar onMouseMove={volumeOnMove} progress={tracklist.audio.volume}/>
+                    <div style={{flex: 1}}/>
+                </div>
             </div>
         </div>
     )

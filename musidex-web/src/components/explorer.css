@@ -1,7 +1,8 @@
 .explorer {
     padding: 30px;
-    max-width: 1000px;
+    width: 100%;
     text-align: left;
+    max-width: 1000px;
 }
 
 .song-elem {

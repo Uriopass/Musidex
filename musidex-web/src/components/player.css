@@ -1,6 +1,4 @@
 .player {
-    height: 100px;
-    position: fixed;
     bottom: 0;
     width: 100%;
     display: flex;
@@ -21,6 +19,14 @@
     flex-direction: column;
 }
 
+.player-volume {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex: 1;
+    padding: 0 20%;
+}
+
 .player-track-bar {
     display: flex;
     flex-direction: row;
@@ -30,10 +36,14 @@
 .player-track-info {
     font-size: 0.9rem;
     padding: 5px;
+    align-items: center;
+    display: flex;
 }
 
 .player-global-controls {
     flex: 1;
+    display: flex;
+    align-items: center;
 }
 
 .player-current-track {

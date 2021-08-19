@@ -3,6 +3,8 @@
     width: 100%;
     display: flex;
     align-items: center;
+    position: relative;
+    user-select: none;
 }
 
 .progress-outer {
@@ -18,5 +20,21 @@
 .progress-bar {
     background-color: var(--primary);
     height: 100%;
-    transition: 0.25s linear;
+}
+
+.progress-container:hover .progress-indicator {
+    opacity: 1;
+    transition: 0.2s;
+    transition-property: opacity;
+}
+
+.progress-indicator {
+    pointer-events: none;
+    opacity: 0;
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 50%);
+    border-radius: 50%;
+    background-color: white;
 }
