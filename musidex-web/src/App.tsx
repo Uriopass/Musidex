@@ -21,8 +21,6 @@ function App() {
     tracklist.audio.onplaying = () => dispatch({action: "audioTick"});
     tracklist.audio.onpause = () => dispatch({action: "audioTick"});
 
-    console.log("rerender app", tracklist)
-
     return (
         <div className="color-bg bg" style={{textAlign: "center"}}>
             <Navbar/>

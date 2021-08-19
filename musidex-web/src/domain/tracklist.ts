@@ -30,9 +30,6 @@ export function emptyTracklist(): Tracklist {
 }
 
 export function applyTracklist(tracklist: Tracklist, action: TrackAction): Tracklist {
-    if (action.action !== "audioTick") {
-        console.log(action);
-    }
     switch (action.action) {
         case "play":
             if (action.track.id < 0) return tracklist;

@@ -4,21 +4,19 @@ import {TracklistCtx} from "../domain/tracklist";
 import {PlayButton} from "./explorer";
 import {useContext, useEffect, useState} from "react";
 
-type PlayerProps = {};
-
 function timeFormat(total: number): string {
     let minutes = Math.floor(total / 60);
     let seconds = Math.floor(total % 60);
     return `${minutes}:${seconds < 10 ? "0": ""}${seconds}`
 }
 
-const Player = (props: PlayerProps) => {
+const Player = () => {
     let tracklist = useContext(TracklistCtx)[0];
     let forceUpdate = useState(1)[1];
 
     useEffect(() => {
         setInterval(() => forceUpdate((v) => v+1), 250);
-    }, [])
+    }, [forceUpdate])
 
     let curtime = tracklist.audio.currentTime || 0;
     let duration = tracklist.duration || 0;
