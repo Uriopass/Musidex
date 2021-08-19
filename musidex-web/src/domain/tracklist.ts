@@ -18,6 +18,7 @@ type Tracklist = {
 type TrackAction =
     { action: "play", track: Track }
     | { action: "audioTick" }
+| { action: "setTime", time: number }
 
 export function emptyTracklist(): Tracklist {
     return {
@@ -52,6 +53,11 @@ export function applyTracklist(tracklist: Tracklist, action: TrackAction): Track
                 current: action.track,
                 duration: action.track.duration || 0,
                 loading: true,
+            }
+        case "setTime":
+            tracklist.audio.currentTime = action.time;
+            return {
+                ...tracklist
             }
         case "audioTick":
             if (tracklist.current === null) return tracklist;

@@ -7,8 +7,10 @@ export const MaterialIcon = React.memo((props: any) => {
 
 export const ProgressBar = React.memo((props: any) => {
     return (
-        <div className="progress-outer">
-            <div className="progress-bar" style={{width: 100*props.progress+"%"}}/>
+        <div className="progress-container" onClick={props.onClick}>
+            <div className="progress-outer">
+                <div className="progress-bar" style={{width: 100*props.progress+"%"}}/>
+            </div>
         </div>
     )
 })

@@ -2,7 +2,7 @@ import {MaterialIcon, ProgressBar} from "./utils";
 import './player.css'
 import {TracklistCtx} from "../domain/tracklist";
 import {PlayButton} from "./explorer";
-import {useContext, useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 
 function timeFormat(total: number): string {
     let minutes = Math.floor(total / 60);
@@ -11,7 +11,7 @@ function timeFormat(total: number): string {
 }
 
 const Player = () => {
-    let tracklist = useContext(TracklistCtx)[0];
+    let [tracklist, dispatch] = useContext(TracklistCtx);
     let forceUpdate = useState(1)[1];
 
     useEffect(() => {
@@ -22,6 +22,16 @@ const Player = () => {
     let duration = tracklist.duration || 0;
     let progress = duration > 0 ? curtime / duration : 0;
     let title = (tracklist.current != null) ? (tracklist.current.tags.get("title")?.text || "No Title") : "";
+
+    let pBarOnClick = (ev: React.MouseEvent<HTMLDivElement>) => {
+        let x = ev.pageX - ev.currentTarget.offsetLeft;
+        if (ev.currentTarget.offsetWidth <= 1 || duration <= 1) {
+            return;
+        }
+        let p = (x * duration) / ev.currentTarget.offsetWidth;
+        dispatch({action: "setTime", time: p});
+    }
+
     return (
         <div className="player fg color-fg">
             <div className="player-current-track">
@@ -29,15 +39,15 @@ const Player = () => {
             </div>
             <div className="player-central-menu">
                 <div className="player-controls">
-                    <button className="player-button" onClick={() => console.log("hi")}><MaterialIcon size={20} name="skip_previous"/></button>
+                    <button className="player-button" onClick={() => console.log("prev")}><MaterialIcon size={20} name="skip_previous"/></button>
                     <PlayButton musicID={tracklist.current?.id || -2} />
-                    <button className=" player-button" onClick={() => console.log(" hi")}><MaterialIcon size={20} name=" skip_next"/></button>
+                    <button className=" player-button" onClick={() => console.log("next")}><MaterialIcon size={20} name=" skip_next"/></button>
                 </div>
                 <div className=" player-track-bar">
                     <span className=" player-track-info">
                         {timeFormat(curtime)}
                     </span>
-                    <ProgressBar progress={progress}/>
+                    <ProgressBar onClick={pBarOnClick} progress={progress}/>
                     <span className=" player-track-info">
                         {timeFormat(duration)}
                     </span>
