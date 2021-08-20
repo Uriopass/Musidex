@@ -6,12 +6,13 @@ import {TracklistCtx} from "../domain/tracklist";
 
 export type ExplorerProps = {
     title: string;
+    hidden: boolean;
 }
 
 const Explorer = (props: ExplorerProps) => {
     const metadata = useContext(MetadataCtx);
     return (
-        <div className="explorer color-fg">
+        <div className={"explorer color-fg " + (props.hidden ? "hidden" : "")}>
             <div className="explorer-title title">{props.title}</div>
             {
                 metadata.musics.map((music) => {

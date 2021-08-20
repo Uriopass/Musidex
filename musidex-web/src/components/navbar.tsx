@@ -6,6 +6,7 @@ import {PageEnum} from "./navigator";
 
 interface NavbarProps {
     setCurPage: Setter<PageEnum>;
+    onSync: () => void;
 }
 
 const Navbar = React.memo((props: NavbarProps) => {
@@ -18,13 +19,15 @@ const Navbar = React.memo((props: NavbarProps) => {
                 <button onClick={() => props.setCurPage("submit")}>
                     <MaterialIcon name="file_upload" size={25}/>
                 </button>
+                <button onClick={() => props.onSync()}>
+                    <MaterialIcon name="sync" size={25}/>
+                </button>
             </NavbarElement>
-            <NavbarElement size="3">
-                <div style={{display: "flex", minWidth: "100%"}}>
-                    <TextInput name="Search" minWidth="50%"/>
-                    <MaterialIcon name="search" style={{marginLeft: "25px"}}/>
-                </div>
+            <NavbarElement size="4">
+                <TextInput onChange={(v) => console.log("search v changed", v)} name="Search" minWidth="50%"/>
+                <MaterialIcon name="search" style={{marginLeft: "25px"}}/>
             </NavbarElement>
+            <NavbarElement size="1" />
         </ul>
     )
 })

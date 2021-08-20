@@ -19,7 +19,7 @@ body {
     height: 100vh;
     width: 100%;
     display: grid;
-    grid-template-rows: 90px 1fr 90px;
+    grid-template-rows: 50px 1fr 85px;
 }
 
 .content {
@@ -59,4 +59,8 @@ body {
 
 .color-bg {
     color: var(--color-bg);
+}
+
+.hidden {
+    display: none;
 }

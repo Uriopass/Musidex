@@ -17,6 +17,7 @@
     flex: 3;
     display: flex;
     flex-direction: column;
+    justify-content: space-evenly;
 }
 
 .player-volume {
@@ -55,7 +56,7 @@
     background-color: transparent;
     border: transparent;
     color: var(--color-fg);
-    margin: 10px;
+    margin: 0 10px;
     border: 2px var(--color-fg) solid;
     border-radius: 100%;
     padding: 5px 5px;

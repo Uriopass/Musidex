@@ -3,6 +3,9 @@
     font-family: 'Poppins', sans-serif;
 }
 
+.form_show_label {
+    margin-top: 20px;
+}
 
 .form_field {
     font-family: inherit;
@@ -17,6 +20,10 @@
 }
 
 .form_field::placeholder {
+    color: var(--color-bg)
+}
+
+.form_show_label .form_field::placeholder {
     color: transparent;
 }
 
