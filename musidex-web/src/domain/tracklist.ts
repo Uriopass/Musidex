@@ -37,7 +37,7 @@ export function setupListeners(tracklist: Tracklist, dispatch: React.Dispatch<Tr
     tracklist.audio.onended = () => dispatch({action: "audioTick"});
     tracklist.audio.oncanplay = () => {
         tracklist.loading = false;
-        if(!tracklist.paused) {
+        if (!tracklist.paused) {
             tracklist.audio.play().catch((e) => console.log(e));
         }
     }

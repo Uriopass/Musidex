@@ -7,12 +7,12 @@ const Navbar = React.memo(() => {
     return (
         <ul className="navbar bg color-fg">
             <NavbarElement size="1">
-                <MaterialIcon name="home" />
+                <MaterialIcon name="home"/>
             </NavbarElement>
             <NavbarElement size="5">
                 <div style={{display: "flex", minWidth: "100%"}}>
-                    <TextInput name="Search" minWidth="50%" />
-                    <MaterialIcon name="search" style={{marginLeft: "25px"}} />
+                    <TextInput name="Search" minWidth="50%"/>
+                    <MaterialIcon name="search" style={{marginLeft: "25px"}}/>
                 </div>
             </NavbarElement>
         </ul>

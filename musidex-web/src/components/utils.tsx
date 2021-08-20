@@ -11,7 +11,7 @@ type ProgressBarProps = {
 }
 
 export const ProgressBar = React.memo(({onMouseMove, progress}: ProgressBarProps) => {
-    let off = 100*progress+"%";
+    let off = 100 * progress + "%";
     return (
         <div className="progress-container" onMouseDown={onMouseMove} onMouseMove={onMouseMove}>
             <div className="progress-indicator" style={{left: "calc(-6px + " + off + ")"}}/>

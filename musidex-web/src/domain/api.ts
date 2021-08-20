@@ -1,7 +1,7 @@
 import {Track} from "./tracklist";
 import React from "react";
 
-let apiURL = (process.env.NODE_ENV === "development") ? "http://127.0.0.1:3200" : "http://"+window.location.hostname;
+let apiURL = (process.env.NODE_ENV === "development") ? "http://127.0.0.1:3200" : "http://" + window.location.hostname;
 
 export type Music = {
     id: number;
@@ -68,13 +68,13 @@ export function buildTrack(id: number, metadata: MusidexMetadata): Track | null 
 export const API = {
     async getMetadata(): Promise<MusidexMetadata | null> {
         return fetchJson(apiURL + "/api/metadata").then((v: RawMusidexMetadata) => {
-            if(v == null) return null;
+            if (v == null) return null;
             return new MusidexMetadata(v.musics, v.tags, v.sources);
         })
     },
 
     getStreamSrc(id: number): string {
-        return apiURL + "/api/stream/"+id
+        return apiURL + "/api/stream/" + id
     }
 }
 

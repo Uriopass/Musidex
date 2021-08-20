@@ -17,14 +17,14 @@
 }
 
 .form_field::placeholder {
-     color: transparent;
- }
+    color: transparent;
+}
 
 .form_field:placeholder-shown ~ .form_label {
-     font-size: 1.3rem;
-     cursor: text;
-     top: 0px;
- }
+    font-size: 1.3rem;
+    cursor: text;
+    top: 0;
+}
 
 .form_label {
     position: absolute;
@@ -36,7 +36,7 @@
 }
 
 .form_field:focus {
-    border-image: linear-gradient(to right, var(--primary),var(--secondary)) 1;
+    border-image: linear-gradient(to right, var(--primary), var(--secondary)) 1;
 }
 
 .form_field:focus ~ .form_label {
@@ -46,8 +46,14 @@
     transition: 0.2s;
     font-size: 1rem;
     color: var(--primary);
-    font-weight:700;
+    font-weight: 700;
 }
+
 /* reset input */
-.form_field:required { box-shadow:none; }
-.form_field:invalid { box-shadow:none; }
+.form_field:required {
+    box-shadow: none;
+}
+
+.form_field:invalid {
+    box-shadow: none;
+}
