@@ -48,6 +48,7 @@
 
 .player-current-track {
     flex: 1;
+    display: flex;
 }
 
 .player-button {

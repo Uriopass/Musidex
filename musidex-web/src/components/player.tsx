@@ -48,7 +48,9 @@ const Player = () => {
     return (
         <div className="player fg color-fg">
             <div className="player-current-track">
-                {title}
+                <span style={{padding: 10}}>
+                    {title}
+                </span>
             </div>
             <div className="player-central-menu">
                 <div className="player-controls">
