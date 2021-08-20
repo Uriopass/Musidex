@@ -17,7 +17,7 @@ function App() {
     }, []);
 
     let [volume, setVolume] = useLocalStorage("volume", 1);
-    let [tracklist, dispatch] = useReducer(applyTracklist, newTracklist(setVolume));
+    let [tracklist, dispatch] = useReducer(applyTracklist, newTracklist());
 
     tracklist.audio.volume = volume;
     setupListeners(tracklist, dispatch);
@@ -30,7 +30,7 @@ function App() {
                     <div className="content">
                         <Explorer title="Musics" metadata={metadata}/>
                     </div>
-                    <Player />
+                    <Player onVolumeChange={(volume) => setVolume(volume)}/>
                 </TracklistCtx.Provider>
             </MetadataCtx.Provider>
         </Fragment>

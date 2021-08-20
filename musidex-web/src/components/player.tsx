@@ -1,4 +1,4 @@
-import {MaterialIcon, ProgressBar} from "./utils";
+import {clamp, MaterialIcon, ProgressBar} from "./utils";
 import './player.css'
 import {TracklistCtx} from "../domain/tracklist";
 import {PlayButton} from "./explorer";
@@ -10,7 +10,11 @@ function timeFormat(total: number): string {
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
 }
 
-const Player = () => {
+interface PlayerProps {
+    onVolumeChange: (volume: number) => void;
+}
+
+const Player = (props: PlayerProps) => {
     let [tracklist, dispatch] = useContext(TracklistCtx);
     let forceUpdate = useState(1)[1];
 
@@ -42,7 +46,8 @@ const Player = () => {
             return;
         }
         let p = x / ev.currentTarget.offsetWidth;
-        dispatch({action: "setVolume", volume: p});
+        p = clamp(p, 0, 1);
+        props.onVolumeChange(p);
     }
 
     return (

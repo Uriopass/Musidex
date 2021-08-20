@@ -16,7 +16,8 @@ const Explorer = (props: ExplorerProps) => {
             {
                 props.metadata?.musics.map((music) => {
                     return (
-                        <SongElem key={music.id} musicID={music.id} tags={props.metadata?.music_tags_idx.get(music.id)}/>
+                        <SongElem key={music.id} musicID={music.id}
+                                  tags={props.metadata?.music_tags_idx.get(music.id)}/>
                     )
                 })
             }
@@ -59,12 +60,12 @@ export const PlayButton = (props: PlayButtonProps) => {
 
     let onClick = () => {
         let track = buildTrack(props.musicID, metadata);
-        if(track === null) return;
+        if (track === null) return;
         dispatch({action: "play", track: track})
     };
 
     let chooseIcon = () => {
-        if (same_v ) {
+        if (same_v) {
             if (tracklist.loading) {
                 return <MaterialIcon name="pending"/>
             } else if (tracklist.paused) {
@@ -80,7 +81,7 @@ export const PlayButton = (props: PlayButtonProps) => {
     return (
         <button className="player-button" onClick={onClick}>
             {
-               chooseIcon()
+                chooseIcon()
             }
         </button>
     )

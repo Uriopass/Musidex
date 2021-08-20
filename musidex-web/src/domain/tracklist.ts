@@ -1,6 +1,5 @@
 import React from "react";
 import API, {Tag} from "./api";
-import {Setter} from "../components/utils";
 
 export type Track = {
     id: number;
@@ -14,23 +13,20 @@ type Tracklist = {
     paused: boolean;
     loading: boolean;
     audio: HTMLAudioElement;
-    setvolume: Setter<number>;
 }
 
 type TrackAction =
     { action: "play", track: Track }
     | { action: "audioTick" }
     | { action: "setTime", time: number }
-    | { action: "setVolume", volume: number }
 
-export function newTracklist(setvolume: Setter<number>): Tracklist {
+export function newTracklist(): Tracklist {
     return {
         current: null,
         audio: new Audio(),
         duration: 0,
         paused: true,
         loading: false,
-        setvolume: setvolume,
     }
 }
 
@@ -38,10 +34,10 @@ export function setupListeners(tracklist: Tracklist, dispatch: React.Dispatch<Tr
     tracklist.audio.onloadeddata = () => dispatch({action: "audioTick"});
     tracklist.audio.onplaying = () => dispatch({action: "audioTick"});
     tracklist.audio.onpause = () => dispatch({action: "audioTick"});
+    tracklist.audio.onended = () => dispatch({action: "audioTick"});
     tracklist.audio.oncanplay = () => {
         tracklist.loading = false;
         if(!tracklist.paused) {
-            console.log("playing after oncanplay")
             tracklist.audio.play().catch((e) => console.log(e));
         }
     }
@@ -77,19 +73,21 @@ export function applyTracklist(tracklist: Tracklist, action: TrackAction): Track
             return {
                 ...tracklist
             }
-        case "setVolume":
-            tracklist.setvolume(action.volume);
-            return tracklist;
         case "audioTick":
             if (tracklist.current === null) return tracklist;
+            if (tracklist.audio.ended) {
+                tracklist.paused = true;
+            }
+            if (!tracklist.audio.paused) {
+                tracklist.loading = false;
+            }
+            tracklist.duration = tracklist.audio.duration;
             return {
                 ...tracklist,
-                duration: tracklist.audio.duration,
-                loading: tracklist.loading && tracklist.audio.paused,
             }
     }
     return tracklist
 }
 
-export const TracklistCtx = React.createContext<[Tracklist, React.Dispatch<TrackAction>]>([newTracklist(_ => _), _ => _]);
+export const TracklistCtx = React.createContext<[Tracklist, React.Dispatch<TrackAction>]>([newTracklist(), _ => _]);
 export default Tracklist;

@@ -22,4 +22,10 @@ export const ProgressBar = React.memo(({onMouseMove, progress}: ProgressBarProps
     )
 })
 
+export function clamp(v: number, lower: number, upper: number) {
+    if (v < lower) return lower;
+    if (v > upper) return upper;
+    return v;
+}
+
 export type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
