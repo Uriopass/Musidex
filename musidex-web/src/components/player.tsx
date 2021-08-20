@@ -47,7 +47,19 @@ const Player = (props: PlayerProps) => {
         }
         let p = x / ev.currentTarget.offsetWidth;
         p = clamp(p, 0, 1);
+        if(p < 0.02) {
+            p = 0;
+        }
         props.onVolumeChange(p);
+    }
+
+    let volumeIcon = "volume_up";
+    let v = tracklist.audio.volume;
+    if(v <= 0.5) {
+        volumeIcon = "volume_down";
+    }
+    if(v <= 0.0) {
+        volumeIcon = "volume_mute";
     }
 
     return (
@@ -80,7 +92,7 @@ const Player = (props: PlayerProps) => {
             <div className="player-global-controls">
                 <div className="player-volume">
                     <span className="player-track-info">
-                        <MaterialIcon size={15} name="volume_up"/>
+                        <MaterialIcon size={15} name={volumeIcon}/>
                     </span>
                     <ProgressBar onMouseMove={volumeOnMove} progress={tracklist.audio.volume}/>
                     <div style={{flex: 1}}/>
