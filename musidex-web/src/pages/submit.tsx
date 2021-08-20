@@ -1,5 +1,5 @@
 import './submit.css'
-import TextInput from "./input";
+import TextInput from "../components/input";
 import {FormEvent, useState} from "react";
 
 const Submit = (props: any) => {

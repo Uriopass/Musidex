@@ -1,8 +1,8 @@
 import {clamp, MaterialIcon, ProgressBar} from "./utils";
 import './player.css'
 import {TracklistCtx} from "../domain/tracklist";
-import {PlayButton} from "./explorer";
 import React, {useContext, useEffect, useState} from "react";
+import {PlayButton} from "./playbutton";
 
 function timeFormat(total: number): string {
     let minutes = Math.floor(total / 60);

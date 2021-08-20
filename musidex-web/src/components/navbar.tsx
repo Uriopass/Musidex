@@ -2,7 +2,7 @@ import './navbar.css'
 import TextInput from "./input";
 import {MaterialIcon, Setter} from "./utils";
 import React from "react";
-import {PageEnum} from "./navigator";
+import {PageEnum} from "../pages/navigator";
 
 interface NavbarProps {
     setCurPage: Setter<PageEnum>;

@@ -4,8 +4,7 @@ import Navbar from "./components/navbar";
 import Player from "./components/player";
 import {applyTracklist, newTracklist, setupListeners, TracklistCtx} from "./domain/tracklist";
 import useLocalStorage from "use-local-storage";
-import PageNavigator, {PageEnum} from "./components/navigator";
-import KeepAliveProvider from "react-keep-alive/es/components/Provider";
+import PageNavigator, {PageEnum} from "./pages/navigator";
 
 function App() {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
@@ -27,7 +26,7 @@ function App() {
 
 
     return (
-        <KeepAliveProvider>
+        <>
             <Navbar setCurPage={setCurPage} onSync={() => setSyncCount((v) => v+1)}/>
             <MetadataCtx.Provider value={metadata}>
                 <TracklistCtx.Provider value={[tracklist, dispatch]}>
@@ -37,7 +36,7 @@ function App() {
                     <Player onVolumeChange={(volume) => setVolume(volume)}/>
                 </TracklistCtx.Provider>
             </MetadataCtx.Provider>
-        </KeepAliveProvider>
+        </>
     );
 }
 
