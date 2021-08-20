@@ -1,10 +1,10 @@
 import React, {Fragment, useEffect, useReducer, useState} from 'react';
 import API, {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/api";
 import Navbar from "./components/navbar";
-import Explorer from "./components/explorer";
 import Player from "./components/player";
 import {applyTracklist, newTracklist, setupListeners, TracklistCtx} from "./domain/tracklist";
 import useLocalStorage from "use-local-storage";
+import PageNavigator, {PageEnum} from "./components/navigator";
 
 function App() {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
@@ -18,17 +18,18 @@ function App() {
 
     let [volume, setVolume] = useLocalStorage("volume", 1);
     let [tracklist, dispatch] = useReducer(applyTracklist, newTracklist());
+    let [curPage, setCurPage] = useState("explorer" as PageEnum);
 
     tracklist.audio.volume = volume;
     setupListeners(tracklist, dispatch);
 
     return (
         <Fragment>
-            <Navbar/>
+            <Navbar setCurPage={setCurPage}/>
             <MetadataCtx.Provider value={metadata}>
                 <TracklistCtx.Provider value={[tracklist, dispatch]}>
                     <div className="content">
-                        <Explorer title="Musics" metadata={metadata}/>
+                        <PageNavigator page={curPage} />
                     </div>
                     <Player onVolumeChange={(volume) => setVolume(volume)}/>
                 </TracklistCtx.Provider>

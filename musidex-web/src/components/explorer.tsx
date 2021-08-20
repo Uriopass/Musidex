@@ -1,23 +1,23 @@
 import './explorer.css'
-import {buildTrack, MetadataCtx, MusidexMetadata, Tag} from "../domain/api";
+import {buildTrack, MetadataCtx, Tag} from "../domain/api";
 import {Fragment, useContext} from "react";
 import {MaterialIcon} from "./utils";
 import {TracklistCtx} from "../domain/tracklist";
 
 export type ExplorerProps = {
     title: string;
-    metadata: MusidexMetadata | null,
 }
 
 const Explorer = (props: ExplorerProps) => {
+    const metadata = useContext(MetadataCtx);
     return (
         <div className="explorer color-fg">
             <div className="explorer-title title">{props.title}</div>
             {
-                props.metadata?.musics.map((music) => {
+                metadata.musics.map((music) => {
                     return (
                         <SongElem key={music.id} musicID={music.id}
-                                  tags={props.metadata?.music_tags_idx.get(music.id)}/>
+                                  tags={metadata.music_tags_idx.get(music.id)}/>
                     )
                 })
             }

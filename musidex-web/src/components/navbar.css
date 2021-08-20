@@ -16,3 +16,19 @@
     align-items: center;
     justify-content: space-around;
 }
+
+.navbar button:hover {
+    cursor: pointer;
+}
+
+.navbar button:active {
+    color: var(--primary);
+}
+
+.navbar button {
+    background-color: var(--bg);
+    color: var(--color-fg);
+    border: 0;
+    font-size: 20px;
+    display: flex;
+}
