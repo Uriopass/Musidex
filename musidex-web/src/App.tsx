@@ -30,7 +30,7 @@ function App() {
             <Navbar setCurPage={setCurPage} onSync={() => setSyncCount((v) => v+1)}/>
             <MetadataCtx.Provider value={metadata}>
                 <TracklistCtx.Provider value={[tracklist, dispatch]}>
-                    <div className="content">
+                    <div className="scrollable-element content">
                         <PageNavigator page={curPage} />
                     </div>
                     <Player onVolumeChange={(volume) => setVolume(volume)}/>
