@@ -4,22 +4,23 @@ extern crate anyhow;
 #[macro_use]
 mod utils;
 
+mod application;
 mod domain;
 mod infrastructure;
 #[cfg(test)]
 mod tests;
 
-use crate::domain::handlers;
+use crate::application::handlers;
+use crate::domain::config;
+use crate::infrastructure::db::Pg;
+use crate::infrastructure::migrate::migrate;
+use crate::infrastructure::router::Router;
 use crate::infrastructure::tls::TlsConfigBuilder;
 use crate::utils::env_or;
 use anyhow::Context;
-use domain::config;
 use hyper::server::conn::AddrIncoming;
 use hyper::Server;
 use include_dir::{include_dir, Dir};
-use infrastructure::db::Pg;
-use infrastructure::migrate::migrate;
-use infrastructure::router::Router;
 
 static MIGRATIONS: Dir = include_dir!("migrations");
 

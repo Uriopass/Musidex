@@ -1,7 +1,6 @@
 use crate::domain::entity::MusicID;
 use crate::domain::{config, stream, sync};
 use crate::infrastructure::router::RequestExt;
-use crate::utils::get_file_range;
 use crate::Pg;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
@@ -29,55 +28,25 @@ pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {
     let db = req.state::<Pg>();
     let c = db.get().await?;
 
-    let source_path = stream::stream_path(&c, id).await?;
-    let file_path = format!("./storage/{}", source_path);
+    let meta = stream::stream_music(&c, id, req.headers().get(hyper::header::RANGE)).await?;
 
-    let range_size;
-    let buf = if let Some(rangev) = req.headers().get(hyper::header::RANGE) {
-        let range = http_range::HttpRange::parse_bytes(rangev.as_bytes(), u32::MAX as u64)
-            .map_err(|_| anyhow!("could not decode range"))?;
-        log::info!(
-            "asked with range {:?}: {}",
-            range[0],
-            rangev.to_str().unwrap()
-        );
-        let r = range.get(0).context("no ranges")?;
-        let buf = get_file_range(file_path, (r.start, r.start + r.length))?;
-        let len = r.start + buf.len() as u64;
-        range_size = (
-            r.start,
-            (r.start + r.length).min(len.saturating_sub(1)),
-            len,
-        );
-        buf
-    } else {
-        let buf = std::fs::read(file_path).context("failed reading source")?;
-        let l = buf.len() as u64;
-        range_size = (0, l.saturating_sub(1), l);
-        buf
-    };
+    let mut r = Response::new(Body::from(meta.buf));
 
-    let mut r = Response::new(Body::from(buf));
-
-    let content_type = if source_path.ends_with("mp3") {
-        "audio/mpeg"
-    } else if source_path.ends_with("ogg") {
-        "audio/ogg"
-    } else if source_path.ends_with("m4a") {
-        "audio/mp4"
-    } else {
-        ""
-    };
     r.headers_mut()
-        .insert(hyper::header::CONTENT_TYPE, content_type.parse()?);
+        .insert(hyper::header::CONTENT_TYPE, meta.content_type.parse()?);
     r.headers_mut()
         .insert(hyper::header::ACCEPT_RANGES, "bytes".parse()?);
+
     if req.headers().contains_key(hyper::header::RANGE) {
         r.headers_mut().insert(
             hyper::header::CONTENT_RANGE,
-            format!("bytes {}-{}/{}", range_size.0, range_size.1, range_size.2).try_into()?,
+            format!(
+                "bytes {}-{}/{}",
+                meta.range_size.0, meta.range_size.1, meta.range_size.2
+            )
+            .try_into()?,
         );
-        if range_size.0 > 0 && range_size.1 < range_size.2 {
+        if meta.range_size.0 > 0 && meta.range_size.1 < meta.range_size.2 {
             *r.status_mut() = StatusCode::PARTIAL_CONTENT;
         }
     }
