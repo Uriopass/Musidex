@@ -128,6 +128,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "dateparser"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30b7e4a525ed9380db27c945fac1b6ca6762c533fb37c48fcf27238dbee4f6b4"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "lazy_static",
+ "regex",
+]
+
+[[package]]
 name = "deadpool"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -524,6 +536,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "dateparser",
  "deadpool-postgres",
  "env_logger",
  "futures",
