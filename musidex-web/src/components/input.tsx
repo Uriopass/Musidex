@@ -6,6 +6,8 @@ type TextInputProps = {
     minWidth?: string;
     onChange: (value: string) => void;
     withLabel?: boolean;
+    pattern?: string,
+    title?: string,
 }
 
 const TextInput = React.memo((props: TextInputProps) => {
@@ -19,6 +21,8 @@ const TextInput = React.memo((props: TextInputProps) => {
                    placeholder={props.name}
                    name={id}
                    id={id}
+                   title={props.title}
+                   pattern={props.pattern}
                    autoComplete="off"/>
             {showl ? (
                 <label htmlFor={id} className="form_label">{props.name}</label>

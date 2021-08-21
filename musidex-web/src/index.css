@@ -5,7 +5,10 @@ body {
 }
 
 :root {
+    --danger: #de5050;
+    --alert: #dcaa2c;
     --primary: #8761a2;
+    --success: #2abe2a;
     --secondary: #3f7a51;
     --bg: #151517;
     --fg: #1b1d21;
@@ -69,6 +72,15 @@ body {
 
 .hidden {
     display: none;
+}
+
+.btn-primary {
+    font-size: 1rem;
+    border: 1px solid var(--primary);
+    border-radius: 4px;
+    padding: 10px 15px;
+    background-color: var(--fg);
+    color: var(--color-fg);
 }
 
 .scrollable-element::-webkit-scrollbar {

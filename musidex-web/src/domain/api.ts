@@ -73,6 +73,19 @@ export const API = {
         })
     },
 
+    async sendYTUrl(url: string): Promise<Response> {
+        return fetch(apiURL + "/api/youtube_url", {
+            method: "post",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            mode: "no-cors",
+            body: JSON.stringify({
+                url: url,
+            })
+        });
+    },
+
     getStreamSrc(id: number): string {
         return apiURL + "/api/stream/" + id
     }
