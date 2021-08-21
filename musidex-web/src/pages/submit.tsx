@@ -43,7 +43,7 @@ const YTSubmit = () => {
         }
         setSendState({type: "sending"});
         API.sendYTUrl(v).then((res) => {
-            if (res.status === 200) {
+            if (res.ok) {
                 setSendState({type: "accepted"});
                 return;
             }

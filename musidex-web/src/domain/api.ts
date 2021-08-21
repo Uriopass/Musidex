@@ -74,7 +74,7 @@ export const API = {
     },
 
     async sendYTUrl(url: string): Promise<Response> {
-        return fetch(apiURL + "/api/youtube_url", {
+        return fetch(apiURL + "/api/youtube_upload", {
             method: "post",
             headers: {
                 "Content-Type": "application/json",
