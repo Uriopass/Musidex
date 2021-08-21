@@ -1,16 +1,16 @@
 use crate::domain::entity::{MusicID, Tag};
 use anyhow::{Context, Result};
 use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-use deadpool_postgres::Client;
+use tokio_postgres::Client;
 
 pub async fn insert_tag(c: &Client, tag: Tag) -> Result<()> {
     let v = c
         .execute(
             "
-            INSERT INTO tags (music_id, key, text, integer, date)
+            INSERT INTO mtag (music_id, key, text, integer, date)
             VALUES ($1, $2, $3, $4, $5)
             ON CONFLICT (music_id, key)
-            DO SET text=$3, integer=$4, date=$5;",
+            DO UPDATE SET text=$3, integer=$4, date=$5;",
             &[
                 &tag.music_id.0,
                 &tag.key,
@@ -25,6 +25,18 @@ pub async fn insert_tag(c: &Client, tag: Tag) -> Result<()> {
         bail!("no row updated")
     }
     Ok(())
+}
+
+pub async fn tags_by_text(c: &Client, text: &str) -> Result<Vec<Tag>> {
+    let v = c
+        .query(
+            "
+            SELECT * FROM mtag
+            WHERE text=$1;",
+            &[&text],
+        )
+        .await?;
+    Ok(v.into_iter().map(|row| Tag::from(row)).collect())
 }
 
 impl Tag {

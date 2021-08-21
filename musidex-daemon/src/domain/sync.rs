@@ -1,6 +1,6 @@
 use crate::domain::entity::MusidexMetadata;
 use anyhow::Result;
-use deadpool_postgres::Client;
+use tokio_postgres::Client;
 
 pub async fn fetch_metadata(c: &Client) -> Result<MusidexMetadata> {
     let (musics, tags, sources) = futures::join!(

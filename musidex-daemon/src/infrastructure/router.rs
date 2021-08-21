@@ -33,6 +33,7 @@ use std::task::{Context, Poll};
 use hyper::header::{
     ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_ALLOW_ORIGIN,
 };
+use hyper::http::request::Parts;
 use hyper::http::Extensions;
 use hyper::service::Service;
 use hyper::{Body, Method, Request, Response};
@@ -72,7 +73,7 @@ impl Router {
     }
 
     /// Register a handler for POST requests
-    pub fn post<H>(&mut self, path: &str, handler: H)
+    pub fn post<H>(&mut self, path: &str, handler: H) -> &mut Self
     where
         H: Handler,
     {
@@ -81,6 +82,7 @@ impl Router {
             .entry(Method::POST)
             .or_insert_with(InnerRouter::new);
         entry.add(path, Box::new(handler));
+        self
     }
 
     /// Register a handler for PUT requests
@@ -197,7 +199,8 @@ impl Service<Request<Body>> for RouterService {
             let mut response = match fut.await {
                 Ok(x) => x,
                 Err(e) => {
-                    log::error!("got error in request: {:?}", e);
+                    let e = e.context("got error in request");
+                    log::error!("{:?}", e);
                     Response::builder()
                         .status(500)
                         .body(Body::from(format!("{}", e)))
@@ -286,6 +289,20 @@ impl RequestExt for Request<Body> {
 
     fn state<T: Send + Sync + 'static>(&self) -> &T {
         self.extensions()
+            .get::<Arc<Extensions>>()
+            .unwrap()
+            .get::<T>()
+            .expect("state was not added to router")
+    }
+}
+
+impl RequestExt for Parts {
+    fn params(&self) -> &Params {
+        self.extensions.get::<Params>().unwrap()
+    }
+
+    fn state<T: Send + Sync + 'static>(&self) -> &T {
+        self.extensions
             .get::<Arc<Extensions>>()
             .unwrap()
             .get::<T>()

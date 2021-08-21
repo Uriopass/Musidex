@@ -1,8 +1,8 @@
 use crate::utils::env_or;
 use anyhow::{Context, Result};
-use deadpool_postgres::tokio_postgres::error::SqlState;
-use deadpool_postgres::tokio_postgres::NoTls;
 use deadpool_postgres::{Client, Config, ManagerConfig, PoolError, RecyclingMethod};
+use tokio_postgres::error::SqlState;
+use tokio_postgres::NoTls;
 
 #[derive(Clone)]
 pub struct Pg(deadpool_postgres::Pool);

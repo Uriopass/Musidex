@@ -1,8 +1,8 @@
 use crate::domain::entity::{MusicID, Source};
 use crate::utils::get_file_range;
 use anyhow::{Context, Result};
-use deadpool_postgres::tokio_postgres::Client;
 use hyper::http::HeaderValue;
+use tokio_postgres::Client;
 
 pub struct MusicMetadata {
     pub buf: Vec<u8>,

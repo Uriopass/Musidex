@@ -40,6 +40,7 @@ async fn start() -> anyhow::Result<()> {
     router
         .state(pg)
         .get("/api/metadata", handlers::metadata)
+        .post("/api/youtube_upload", handlers::youtube_upload)
         .get("/api/stream/:musicid", handlers::stream)
         .get("/api/config", handlers::get_config);
 

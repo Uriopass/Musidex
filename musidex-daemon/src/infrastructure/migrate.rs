@@ -1,8 +1,8 @@
 use crate::infrastructure::db::Pg;
 use anyhow::{Context, Result};
-use deadpool_postgres::tokio_postgres::error::SqlState;
-use deadpool_postgres::tokio_postgres::{Client, Row};
 use include_dir::Dir;
+use tokio_postgres::error::SqlState;
+use tokio_postgres::{Client, Row};
 
 async fn get_migrated(pg: &Client) -> Result<Vec<String>> {
     let migrated = pg

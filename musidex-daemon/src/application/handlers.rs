@@ -1,9 +1,11 @@
 use crate::domain::entity::MusicID;
-use crate::domain::{config, stream, sync};
+use crate::domain::{config, stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
+use crate::utils::res_status;
 use crate::Pg;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
+use serde::Deserialize;
 use serde_json::Value;
 use std::convert::TryInto;
 
@@ -16,6 +18,27 @@ pub async fn metadata(req: Request<Body>) -> Result<Response<Body>> {
         .context("failed fetching metadata")?;
 
     Ok(Response::new(Body::from(serde_json::to_string(&metadata)?)))
+}
+
+#[derive(Deserialize)]
+pub struct UploadYoutube {
+    pub url: String,
+}
+
+pub async fn youtube_upload(req: Request<Body>) -> Result<Response<Body>> {
+    let (parts, body) = req.into_parts();
+    let f = hyper::body::to_bytes(body)
+        .await
+        .context("could not decode body")?;
+    let b: UploadYoutube = serde_json::from_slice(&*f).context("could not parse body")?;
+    let url = b.url;
+    if url.len() < 3 {
+        return Ok(res_status(StatusCode::BAD_REQUEST));
+    }
+    let db = parts.state::<Pg>();
+    let mut c = db.get().await?;
+
+    Ok(res_status(upload::youtube_upload(&mut c, url).await?))
 }
 
 pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {

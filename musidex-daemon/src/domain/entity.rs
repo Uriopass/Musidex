@@ -1,13 +1,8 @@
 use chrono::{DateTime, Utc};
-use deadpool_postgres::tokio_postgres::Row;
 use serde::{Deserialize, Serialize};
+use tokio_postgres::Row;
 
-#[derive(Deserialize)]
-pub struct UploadYoutube {
-    pub url: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Copy, Clone, Serialize, Deserialize, Debug)]
 #[serde(transparent)]
 pub struct MusicID(pub i32);
 

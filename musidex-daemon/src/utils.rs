@@ -1,3 +1,4 @@
+use hyper::{Body, Response, StatusCode};
 use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
 use std::str::FromStr;
@@ -17,6 +18,12 @@ macro_rules! unwrap_ret {
             Err(err) => return $ret(err),
         }
     };
+}
+
+pub fn res_status(status: StatusCode) -> Response<Body> {
+    let mut r = Response::new(Body::empty());
+    *r.status_mut() = status;
+    r
 }
 
 pub fn get_file_range<P: AsRef<Path>>(

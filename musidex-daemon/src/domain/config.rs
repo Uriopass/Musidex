@@ -1,6 +1,6 @@
 use crate::Pg;
 use anyhow::{Context, Result};
-use deadpool_postgres::Client;
+use tokio_postgres::Client;
 
 #[rustfmt::skip]
 const DEFAULT_CONFIG: &[(&str, &str)] = &[
