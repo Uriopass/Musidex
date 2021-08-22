@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
+use rusqlite::Row;
 use serde::{Deserialize, Serialize};
-use tokio_postgres::Row;
 
 #[derive(Copy, Clone, Serialize, Deserialize, Debug)]
 #[serde(transparent)]
@@ -36,34 +36,36 @@ pub struct MusidexMetadata {
     pub sources: Vec<Source>,
 }
 
-impl From<Row> for Music {
-    fn from(row: Row) -> Self {
+impl<'a, 'b> From<&'a Row<'b>> for Music {
+    fn from(row: &'a Row<'b>) -> Self {
         Music {
-            id: MusicID(row.get("id")),
+            id: MusicID(row.get_unwrap("id")),
         }
     }
 }
 
-impl From<Row> for Source {
-    fn from(row: Row) -> Self {
+impl<'a, 'b> From<&'a Row<'b>> for Source {
+    fn from(row: &'a Row<'b>) -> Self {
         Source {
-            music_id: MusicID(row.get("music_id")),
-            format: row.get("format"),
-            url: row.get("url"),
+            music_id: MusicID(row.get_unwrap("music_id")),
+            format: row.get_unwrap("format"),
+            url: row.get_unwrap("url"),
         }
     }
 }
 
-impl From<Row> for Tag {
-    fn from(row: Row) -> Self {
+impl<'a, 'b> From<&'a Row<'b>> for Tag {
+    fn from(row: &'a Row<'b>) -> Self {
         Self {
-            music_id: MusicID(row.get("music_id")),
-            key: row.get("key"),
-            text: row.get("text"),
-            integer: row.get("integer"),
-            date: row.get("date"),
+            music_id: MusicID(row.get_unwrap("music_id")),
+            key: row.get_unwrap("key"),
+            text: row.get_unwrap("text"),
+            integer: row.get_unwrap("integer"),
+            date: row
+                .get_unwrap::<_, Option<String>>("date")
+                .and_then(|v| DateTime::parse_from_rfc3339(&v).ok().map(Into::into)),
             vector: row
-                .get::<_, Option<&[u8]>>("vector")
+                .get_unwrap::<_, Option<Vec<u8>>>("vector")
                 .map(|x| x.iter().map(|&x| x as f32).collect()),
         }
     }

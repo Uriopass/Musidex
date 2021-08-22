@@ -1,4 +1,6 @@
+use anyhow::Result;
 use hyper::{Body, Response, StatusCode};
+use rusqlite::{MappedRows, Row};
 use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
 use std::str::FromStr;
@@ -18,6 +20,17 @@ macro_rules! unwrap_ret {
             Err(err) => return $ret(err),
         }
     };
+}
+
+pub fn collect_rows<T, F>(rows: MappedRows<F>) -> Result<Vec<T>>
+where
+    F: FnMut(&Row<'_>) -> rusqlite::Result<T>,
+{
+    let mut vec = vec![];
+    for val in rows {
+        vec.push(val?);
+    }
+    Ok(vec)
 }
 
 pub fn res_status(status: StatusCode) -> Response<Body> {

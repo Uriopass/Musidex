@@ -1,64 +1,60 @@
-use crate::Pg;
+use crate::utils::collect_rows;
+use crate::Db;
 use anyhow::{Context, Result};
-use tokio_postgres::Client;
+use rusqlite::Connection;
 
 #[rustfmt::skip]
 const DEFAULT_CONFIG: &[(&str, &str)] = &[
     ("config_test", "1")
 ];
 
-pub async fn init(db: &Pg) -> Result<()> {
+pub async fn init(db: &Db) -> Result<()> {
     log::info!("checking for missing config keys");
-    let c = db.get().await?;
+    let c = db.get().await;
     for (key, value) in DEFAULT_CONFIG {
-        insert_if_not_exist(&c, key, value).await?;
+        insert_if_not_exist(&c, key, value)?;
     }
     Ok(())
 }
 
 #[allow(dead_code)]
-pub async fn upsert_key(c: &Client, key: &str, value: &str) -> Result<()> {
-    c.execute(
-        "INSERT INTO config (key, value)\
+pub fn upsert_key(c: &Connection, key: &str, value: &str) -> Result<()> {
+    c.prepare_cached(
+        "INSERT INTO config (key, value)
                     VALUES ($1, $2)
-                    ON CONFLICT (key) DO\
-                    UPDATE SET value=$2;",
-        &[&key, &value],
+                    ON CONFLICT (key)
+                    DO UPDATE SET value=$2;",
     )
-    .await
-    .context("upsert key error")
-    .map(|_| ())
+    .context("upsert key error")?
+    .execute([&key, &value])?;
+    Ok(())
 }
 
-async fn insert_if_not_exist(c: &Client, key: &str, value: &str) -> Result<()> {
-    c.execute(
-        "INSERT INTO config (key, value)\
+fn insert_if_not_exist(c: &Connection, key: &str, value: &str) -> Result<()> {
+    c.prepare_cached(
+        "INSERT INTO config (key, value)
                     VALUES ($1, $2)
-                    ON CONFLICT (key) DO NOTHING;",
-        &[&key, &value],
+                    ON CONFLICT (key) DO NOTHING",
     )
-    .await
-    .context("insert if not exist error")
-    .map(|_| ())
+    .context("insert if not exist error")?
+    .execute([&key, &value])?;
+    Ok(())
 }
 
-pub async fn get_all(c: &Client) -> Result<Vec<(String, String)>> {
-    let v = c.query("SELECT key,value FROM config", &[]).await?;
-    Ok(v.into_iter()
-        .map(|x| (x.get("key"), x.get("value")))
-        .collect())
+pub fn get_all(c: &Connection) -> Result<Vec<(String, String)>> {
+    let mut stmt = c.prepare_cached("SELECT key,value FROM config")?;
+    let v = stmt.query_map([], |x| Ok((x.get("key")?, x.get("value")?)))?;
+    collect_rows(v)
 }
 
 #[allow(dead_code)]
-pub async fn get(c: &Client, key: &str) -> Result<Option<String>> {
+pub fn get(c: &Connection, key: &str) -> Result<Option<String>> {
     let v = c
-        .query_one("SELECT value FROM config WHERE key= $1", &[&key])
-        .await;
+        .prepare_cached("SELECT value FROM config WHERE key= $1")?
+        .query_row([&key], |v| v.get("value"));
     match v {
-        Ok(x) => Ok(x.try_get("value").ok()),
-        Err(e) => match e.as_db_error() {
-            None => Ok(None),
-            Some(e) => Err(e.clone()).with_context(|| format!("error getting config key: {}", key)),
-        },
+        Ok(x) => Ok(x),
+        Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+        Err(e) => Err(e).with_context(|| format!("error getting config key: {}", key)),
     }
 }

@@ -2,7 +2,7 @@ use crate::domain::entity::{MusicID, Source};
 use crate::utils::get_file_range;
 use anyhow::{Context, Result};
 use hyper::http::HeaderValue;
-use tokio_postgres::Client;
+use rusqlite::Connection;
 
 pub struct MusicMetadata {
     pub buf: Vec<u8>,
@@ -10,18 +10,17 @@ pub struct MusicMetadata {
     pub content_type: &'static str,
 }
 
-pub async fn stream_music(
-    c: &Client,
+pub fn stream_music(
+    c: &Connection,
     id: MusicID,
     range: Option<&HeaderValue>,
 ) -> Result<MusicMetadata> {
-    let sources = c
-        .query("SELECT * FROM source WHERE music_id=$1", &[&id.0])
-        .await?;
+    let mut stmt = c.prepare_cached("SELECT * from sources WHERE music_id=$1")?;
+    let sources = stmt.query_map([&id.0], |v| Ok(Source::from(v)))?;
 
     let mut source_path = None;
-    for row in sources {
-        let source = Source::from(row);
+    for source in sources {
+        let source = source?;
         if source.format == "local_mp3"
             || source.format == "local_ogg"
             || source.format == "local_m4a"

@@ -1,42 +1,40 @@
 use crate::domain::entity::{MusicID, Tag};
+use crate::utils::collect_rows;
 use anyhow::{Context, Result};
 use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-use tokio_postgres::Client;
+use rusqlite::Connection;
 
-pub async fn insert_tag(c: &Client, tag: Tag) -> Result<()> {
-    let v = c
-        .execute(
-            "
-            INSERT INTO mtag (music_id, key, text, integer, date)
+pub fn insert_tag(c: &Connection, tag: Tag) -> Result<()> {
+    let mut stmt = c.prepare_cached(
+        "
+            INSERT INTO tags (music_id, key, text, integer, date)
             VALUES ($1, $2, $3, $4, $5)
             ON CONFLICT (music_id, key)
             DO UPDATE SET text=$3, integer=$4, date=$5;",
-            &[
-                &tag.music_id.0,
-                &tag.key,
-                &tag.text,
-                &tag.integer,
-                &tag.date,
-            ],
-        )
-        .await;
-    let v = v.context("error inserting tag")?;
+    )?;
+    let v = stmt
+        .execute(rusqlite::params![
+            tag.music_id.0,
+            tag.key,
+            tag.text,
+            tag.integer,
+            tag.date.map(|x| x.to_rfc3339()),
+        ])
+        .context("error inserting tag")?;
     if v == 0 {
         bail!("no row updated")
     }
     Ok(())
 }
 
-pub async fn tags_by_text(c: &Client, text: &str) -> Result<Vec<Tag>> {
-    let v = c
-        .query(
-            "
-            SELECT * FROM mtag
+pub fn tags_by_text(c: &Connection, text: &str) -> Result<Vec<Tag>> {
+    let mut stmt = c.prepare_cached(
+        "
+            SELECT * FROM tags
             WHERE text=$1;",
-            &[&text],
-        )
-        .await?;
-    Ok(v.into_iter().map(|row| Tag::from(row)).collect())
+    )?;
+    let v = stmt.query_map([&text], |row| Ok(Tag::from(row)))?;
+    collect_rows(v)
 }
 
 impl Tag {
@@ -51,6 +49,7 @@ impl Tag {
         }
     }
 
+    #[allow(dead_code)]
     pub fn new_parse(id: MusicID, key: String, value: String) -> Tag {
         let integer = value.parse().ok();
         let mut date = dateparser::parse(&*value).ok();

@@ -1,41 +1,40 @@
-use crate::infrastructure::db::Pg;
+use crate::infrastructure::db::Db;
+use crate::utils::collect_rows;
 use anyhow::{Context, Result};
 use include_dir::Dir;
-use tokio_postgres::error::SqlState;
-use tokio_postgres::{Client, Row};
+use rusqlite::{Connection, ErrorCode};
 
-async fn get_migrated(pg: &Client) -> Result<Vec<String>> {
-    let migrated = pg
-        .query("SELECT migration FROM sqlx_pg_migrate ORDER BY id;", &[])
-        .await
-        .map(|x| x.into_iter().map(|row: Row| row.get("migration")).collect());
-    match migrated {
-        Ok(migrated) => Ok(migrated),
-        Err(err) => {
-            if let Some(&SqlState::UNDEFINED_TABLE) = err.code() {
-                Ok(vec![])
+fn get_migrated(pg: &Connection) -> Result<Vec<String>> {
+    let mut stmt = match pg.prepare("SELECT migration FROM sqlx_pg_migrate ORDER BY id;") {
+        Ok(x) => x,
+        Err(rusqlite::Error::SqliteFailure(sqlite_err, msg)) => {
+            if sqlite_err.code == ErrorCode::Unknown
+                && msg
+                    .as_ref()
+                    .map(|v| v.starts_with("no such table"))
+                    .unwrap_or(false)
+            {
+                return Ok(vec![]);
             } else {
-                bail!("error, cant get current migrations")
+                bail!("{:?}", msg.unwrap_or_default());
             }
         }
-    }
+        Err(e) => Err(e)?,
+    };
+    let migrated = stmt.query_map([], |row| row.get("migration"))?;
+    collect_rows(migrated)
 }
 
 /// Runs the migrations contained in the directory. See module documentation for
 /// more information.
-pub async fn migrate(pg: &Pg, dir: &Dir<'_>) -> Result<()> {
+pub async fn migrate(pg: &Db, dir: &Dir<'_>) -> Result<()> {
     log::info!("running migrations");
 
-    let mut client = pg.get().await?;
-    let migrated = get_migrated(&client)
-        .await
-        .context("error getting migrations")?;
+    let mut client = pg.get().await;
+    let migrated = get_migrated(&client).context("error getting migrations")?;
     log::info!("got existing migrations from table");
 
-    let tx = client
-        .transaction()
-        .await
-        .context("error creating transaction")?;
+    let tx = client.transaction().context("error creating transaction")?;
     if migrated.is_empty() {
         log::info!("no migration table, creating it");
 
@@ -47,9 +46,8 @@ pub async fn migrate(pg: &Pg, dir: &Dir<'_>) -> Result<()> {
                     created TIMESTAMP NOT NULL DEFAULT current_timestamp
                 );
             "#,
-            &[],
+            [],
         )
-        .await
         .context("error creating migration table")?;
     }
     let mut files: Vec<_> = dir.files().iter().collect();
@@ -69,15 +67,14 @@ pub async fn migrate(pg: &Pg, dir: &Dir<'_>) -> Result<()> {
         log::info!("running and inserting migration: {}", path);
 
         let content = f.contents_utf8().context("invalid file content")?;
-        tx.batch_execute(content).await?;
+        tx.execute_batch(content)?;
         tx.execute(
             "INSERT INTO sqlx_pg_migrate (migration) VALUES ($1)",
-            &[&path],
+            [&path],
         )
-        .await
         .context("error running transaction")?;
     }
-    tx.commit().await.context("error commiting transaction")?;
+    tx.commit().context("error commiting transaction")?;
     log::info!("sucessfully ran migrations");
     Ok(())
 }

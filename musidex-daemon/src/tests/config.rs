@@ -1,5 +1,7 @@
-use crate::domain::handlers::get_config;
-use crate::infrastructure::db::Pg;
+use crate::application::handlers::get_config;
+use crate::infrastructure::db::Db;
+use crate::infrastructure::migrate::migrate;
+use crate::MIGRATIONS;
 use anyhow::Result;
 use hyper::http::Extensions;
 use hyper::{Body, Request, StatusCode};
@@ -15,13 +17,20 @@ pub fn tstart() {
 }
 
 pub async fn init() {
-    let db = Pg::connect().await.unwrap();
-
-    test_get_config(&db).await.unwrap();
+    std::env::set_var("RUST_LOG", "info");
+    env_logger::init();
+    log::info!("init test");
+    let _ = test_get_config()
+        .await
+        .map_err(|e| log::error!("{:?}", e))
+        .unwrap();
 }
 
-pub async fn test_get_config(db: &Pg) -> Result<()> {
-    db.clean().await?;
+pub async fn test_get_config() -> Result<()> {
+    let db = mk_db().await?;
+    let c = db.get().await;
+    crate::domain::config::upsert_key(&c, "salut", "salut")?;
+    drop(c);
 
     let mut r = Request::builder().body(Body::empty())?;
     mk_db_extension(&mut r, db);
@@ -30,13 +39,19 @@ pub async fn test_get_config(db: &Pg) -> Result<()> {
 
     assert_eq!(v.status(), StatusCode::OK);
     let bytes = hyper::body::to_bytes(v.into_body()).await?;
-    assert_eq!(&*bytes, &*b"{}");
+    assert_eq!(&*bytes, &*br#"{"salut":"salut"}"#);
 
     Ok(())
 }
 
-fn mk_db_extension(req: &mut Request<Body>, db: &Pg) {
+async fn mk_db() -> Result<Db> {
+    let db = Db::connect_in_memory().await;
+    migrate(&db, &MIGRATIONS).await?;
+    Ok(db)
+}
+
+fn mk_db_extension(req: &mut Request<Body>, db: Db) {
     let mut e = Extensions::new();
-    e.insert(db.clone());
+    e.insert(db);
     req.extensions_mut().insert(Arc::new(e));
 }

@@ -2,7 +2,7 @@ use crate::domain::entity::MusicID;
 use crate::domain::{config, stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
 use crate::utils::res_status;
-use crate::Pg;
+use crate::Db;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
 use serde::Deserialize;
@@ -10,12 +10,10 @@ use serde_json::Value;
 use std::convert::TryInto;
 
 pub async fn metadata(req: Request<Body>) -> Result<Response<Body>> {
-    let db = req.state::<Pg>();
-    let c = db.get().await?;
+    let db = req.state::<Db>();
+    let c = db.get().await;
 
-    let metadata = sync::fetch_metadata(&c)
-        .await
-        .context("failed fetching metadata")?;
+    let metadata = sync::fetch_metadata(&c).context("failed fetching metadata")?;
 
     Ok(Response::new(Body::from(serde_json::to_string(&metadata)?)))
 }
@@ -35,10 +33,10 @@ pub async fn youtube_upload(req: Request<Body>) -> Result<Response<Body>> {
     if url.len() < 3 {
         return Ok(res_status(StatusCode::BAD_REQUEST));
     }
-    let db = parts.state::<Pg>();
-    let mut c = db.get().await?;
+    let db = parts.state::<Db>();
+    let mut c = db.get().await;
 
-    Ok(res_status(upload::youtube_upload(&mut c, url).await?))
+    Ok(res_status(upload::youtube_upload(&mut c, url)?))
 }
 
 pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {
@@ -48,10 +46,10 @@ pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {
             .parse()
             .context("couldn't parse music id as integer")?,
     );
-    let db = req.state::<Pg>();
-    let c = db.get().await?;
+    let db = req.state::<Db>();
+    let c = db.get().await;
 
-    let meta = stream::stream_music(&c, id, req.headers().get(hyper::header::RANGE)).await?;
+    let meta = stream::stream_music(&c, id, req.headers().get(hyper::header::RANGE))?;
 
     let mut r = Response::new(Body::from(meta.buf));
 
@@ -78,12 +76,10 @@ pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {
 }
 
 pub async fn get_config(req: Request<Body>) -> Result<Response<Body>> {
-    let db = req.state::<Pg>();
-    let c = db.get().await?;
+    let db = req.state::<Db>();
+    let c = db.get().await;
 
-    let keyvals = config::get_all(&c)
-        .await
-        .context("failed fetching metadata")?;
+    let keyvals = config::get_all(&c).context("failed fetching metadata")?;
 
     let m: serde_json::value::Map<String, Value> = keyvals
         .into_iter()

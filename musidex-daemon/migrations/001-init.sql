@@ -1,33 +1,38 @@
 CREATE TABLE IF NOT EXISTS music
 (
-    id serial primary key
+    id integer primary key autoincrement
 );
 
-CREATE TABLE IF NOT EXISTS mtag
+CREATE TABLE IF NOT EXISTS tags
 (
-    music_id int references music(id),
+    music_id integer,
     key text not null,
 
     -- all types that a tag can take, 1999 is both a text, an integer and a date, potentially.
     text text,
     integer int,
-    date timestamptz,
-    vector bytea,
+    date text, -- stored as RFC3339
+    vector blob,
 
+    foreign key (music_id) references music(id),
     primary key (music_id, key)
 );
 
-CREATE TABLE IF NOT EXISTS source
+CREATE INDEX IF NOT EXISTS idx_tags_text on tags (text);
+
+CREATE TABLE IF NOT EXISTS sources
 (
-    music_id int references music(id),
+    music_id integer,
 
     -- the format of the source, could be "local_ogg", "local_mp3", "youtube_link"
     format text,
     url text,
+
+    foreign key (music_id) references music(id),
     primary key (music_id, format)
 );
 
-CREATE TABLE IF NOT EXISTS  config
+CREATE TABLE IF NOT EXISTS config
 (
     key text primary key,
     value text not null

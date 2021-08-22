@@ -12,7 +12,7 @@ mod tests;
 
 use crate::application::handlers;
 use crate::domain::config;
-use crate::infrastructure::db::Pg;
+use crate::infrastructure::db::Db;
 use crate::infrastructure::migrate::migrate;
 use crate::infrastructure::router::Router;
 use crate::infrastructure::tls::TlsConfigBuilder;
@@ -22,14 +22,14 @@ use hyper::server::conn::AddrIncoming;
 use hyper::Server;
 use include_dir::{include_dir, Dir};
 
-static MIGRATIONS: Dir = include_dir!("migrations");
+pub static MIGRATIONS: Dir = include_dir!("migrations");
 
 async fn start() -> anyhow::Result<()> {
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
     std::fs::create_dir_all("./storage/").context("could not create storage")?;
 
-    let pg = Pg::connect().await.context("error connecting to pg")?;
+    let pg = Db::connect().await.context("error connecting to pg")?;
     migrate(&pg, &MIGRATIONS)
         .await
         .context("error running migrations")?;
