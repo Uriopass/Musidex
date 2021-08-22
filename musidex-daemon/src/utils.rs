@@ -1,9 +1,9 @@
 use anyhow::Result;
 use hyper::{Body, Response, StatusCode};
 use rusqlite::{MappedRows, Row};
-use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
 use std::str::FromStr;
+use tokio::io::{AsyncReadExt, AsyncSeekExt, BufReader, SeekFrom};
 
 pub fn env_or<T: FromStr>(key: &str, default: T) -> T {
     match std::env::var(key) {
@@ -39,18 +39,19 @@ pub fn res_status(status: StatusCode) -> Response<Body> {
     r
 }
 
-pub fn get_file_range<P: AsRef<Path>>(
+pub async fn get_file_range<P: AsRef<Path>>(
     file_path: P,
     (start, end): (u64, u64),
 ) -> std::io::Result<Vec<u8>> {
     if end < start {
         return Err(std::io::Error::from(std::io::ErrorKind::InvalidInput));
     }
-    let mut f = std::fs::File::open(file_path)?;
+    let mut f = tokio::fs::File::open(file_path).await?;
     let mut buffer = Vec::new();
-    f.seek(SeekFrom::Start(start))?;
+    f.seek(SeekFrom::Start(start)).await?;
     BufReader::new(f)
         .take(end - start + 1)
-        .read_to_end(&mut buffer)?;
+        .read_to_end(&mut buffer)
+        .await?;
     Ok(buffer)
 }

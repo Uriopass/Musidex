@@ -1,8 +1,8 @@
 use crate::domain::entity::{MusicID, Source};
+use crate::infrastructure::db::Client;
 use crate::utils::get_file_range;
 use anyhow::{Context, Result};
 use hyper::http::HeaderValue;
-use rusqlite::Connection;
 
 pub struct MusicMetadata {
     pub buf: Vec<u8>,
@@ -10,23 +10,25 @@ pub struct MusicMetadata {
     pub content_type: &'static str,
 }
 
-pub fn stream_music(
-    c: &Connection,
+pub async fn stream_music(
+    c: Client<'_>,
     id: MusicID,
     range: Option<&HeaderValue>,
 ) -> Result<MusicMetadata> {
-    let mut stmt = c.prepare_cached("SELECT * from sources WHERE music_id=$1")?;
-    let sources = stmt.query_map([&id.0], |v| Ok(Source::from(v)))?;
-
     let mut source_path = None;
-    for source in sources {
-        let source = source?;
-        if source.format == "local_mp3"
-            || source.format == "local_ogg"
-            || source.format == "local_m4a"
-        {
-            source_path = Some(source.url);
-            break;
+    {
+        let mut stmt = c.prepare_cached("SELECT * from sources WHERE music_id=$1")?;
+        let sources = stmt.query_map([&id.0], |v| Ok(Source::from(v)))?;
+
+        for source in sources {
+            let source = source?;
+            if source.format == "local_mp3"
+                || source.format == "local_ogg"
+                || source.format == "local_m4a"
+            {
+                source_path = Some(source.url);
+                break;
+            }
         }
     }
     let source_path = source_path.context("no streamable source found")?;
@@ -52,7 +54,7 @@ pub fn stream_music(
             rangev.to_str().unwrap()
         );
         let r = range.get(0).context("no ranges")?;
-        let buf = get_file_range(file_path, (r.start, r.start + r.length))?;
+        let buf = get_file_range(file_path, (r.start, r.start + r.length)).await?;
         let len = r.start + buf.len() as u64;
         let range_size = (
             r.start,
@@ -66,7 +68,10 @@ pub fn stream_music(
         });
     }
 
-    let buf = std::fs::read(file_path).context("failed reading source")?;
+    let buf = tokio::fs::read(file_path)
+        .await
+        .context("failed reading source")?;
+
     let l = buf.len() as u64;
     let range_size = (0, l.saturating_sub(1), l);
     Ok(MusicMetadata {

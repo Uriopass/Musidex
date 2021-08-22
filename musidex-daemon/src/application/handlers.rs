@@ -49,7 +49,7 @@ pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {
     let db = req.state::<Db>();
     let c = db.get().await;
 
-    let meta = stream::stream_music(&c, id, req.headers().get(hyper::header::RANGE))?;
+    let meta = stream::stream_music(c, id, req.headers().get(hyper::header::RANGE)).await?;
 
     let mut r = Response::new(Body::from(meta.buf));
 
