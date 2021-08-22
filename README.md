@@ -1,4 +1,4 @@
-![Musidex logo, a capital letter M](musidex-web/public/musidex_logo.png)
+<img alt="Musidex logo, a capital letter M" height="128" src="musidex-web/public/musidex_logo.png" width="128"/>
 
 # Musidex
 Your musical pokedex, Plex for music
