@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS music
+CREATE TABLE IF NOT EXISTS musics
 (
     id integer primary key autoincrement
 );
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS tags
     date text, -- stored as RFC3339
     vector blob,
 
-    foreign key (music_id) references music(id),
+    foreign key (music_id) references musics(id),
     primary key (music_id, key)
 );
 
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS sources
     format text,
     url text,
 
-    foreign key (music_id) references music(id),
+    foreign key (music_id) references musics(id),
     primary key (music_id, format)
 );
 

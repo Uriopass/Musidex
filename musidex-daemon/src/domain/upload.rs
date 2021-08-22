@@ -16,12 +16,12 @@ pub fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCode> {
         &tx,
         Source {
             music_id: id,
-            format: "youtube_url".to_string(),
+            format: s!("youtube_url"),
             url: url.clone(),
         },
     )?;
 
-    tags::insert_tag(&tx, Tag::new_text(id, "youtube_url".to_string(), url))?;
+    tags::insert_tag(&tx, Tag::new_text(id, s!("youtube_url"), url))?;
 
     tx.commit()?;
     Ok(StatusCode::OK)

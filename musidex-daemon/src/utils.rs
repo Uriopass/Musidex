@@ -22,6 +22,12 @@ macro_rules! unwrap_ret {
     };
 }
 
+macro_rules! s {
+    ($e: expr) => {
+        $e.to_string()
+    };
+}
+
 pub fn collect_rows<T, F>(rows: MappedRows<F>) -> Result<Vec<T>>
 where
     F: FnMut(&Row<'_>) -> rusqlite::Result<T>,

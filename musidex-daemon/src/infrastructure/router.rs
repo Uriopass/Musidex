@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+use anyhow::Context as _c;
 use anyhow::Result;
 use std::collections::HashMap;
 use std::error::Error;
@@ -30,14 +31,17 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 
+use crate::utils::res_status;
 use hyper::header::{
     ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_ALLOW_ORIGIN,
 };
 use hyper::http::request::Parts;
 use hyper::http::Extensions;
 use hyper::service::Service;
-use hyper::{Body, Method, Request, Response};
+use hyper::{Body, Method, Request, Response, StatusCode};
 use route_recognizer::Router as InnerRouter;
+use std::io::ErrorKind;
+use std::path::PathBuf;
 
 #[derive(Default)]
 pub(crate) struct Router {
@@ -56,6 +60,19 @@ impl Router {
         Arc::get_mut(&mut self.state)
             .expect("state is being shared yet it's trying to be added")
             .insert(v);
+        self
+    }
+
+    pub(crate) fn static_files(&mut self, path: &str, dir_location: &str) -> &mut Self {
+        let dir_location = PathBuf::from(dir_location);
+        let h = StaticHandle { dir_location };
+        if !path.ends_with("/") {
+            panic!("path must end with /")
+        }
+        let mut v = path.to_string();
+        v.push_str("*fileurl");
+        self.get(&v, h);
+
         self
     }
 
@@ -121,6 +138,15 @@ impl Router {
         &self,
         mut req: Request<Body>,
     ) -> Pin<Box<dyn Future<Output = Result<Response<Body>>> + Send>> {
+        if req.uri().path() == "/" {
+            return Box::pin(async {
+                Ok(Response::builder()
+                    .status(301)
+                    .header("Location", "index.html")
+                    .body(Body::empty())
+                    .unwrap())
+            });
+        }
         match self.inner.get(req.method()) {
             Some(inner_router) => match inner_router.recognize(req.uri().path()) {
                 Ok(matcher) => {
@@ -150,6 +176,34 @@ impl Router {
         MakeRouterService {
             inner: RouterService::new(self),
         }
+    }
+}
+
+pub struct StaticHandle {
+    dir_location: PathBuf,
+}
+
+impl Handler for StaticHandle {
+    fn call(
+        &self,
+        req: Request<Body>,
+    ) -> Pin<Box<dyn Future<Output = Result<Response<Body>>> + Send>> {
+        let url = req.params().get("fileurl").unwrap_or("index.html");
+        log::info!("serving file: {}", url);
+        let mut p = self.dir_location.clone();
+        p.push(url);
+        Box::pin((|| async {
+            let f = match tokio::fs::read(p).await {
+                Ok(x) => x,
+                Err(e) => {
+                    if e.kind() == ErrorKind::NotFound {
+                        return Ok(res_status(StatusCode::NOT_FOUND));
+                    }
+                    return Err(e).context("failed reading file");
+                }
+            };
+            Ok(Response::new(Body::from(f)))
+        })())
     }
 }
 
@@ -196,6 +250,7 @@ impl Service<Request<Body>> for RouterService {
         let router = self.0.clone();
         let fut = router.serve(req);
         let fut = async {
+            #[allow(unused_mut)]
             let mut response = match fut.await {
                 Ok(x) => x,
                 Err(e) => {
@@ -215,6 +270,7 @@ impl Service<Request<Body>> for RouterService {
     }
 }
 
+#[allow(dead_code)]
 fn set_cors(req: &mut Response<Body>) {
     req.headers_mut()
         .insert(ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
@@ -269,6 +325,7 @@ impl<T> Future for Ready<T> {
 
 impl<T> Unpin for Ready<T> {}
 
+#[derive(Debug)]
 pub struct Params(Option<Box<route_recognizer::Params>>);
 
 impl Params {

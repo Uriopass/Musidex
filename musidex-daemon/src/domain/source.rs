@@ -6,7 +6,7 @@ pub fn insert_source(c: &Connection, source: Source) -> Result<()> {
     let v = c
         .prepare_cached(
             "
-            INSERT INTO source (music_id, format, url)
+            INSERT INTO sources (music_id, format, url)
             VALUES ($1, $2, $3)
             ON CONFLICT (music_id, format)
             DO UPDATE SET url=$3;",

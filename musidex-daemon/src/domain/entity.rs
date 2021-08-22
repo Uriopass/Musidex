@@ -2,16 +2,16 @@ use chrono::{DateTime, Utc};
 use rusqlite::Row;
 use serde::{Deserialize, Serialize};
 
-#[derive(Copy, Clone, Serialize, Deserialize, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Debug)]
 #[serde(transparent)]
 pub struct MusicID(pub i32);
 
-#[derive(Serialize, Deserialize)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Music {
     pub id: MusicID,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Tag {
     pub music_id: MusicID,
     pub key: String,
@@ -22,7 +22,9 @@ pub struct Tag {
     pub vector: Option<Vec<f32>>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl Eq for Tag {}
+
+#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Source {
     pub music_id: MusicID,
     pub format: String,

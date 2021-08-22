@@ -9,12 +9,13 @@ pub type Client<'a> = MutexGuard<'a, Connection>;
 
 impl Db {
     pub async fn connect() -> Result<Db> {
-        let cfg = Connection::open(env_or("DB_LOCATION", "./storage/db.db".to_string()))
+        let cfg = Connection::open(env_or("DB_LOCATION", s!("./storage/db.db")))
             .context("cannot open connection to sqlite db")?;
         let pool = Db(Mutex::new(cfg));
         Ok(pool)
     }
 
+    #[allow(dead_code)]
     pub async fn connect_in_memory() -> Db {
         Db(Mutex::new(Connection::open_in_memory().unwrap()))
     }

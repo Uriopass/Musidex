@@ -4,7 +4,7 @@ use anyhow::Result;
 use rusqlite::Connection;
 
 pub fn fetch_metadata(c: &Connection) -> Result<MusidexMetadata> {
-    let mut musics = c.prepare_cached("SELECT * FROM music")?;
+    let mut musics = c.prepare_cached("SELECT * FROM musics")?;
     let mut tags = c.prepare_cached("SELECT * FROM tags")?;
     let mut sources = c.prepare_cached("SELECT * from sources")?;
 

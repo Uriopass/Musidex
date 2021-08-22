@@ -1,7 +1,7 @@
 import {Track} from "./tracklist";
 import React from "react";
 
-let apiURL = (process.env.NODE_ENV === "development") ? "http://127.0.0.1:3200" : "http://" + window.location.hostname;
+let apiURL = (process.env.NODE_ENV === "development") ? "http://127.0.0.1:3200" : window.location.origin;
 
 export type Music = {
     id: number;

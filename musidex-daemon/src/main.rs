@@ -42,7 +42,8 @@ async fn start() -> anyhow::Result<()> {
         .get("/api/metadata", handlers::metadata)
         .post("/api/youtube_upload", handlers::youtube_upload)
         .get("/api/stream/:musicid", handlers::stream)
-        .get("/api/config", handlers::get_config);
+        .get("/api/config", handlers::get_config)
+        .static_files("/", "./web/");
 
     let addr = ([127, 0, 0, 1], 3200).into();
     let incoming = AddrIncoming::bind(&addr).unwrap_or_else(|e| {
@@ -53,8 +54,8 @@ async fn start() -> anyhow::Result<()> {
     if env_or("USE_HTTPS", false) {
         let tls_accept = infrastructure::tls::TlsAcceptor::new(
             TlsConfigBuilder::new()
-                .cert_path(env_or("CERT_PATH", "./cert.pem".to_string()))
-                .key_path(env_or("CERT_KEY_PATH", "./cert.rsa".to_string()))
+                .cert_path(env_or("CERT_PATH", s!("./cert.pem")))
+                .key_path(env_or("CERT_KEY_PATH", s!("./cert.rsa")))
                 .build()?,
             incoming,
         );

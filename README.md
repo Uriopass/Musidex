@@ -41,13 +41,9 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 git clone https://github.com/Uriopass/Musidex
 cd Musidex
 
-# Then start the daemon
-cd musidex-daemon
-cargo run --release
+# Then use the build and run script
+./start.sh
 
-# Then in a separate terminal start the web server
-cd musidex-web
-npm start
 ```
 
 Tada !
