@@ -1,6 +1,6 @@
 use crate::domain::entity::{Music, Tag, TagKey};
-use crate::infrastructure::youtube_dl::{ytdl_run_with_args, YoutubeDlOutput};
-use anyhow::Result;
+use crate::infrastructure::youtube_dl::{ytdl_run_with_args, SingleVideo, YoutubeDlOutput};
+use anyhow::{Context, Result};
 use hyper::StatusCode;
 use rusqlite::Connection;
 
@@ -14,20 +14,26 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
         YoutubeDlOutput::Playlist(_) => return Ok(StatusCode::BAD_REQUEST),
         YoutubeDlOutput::SingleVideo(v) => v,
     };
-
     let tx = c.transaction()?;
-    let id = Music::mk(&tx)?;
-
-    Tag::insert(&tx, Tag::new_text(id, TagKey::YoutubeURL, url))?;
-    Tag::insert(&tx, Tag::new_text(id, TagKey::YoutubeVideoID, v.id))?;
-    Tag::insert(
-        &tx,
-        Tag::new_text(id, TagKey::YoutubeWorkerTreated, s!("false")),
-    )?;
-    Tag::insert(&tx, Tag::new_text(id, TagKey::Title, v.title))?;
-
+    push_for_treatment(&tx, v)?;
     tx.commit()?;
     Ok(StatusCode::OK)
+}
+
+fn push_for_treatment(c: &Connection, v: SingleVideo) -> Result<()> {
+    let id = Music::mk(&c)?;
+
+    Tag::insert(
+        &c,
+        Tag::new_text(id, TagKey::YoutubeURL, v.url.context("no url")?),
+    )?;
+    Tag::insert(&c, Tag::new_text(id, TagKey::YoutubeVideoID, v.id))?;
+    Tag::insert(
+        &c,
+        Tag::new_text(id, TagKey::YoutubeWorkerTreated, s!("false")),
+    )?;
+    Tag::insert(&c, Tag::new_text(id, TagKey::Title, v.title))?;
+    Ok(())
 }
 
 pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<StatusCode> {
@@ -38,16 +44,10 @@ pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<
     match metadata {
         YoutubeDlOutput::Playlist(p) => {
             for entry in p.entries.into_iter().flatten() {
-                let url = unwrap_cont!(entry.url);
-
-                let id = Music::mk(&tx)?;
-                Tag::insert(&tx, Tag::new_text(id, TagKey::YoutubeURL, url))?;
-                Tag::insert(&tx, Tag::new_text(id, TagKey::YoutubeVideoID, entry.id))?;
-                Tag::insert(
-                    &tx,
-                    Tag::new_text(id, TagKey::YoutubeWorkerTreated, s!("false")),
-                )?;
-                Tag::insert(&tx, Tag::new_text(id, TagKey::Title, entry.title))?;
+                if entry.url.is_none() {
+                    continue;
+                }
+                push_for_treatment(&tx, entry)?;
             }
         }
         YoutubeDlOutput::SingleVideo(_) => {
