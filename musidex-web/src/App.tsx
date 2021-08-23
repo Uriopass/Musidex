@@ -5,6 +5,7 @@ import Player from "./components/player";
 import {applyTracklist, newTracklist, setupListeners, TracklistCtx} from "./domain/tracklist";
 import useLocalStorage from "use-local-storage";
 import PageNavigator, {PageEnum} from "./pages/navigator";
+import {clearInterval} from "timers";
 
 function App() {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
@@ -16,6 +17,14 @@ function App() {
             setMetadata(metadata);
         })
     }, [metadataSc]);
+
+    useEffect(() => {
+        let v = setInterval(() => {
+            updateMetadata((v) => v+1)
+        }, 2000)
+        
+        return () => clearInterval(v);
+    }, [])
 
     let [volume, setVolume] = useLocalStorage("volume", 1);
     let [tracklist, dispatch] = useReducer(applyTracklist, newTracklist());
