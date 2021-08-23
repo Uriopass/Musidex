@@ -12,20 +12,22 @@ export type ExplorerProps = {
 const Explorer = (props: ExplorerProps) => {
     const [metadata, syncMetadata] = useContext(MetadataCtx);
     return (
-        <div className={"explorer color-fg " + (props.hidden && "hidden")}>
+        <div className={"explorer color-fg " + (props.hidden ? "hidden" : "")}>
             <div className="explorer-title title">{props.title}</div>
             {
                 metadata.musics.map((music) => {
                     return (
                         <SongElem key={music.id} musicID={music.id}
                                   tags={metadata.music_tags_idx.get(music.id)}
-                        onDelete={() => {
-                            API.deleteMusic(music.id).then((res) => {
-                                if (res.ok && res.status === 200) {
-                                    syncMetadata()
-                                }
-                            })
-                        }}/>
+                                  sources={metadata.music_sources_idx.get(music.id)}
+                                  onDelete={() => {
+                                      API.deleteMusic(music.id).then((res) => {
+                                          if (res.ok && res.status === 200) {
+                                              syncMetadata()
+                                          }
+                                      })
+                                  }}
+                        />
                     )
                 })
             }
@@ -36,21 +38,32 @@ const Explorer = (props: ExplorerProps) => {
 type SongElemProps = {
     musicID: number;
     tags: Map<string, Tag> | undefined;
+    sources: Map<string, string> | undefined;
     onDelete: () => void;
 }
 
 const SongElem = (props: SongElemProps) => {
-    if (props.tags === undefined) {
+    if (props.tags === undefined || props.sources === undefined) {
         return <Fragment/>;
     }
-    let cover = props.tags.get("thumbnail")?.text;
+    let cover = props.tags.get("thumbnail")?.text || null;
+
+    let playable = false;
+    let it = props.sources.keys();
+    let res = it.next();
+    while (!res.done) {
+        if (res.value.startsWith("local_")) {
+            playable = true;
+        }
+        res = it.next();
+    }
 
     return (
         <div className="song-elem">
             <div className="cover-image-container">
                 {
                     (cover !== null) &&
-                        <img src={"storage/"+cover} alt="cover image"/>
+                    <img src={"storage/" + cover} alt="album or video cover"/>
                 }
             </div>
             <div style={{flex: "1", padding: "10px"}}>
@@ -59,7 +72,10 @@ const SongElem = (props: SongElemProps) => {
                 </b>
             </div>
             <div style={{flex: "1", padding: "10px", textAlign: "right"}}>
-                <PlayButton musicID={props.musicID}/>
+                {
+                    playable &&
+                    <PlayButton musicID={props.musicID}/>
+                }
                 <button className="player-button" onClick={props.onDelete}>
                     <MaterialIcon name="remove"/>
                 </button>
@@ -67,7 +83,6 @@ const SongElem = (props: SongElemProps) => {
         </div>
     )
 }
-
 
 
 export default Explorer;

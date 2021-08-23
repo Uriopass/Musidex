@@ -34,18 +34,26 @@ export class MusidexMetadata {
     tags: Tag[];
     sources: Source[];
     music_tags_idx: Map<number, Map<string, Tag>>;
+    music_sources_idx: Map<number, Map<string, string>>;
 
     constructor(musics: Music[], tags: Tag[], sources: Source[]) {
         this.musics = musics;
         this.tags = tags;
         this.sources = sources;
         this.music_tags_idx = new Map();
+        this.music_sources_idx = new Map();
+
         this.musics.forEach((m) => {
             this.music_tags_idx.set(m.id, new Map());
+            this.music_sources_idx.set(m.id, new Map());
         })
 
         this.tags.forEach((tag) => {
             this.music_tags_idx.get(tag.music_id)?.set(tag.key, tag);
+        })
+
+        this.sources.forEach((source) => {
+            this.music_sources_idx.get(source.music_id)?.set(source.format, source.url);
         })
     }
 }

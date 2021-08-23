@@ -25,6 +25,7 @@ pub async fn stream_music(
             if source.format == "local_mp3"
                 || source.format == "local_ogg"
                 || source.format == "local_m4a"
+                || source.format == "local_webm"
             {
                 source_path = Some(source.url);
                 break;
@@ -39,6 +40,8 @@ pub async fn stream_music(
         "audio/ogg"
     } else if source_path.ends_with("m4a") {
         "audio/mp4"
+    } else if source_path.ends_with("webm") {
+        "audio/webm"
     } else {
         ""
     };

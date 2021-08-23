@@ -7,7 +7,7 @@ import API from "../domain/api";
 /* eslint-disable no-useless-escape */
 const Submit = (props: any) => {
     return (
-        <div className={"submit color-fg " + (props.hidden && "hidden")}>
+        <div className={"submit color-fg " + (props.hidden ? "hidden" : "")}>
             <YTSubmit
                 description="Paste a valid Youtube URL to add the music to your library."
                 uploadAPI={API.youtubeUpload}
