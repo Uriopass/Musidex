@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-echo "Building web client"
-npm --prefix musidex-web run build
-rm -r web
-cp -r musidex-web/build web
+if [[ $1 != "skip-web" ]];
+then
+    echo "Building web client"
+    (cd musidex-web && npm run build)
+    rm -r web
+    cp -r musidex-web/build web
+fi
 
-(cd musidex-daemon && cargo build --release)
-cp musidex-daemon/target/release/musidex-daemon mdx-daemon
+(cd musidex-daemon && cargo build)
+cp musidex-daemon/target/debug/musidex-daemon mdx-daemon
 chmod +x ./mdx-daemon
 ./mdx-daemon

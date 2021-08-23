@@ -5,6 +5,12 @@ use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use rusqlite::Connection;
 
 pub fn insert_tag(c: &Connection, tag: Tag) -> Result<()> {
+    log::info!(
+        "inserting tag {}:{}:{}",
+        tag.music_id.0,
+        &tag.key,
+        tag.text.as_deref().unwrap_or("None")
+    );
     let mut stmt = c.prepare_cached(
         "
             INSERT INTO tags (music_id, key, text, integer, date)
@@ -35,6 +41,13 @@ pub fn tags_by_text(c: &Connection, text: &str) -> Result<Vec<Tag>> {
     )?;
     let v = stmt.query_map([&text], |row| Ok(Tag::from(row)))?;
     collect_rows(v)
+}
+
+#[allow(dead_code)]
+pub fn has_tag(c: &Connection, id: MusicID, key: String) -> Result<bool> {
+    let mut stmt = c.prepare_cached("SELECT count(1) FROM tags WHERE music_id=$1 AND key=$2;")?;
+    let v: i32 = stmt.query_row(rusqlite::params![id.0, key], |row| row.get(0))?;
+    Ok(v == 1)
 }
 
 impl Tag {

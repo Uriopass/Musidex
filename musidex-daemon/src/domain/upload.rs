@@ -1,5 +1,5 @@
-use crate::domain::entity::{Source, Tag};
-use crate::domain::{music, source, tags};
+use crate::domain::entity::Tag;
+use crate::domain::{music, tags};
 use anyhow::Result;
 use hyper::StatusCode;
 use rusqlite::Connection;
@@ -11,15 +11,6 @@ pub fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCode> {
 
     let tx = c.transaction()?;
     let id = music::mk_music(&tx)?;
-
-    source::insert_source(
-        &tx,
-        Source {
-            music_id: id,
-            format: s!("youtube_url"),
-            url: url.clone(),
-        },
-    )?;
 
     tags::insert_tag(&tx, Tag::new_text(id, s!("youtube_url"), url))?;
 

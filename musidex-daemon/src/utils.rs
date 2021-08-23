@@ -12,12 +12,11 @@ pub fn env_or<T: FromStr>(key: &str, default: T) -> T {
     }
 }
 
-#[allow(unused_macros)]
-macro_rules! unwrap_ret {
-    ($e: expr, $ret: expr) => {
+macro_rules! unwrap_cont {
+    ($e: expr) => {
         match $e {
-            Ok(x) => x,
-            Err(err) => return $ret(err),
+            Some(x) => x,
+            None => continue,
         }
     };
 }

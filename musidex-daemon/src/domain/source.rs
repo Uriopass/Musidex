@@ -1,8 +1,15 @@
-use crate::domain::entity::Source;
+use crate::domain::entity::{MusicID, Source};
 use anyhow::{Context, Result};
 use rusqlite::Connection;
 
 pub fn insert_source(c: &Connection, source: Source) -> Result<()> {
+    log::info!(
+        "inserting source {}:{}:{}",
+        source.music_id.0,
+        source.format,
+        source.url
+    );
+
     let v = c
         .prepare_cached(
             "
@@ -21,4 +28,11 @@ pub fn insert_source(c: &Connection, source: Source) -> Result<()> {
         bail!("no row updated")
     }
     Ok(())
+}
+
+pub fn has_source(c: &Connection, id: MusicID, format: String) -> Result<bool> {
+    let mut stmt =
+        c.prepare_cached("SELECT count(1) FROM sources WHERE music_id=$1 AND format=$2;")?;
+    let v: i32 = stmt.query_row(rusqlite::params![id.0, format], |row| row.get(0))?;
+    Ok(v == 1)
 }

@@ -12,6 +12,7 @@ mod tests;
 
 use crate::application::handlers;
 use crate::domain::config;
+use crate::domain::youtube_dl_worker::YoutubeDLWorker;
 use crate::infrastructure::db::Db;
 use crate::infrastructure::migrate::migrate;
 use crate::infrastructure::router::Router;
@@ -29,16 +30,26 @@ async fn start() -> anyhow::Result<()> {
     env_logger::init();
     std::fs::create_dir_all("./storage/").context("could not create storage")?;
 
-    let pg = Db::connect().await.context("error connecting to pg")?;
-    migrate(&pg, &MIGRATIONS)
+    let db = Db::connect().await.context("error connecting to pg")?;
+    migrate(&db, &MIGRATIONS)
         .await
         .context("error running migrations")?;
 
-    config::init(&pg).await?;
+    config::init(&db).await?;
+
+    let mut worker = YoutubeDLWorker {};
+    {
+        let mut c = db.get().await;
+        let candidates = worker.find_candidates(&c)?;
+
+        for cand in candidates {
+            worker.youtube_dl_work(&mut c, cand)?;
+        }
+    }
 
     let mut router = Router::new();
     router
-        .state(pg)
+        .state(db)
         .get("/api/metadata", handlers::metadata)
         .post("/api/youtube_upload", handlers::youtube_upload)
         .get("/api/stream/:musicid", handlers::stream)
