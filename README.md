@@ -27,23 +27,45 @@ Sqlite for the db.
 sudo apt install ffmpeg nodejs libsqlite3-dev
 ```
 
-You will also need the [rust compiler](https://www.rust-lang.org/tools/install) for the backend.
+The [rust compiler](https://www.rust-lang.org/tools/install) for the backend.
 
 ```bash
 # Installs rust, just follow the instructions
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
+The repo itself.
+
+```bash
+git clone https://github.com/Uriopass/Musidex
+cd Musidex
+```
+
 ### Building and running
 
 ```bash
-# First clone the project
-git clone https://github.com/Uriopass/Musidex
-cd Musidex
-
-# Then use the build and run script
+# Just run the start script
 ./start.sh
-
 ```
 
-Tada !
+# Developing on the project
+
+First install the dependencies as listed above, then
+
+```bash
+# Start the daemon, will listen on localhost:3200
+cargo run --manifest-path=musidex-daemon/Cargo.toml
+
+# And in another terminal... start the web client
+cd musidex-web
+npm start # will start on localhost:3000 
+          # and proxy api requests to the daemon
+```
+
+Then if you want to work on the daemon,
+simply run `cargo run` again after doing your modifications.
+
+If you want to work on the web client,
+the modifications will be hot reloaded.
+
+All musidex data ends up in the `storage` directory.
