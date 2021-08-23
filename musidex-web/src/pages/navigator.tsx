@@ -10,7 +10,7 @@ interface NavigatorProps {
 const PageNavigator = (props: NavigatorProps) => {
     return (
         <>
-            <Explorer title="musics" hidden={props.page !== "explorer"}/>
+            <Explorer title="Musics" hidden={props.page !== "explorer"}/>
             <Submit hidden={props.page !== "submit"}/>
         </>
     )

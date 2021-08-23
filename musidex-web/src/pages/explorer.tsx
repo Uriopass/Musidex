@@ -43,9 +43,16 @@ const SongElem = (props: SongElemProps) => {
     if (props.tags === undefined) {
         return <Fragment/>;
     }
+    let cover = props.tags.get("thumbnail")?.text;
+
     return (
         <div className="song-elem">
-            <div style={{width: "80px", height: "80px", backgroundColor: "gray"}}/>
+            <div className="cover-image-container">
+                {
+                    (cover !== null) &&
+                        <img src={"storage/"+cover} alt="cover image"/>
+                }
+            </div>
             <div style={{flex: "1", padding: "10px"}}>
                 <b>
                     {props.tags.get("title")?.text || "No Title"}
