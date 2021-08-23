@@ -42,8 +42,8 @@ body {
 
 .title {
     border-left: 3px var(--primary) solid;
-    font-size: 3rem;
-    padding-left: 20px;
+    font-size: 2rem;
+    padding-left: 1rem;
 }
 
 .primary {
