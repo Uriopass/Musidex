@@ -47,8 +47,12 @@ const YTSubmit = () => {
                 setSendState({type: "accepted"});
                 return;
             }
+            console.log("not ok", res);
             setSendState({"type": "error"});
-        }).catch(() => setSendState({"type": "error"}));
+        }).catch((e) => {
+            console.log(e);
+            setSendState({"type": "error"});
+        });
     }
 
     let icon: string = "";
