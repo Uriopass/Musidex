@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS tags
     date text, -- stored as RFC3339
     vector blob,
 
-    foreign key (music_id) references musics(id),
+    foreign key (music_id) references musics(id) ON DELETE CASCADE,
     primary key (music_id, key)
 );
 
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS sources
     format text,
     url text,
 
-    foreign key (music_id) references musics(id),
+    foreign key (music_id) references musics(id) ON DELETE CASCADE,
     primary key (music_id, format)
 );
 
