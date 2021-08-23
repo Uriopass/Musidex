@@ -14,7 +14,7 @@ pub async fn test_insert_tag() -> Result<()> {
     Tag::insert(&c, tag.clone())?;
 
     let metadata = fetch_metadata(&c)?;
-    assert_eq!(metadata.musics[0].id, music);
+    assert_eq!(metadata.musics[0], music);
     assert_eq!(metadata.tags[0], tag);
 
     Ok(())

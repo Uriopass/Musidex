@@ -3,10 +3,6 @@ import React from "react";
 
 let apiURL = window.location.origin;
 
-export type Music = {
-    id: number;
-}
-
 export type Tag = {
     music_id: number;
     key: string;
@@ -18,22 +14,22 @@ export type Tag = {
 }
 
 type RawMusidexMetadata = {
-    musics: Music[];
+    musics: number[];
     tags: Tag[];
 }
 
 export class MusidexMetadata {
-    musics: Music[];
+    musics: number[];
     tags: Tag[];
     music_tags_idx: Map<number, Map<string, Tag>>;
 
-    constructor(musics: Music[], tags: Tag[]) {
+    constructor(musics: number[], tags: Tag[]) {
         this.musics = musics;
         this.tags = tags;
         this.music_tags_idx = new Map();
 
         this.musics.forEach((m) => {
-            this.music_tags_idx.set(m.id, new Map());
+            this.music_tags_idx.set(m, new Map());
         })
 
         this.tags.forEach((tag) => {

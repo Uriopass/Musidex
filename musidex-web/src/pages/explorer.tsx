@@ -15,12 +15,12 @@ const Explorer = (props: ExplorerProps) => {
         <div className={"explorer color-fg " + (props.hidden ? "hidden" : "")}>
             <div className="explorer-title title">{props.title}</div>
             {
-                metadata.musics.map((music) => {
+                metadata.musics.map((id) => {
                     return (
-                        <SongElem key={music.id} musicID={music.id}
-                                  tags={metadata.music_tags_idx.get(music.id)}
+                        <SongElem key={id} musicID={id}
+                                  tags={metadata.music_tags_idx.get(id)}
                                   onDelete={() => {
-                                      API.deleteMusic(music.id).then((res) => {
+                                      API.deleteMusic(id).then((res) => {
                                           if (res.ok && res.status === 200) {
                                               syncMetadata()
                                           }

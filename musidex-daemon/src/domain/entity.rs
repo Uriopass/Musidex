@@ -19,9 +19,13 @@ pub struct Tag {
     pub music_id: MusicID,
     pub key: TagKey,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub integer: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub vector: Option<Vec<f32>>,
 }
 
@@ -29,7 +33,7 @@ impl Eq for Tag {}
 
 #[derive(Serialize)]
 pub struct MusidexMetadata {
-    pub musics: Vec<Music>,
+    pub musics: Vec<MusicID>,
     pub tags: Vec<Tag>,
 }
 

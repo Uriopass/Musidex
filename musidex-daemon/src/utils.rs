@@ -1,6 +1,5 @@
 use anyhow::Result;
 use hyper::{Body, Response, StatusCode};
-use rusqlite::{MappedRows, Row};
 use std::path::Path;
 use std::str::FromStr;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, BufReader, SeekFrom};
@@ -27,9 +26,9 @@ macro_rules! s {
     };
 }
 
-pub fn collect_rows<T, F>(rows: MappedRows<F>) -> Result<Vec<T>>
+pub fn collect_rows<T, E>(rows: impl Iterator<Item = Result<T, E>>) -> Result<Vec<T>>
 where
-    F: FnMut(&Row<'_>) -> rusqlite::Result<T>,
+    E: std::error::Error + Send + Sync + 'static,
 {
     let mut vec = vec![];
     for val in rows {

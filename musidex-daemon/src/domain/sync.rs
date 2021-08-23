@@ -1,4 +1,4 @@
-use crate::domain::entity::MusidexMetadata;
+use crate::domain::entity::{Music, MusidexMetadata};
 use crate::utils::collect_rows;
 use anyhow::Result;
 use rusqlite::Connection;
@@ -11,7 +11,7 @@ pub fn fetch_metadata(c: &Connection) -> Result<MusidexMetadata> {
     let tags = tags.query_map([], |r| Ok(Into::into(r)))?;
 
     Ok(MusidexMetadata {
-        musics: collect_rows(musics)?,
+        musics: collect_rows(musics.map(|x| x.map(|v: Music| v.id)))?,
         tags: collect_rows(tags)?,
     })
 }
