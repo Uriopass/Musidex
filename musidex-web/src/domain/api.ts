@@ -1,7 +1,7 @@
 import {Track} from "./tracklist";
 import React from "react";
 
-let apiURL = (process.env.NODE_ENV === "development") ? "http://127.0.0.1:3200" : window.location.origin;
+let apiURL = window.location.origin;
 
 export type Music = {
     id: number;
@@ -50,7 +50,7 @@ export class MusidexMetadata {
     }
 }
 
-export const MetadataCtx = React.createContext(emptyMetadata());
+export const MetadataCtx = React.createContext<[MusidexMetadata, () => void]>([emptyMetadata(), () => {return;}]);
 
 export function emptyMetadata(): MusidexMetadata {
     return new MusidexMetadata([], [], []);
@@ -79,10 +79,15 @@ export const API = {
             headers: {
                 "Content-Type": "application/json",
             },
-            mode: "no-cors",
             body: JSON.stringify({
                 url: url,
             })
+        });
+    },
+
+    async deleteMusic(id: number): Promise<Response> {
+        return fetch(apiURL + "/api/music/" + id, {
+            method: "delete"
         });
     },
 

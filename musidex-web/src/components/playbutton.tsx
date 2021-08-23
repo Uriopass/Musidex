@@ -9,7 +9,7 @@ export type PlayButtonProps = {
 
 export const PlayButton = (props: PlayButtonProps) => {
     let [tracklist, dispatch] = useContext(TracklistCtx);
-    let metadata = useContext(MetadataCtx);
+    let [metadata,] = useContext(MetadataCtx);
     let same_v = (tracklist.current?.id || -1) === props.musicID;
 
     let onClick = () => {

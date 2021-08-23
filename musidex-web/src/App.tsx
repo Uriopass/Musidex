@@ -8,14 +8,14 @@ import PageNavigator, {PageEnum} from "./pages/navigator";
 
 function App() {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
-    let [syncCount, setSyncCount] = useState(0);
+    let [metadataSc, updateMetadata] = useState(0);
 
     useEffect(() => {
         API.getMetadata().then((metadata) => {
             if (metadata == null) return;
             setMetadata(metadata);
         })
-    }, [syncCount]);
+    }, [metadataSc]);
 
     let [volume, setVolume] = useLocalStorage("volume", 1);
     let [tracklist, dispatch] = useReducer(applyTracklist, newTracklist());
@@ -26,8 +26,8 @@ function App() {
 
     return (
         <>
-            <Navbar setCurPage={setCurPage} onSync={() => setSyncCount((v) => v+1)}/>
-            <MetadataCtx.Provider value={metadata}>
+            <Navbar setCurPage={setCurPage} onSync={() => updateMetadata((v) => v+1)}/>
+            <MetadataCtx.Provider value={[metadata, () => updateMetadata((v) => v+1)]}>
                 <TracklistCtx.Provider value={[tracklist, dispatch]}>
                     <div className="scrollable-element content">
                         <PageNavigator page={curPage} />
