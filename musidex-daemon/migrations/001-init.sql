@@ -21,17 +21,6 @@ CREATE TABLE IF NOT EXISTS tags
 
 CREATE INDEX IF NOT EXISTS idx_tags_text on tags (text);
 
-CREATE TABLE IF NOT EXISTS sources
-(
-    music_id integer references musics (id) on delete cascade,
-
-    -- the format of the source, could be "local_ogg", "local_mp3", "youtube_link"
-    format   text,
-    url      text,
-
-    primary key (music_id, format)
-);
-
 CREATE TABLE IF NOT EXISTS config
 (
     key   text primary key,

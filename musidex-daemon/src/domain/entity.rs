@@ -1,6 +1,9 @@
 use chrono::{DateTime, Utc};
-use rusqlite::Row;
-use serde::{Deserialize, Serialize};
+use rusqlite::types::ToSqlOutput;
+use rusqlite::{Row, ToSql};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::{Debug, Display, Formatter};
+use std::ops::Deref;
 
 #[derive(Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Debug)]
 #[serde(transparent)]
@@ -14,7 +17,7 @@ pub struct Music {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Tag {
     pub music_id: MusicID,
-    pub key: String,
+    pub key: TagKey,
 
     pub text: Option<String>,
     pub integer: Option<i32>,
@@ -24,18 +27,88 @@ pub struct Tag {
 
 impl Eq for Tag {}
 
-#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
-pub struct Source {
-    pub music_id: MusicID,
-    pub format: String,
-    pub url: String,
-}
-
 #[derive(Serialize)]
 pub struct MusidexMetadata {
     pub musics: Vec<Music>,
     pub tags: Vec<Tag>,
-    pub sources: Vec<Source>,
+}
+
+macro_rules! tag_key {
+    {
+     $($key:ident => $name:literal,)+
+    } => {
+        #[derive(Clone, Debug, PartialEq, Eq)]
+        pub enum TagKey {
+            $($key,)+
+            Other(String)
+        }
+
+        impl<'a> From<&'a str> for TagKey {
+            fn from(v: &'a str) -> TagKey {
+                match v {
+                    $($name => TagKey::$key,)+
+                    s => TagKey::Other(s.to_string()),
+                }
+            }
+        }
+
+        impl<'a> Into<String> for &'a TagKey {
+            fn into(self) -> String {
+                match self {
+                    $(TagKey::$key => ($name).to_string(),)+
+                    TagKey::Other(s) => s.clone(),
+                }
+            }
+        }
+
+        impl ToSql for TagKey {
+            fn to_sql(&self) -> rusqlite::Result<ToSqlOutput<'_>> {
+                match self {
+                    $(TagKey::$key => ($name).to_sql(),)+
+                    TagKey::Other(s) => s.to_sql(),
+                }
+            }
+       }
+    }
+}
+
+tag_key! {
+    LocalMP3 => "local_mp3",
+    LocalWEBM => "local_webm",
+    LocalM4A => "local_m4a",
+    LocalOGG => "local_ogg",
+    YoutubeVideoID => "youtube_video_id",
+    YoutubeURL => "youtube_url",
+    Title => "title",
+    Thumbnail => "thumbnail",
+    Duration => "duration",
+}
+
+impl Display for TagKey {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let s: String = self.into();
+        std::fmt::Display::fmt(&s, f)
+    }
+}
+
+impl<'de> Deserialize<'de> for TagKey {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let v = <&str>::deserialize(deserializer)?;
+        Ok(v.into())
+    }
+}
+
+impl Serialize for TagKey {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s: String = self.into();
+        s.serialize(serializer)
+    }
 }
 
 impl<'a, 'b> From<&'a Row<'b>> for Music {
@@ -46,21 +119,11 @@ impl<'a, 'b> From<&'a Row<'b>> for Music {
     }
 }
 
-impl<'a, 'b> From<&'a Row<'b>> for Source {
-    fn from(row: &'a Row<'b>) -> Self {
-        Source {
-            music_id: MusicID(row.get_unwrap("music_id")),
-            format: row.get_unwrap("format"),
-            url: row.get_unwrap("url"),
-        }
-    }
-}
-
 impl<'a, 'b> From<&'a Row<'b>> for Tag {
     fn from(row: &'a Row<'b>) -> Self {
         Self {
             music_id: MusicID(row.get_unwrap("music_id")),
-            key: row.get_unwrap("key"),
+            key: row.get_unwrap::<_, String>("key").deref().into(),
             text: row.get_unwrap("text"),
             integer: row.get_unwrap("integer"),
             date: row

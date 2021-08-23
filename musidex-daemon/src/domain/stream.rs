@@ -1,4 +1,5 @@
-use crate::domain::entity::{MusicID, Source};
+use crate::domain::entity::TagKey::{LocalM4A, LocalMP3, LocalOGG, LocalWEBM};
+use crate::domain::entity::{MusicID, Tag};
 use crate::infrastructure::db::Client;
 use crate::utils::get_file_range;
 use anyhow::{Context, Result};
@@ -17,17 +18,16 @@ pub async fn stream_music(
 ) -> Result<MusicMetadata> {
     let mut source_path = None;
     {
-        let mut stmt = c.prepare_cached("SELECT * from sources WHERE music_id=$1")?;
-        let sources = stmt.query_map([&id.0], |v| Ok(Source::from(v)))?;
+        let tags = Tag::by_id(&c, id)?;
 
-        for source in sources {
-            let source = source?;
-            if source.format == "local_mp3"
-                || source.format == "local_ogg"
-                || source.format == "local_m4a"
-                || source.format == "local_webm"
+        for tag in tags {
+            if (tag.key == LocalMP3
+                || tag.key == LocalOGG
+                || tag.key == LocalM4A
+                || tag.key == LocalWEBM)
+                && tag.text.is_some()
             {
-                source_path = Some(source.url);
+                source_path = tag.text;
                 break;
             }
         }

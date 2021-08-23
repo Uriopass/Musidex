@@ -7,7 +7,6 @@ use std::sync::Arc;
 
 mod config;
 mod music;
-mod sources;
 mod tags;
 
 async fn mk_db() -> anyhow::Result<Db> {

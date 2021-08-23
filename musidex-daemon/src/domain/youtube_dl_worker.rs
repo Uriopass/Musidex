@@ -1,5 +1,4 @@
-use crate::domain::entity::{MusicID, Source, Tag};
-use crate::domain::{source, tags};
+use crate::domain::entity::{MusicID, Tag, TagKey};
 use crate::infrastructure::db::Db;
 use crate::infrastructure::youtube_dl::{ytdl_run_with_args, SingleVideo, YoutubeDlOutput};
 use anyhow::{Context, Result};
@@ -45,42 +44,38 @@ impl YoutubeDLWorker {
 
         let mut c = db.get().await;
         let tx = c.transaction()?;
-        source::insert_source(
+        Tag::insert(
             &tx,
-            Source {
-                music_id: id,
-                format: s!("youtube_video_id"),
-                url: metadata.id.clone(),
-            },
+            Tag::new_text(id, TagKey::YoutubeVideoID, metadata.id.clone()),
         )?;
         let ext = metadata.ext.context("no extension")?;
-        source::insert_source(
+        Tag::insert(
             &tx,
-            Source {
-                music_id: id,
-                format: format!("local_{}", ext),
-                url: format!("{}.{}", metadata.id, ext),
-            },
+            Tag::new_text(
+                id,
+                TagKey::from(&*format!("local_{}", ext)),
+                format!("{}.{}", metadata.id, ext),
+            ),
         )?;
 
         let txb = &tx;
-        let add_tag = move |key, value| tags::insert_tag(txb, Tag::new_text(id, key, value));
+        let add_tag = move |key, value| Tag::insert(txb, Tag::new_text(id, key, value));
 
         let add_tag_opt = move |key, value| {
             if let Some(v) = value {
-                return tags::insert_tag(txb, Tag::new_text(id, key, v));
+                return Tag::insert(txb, Tag::new_text(id, key, v));
             }
             Ok(())
         };
 
-        add_tag(s!("title"), metadata.title)?;
-        add_tag_opt(s!("thumbnail"), metadata.thumbnail_filename)?;
+        add_tag(TagKey::Title, metadata.title)?;
+        add_tag_opt(TagKey::Thumbnail, metadata.thumbnail_filename)?;
         if let Some(v) = metadata.duration.and_then(|x| x.as_i64()) {
-            tags::insert_tag(
+            Tag::insert(
                 txb,
                 Tag {
                     music_id: id,
-                    key: s!("duration"),
+                    key: TagKey::Duration,
                     text: Some(v.to_string()),
                     integer: v.try_into().ok(),
                     date: None,
@@ -95,12 +90,9 @@ impl YoutubeDLWorker {
     }
 
     pub fn find_candidates(c: &Connection) -> Result<Vec<(MusicID, String)>> {
-        let mut stmt = c.prepare_cached("SELECT * FROM tags WHERE key='youtube_url';")?;
-        let tags = stmt.query_map([], |row| Ok(Into::into(row)))?;
         let mut v = vec![];
-        for tag in tags {
-            let tag: Tag = tag?;
-            if source::has_source(c, tag.music_id, s!("youtube_video_id"))? {
+        for tag in Tag::by_key(c, TagKey::YoutubeURL)? {
+            if Tag::has(c, tag.music_id, TagKey::YoutubeVideoID)? {
                 continue;
             }
             v.push((tag.music_id, unwrap_cont!(tag.text)))

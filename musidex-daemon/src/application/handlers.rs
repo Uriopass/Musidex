@@ -1,5 +1,5 @@
-use crate::domain::entity::MusicID;
-use crate::domain::{config, music, stream, sync, upload};
+use crate::domain::entity::{Music, MusicID};
+use crate::domain::{config, stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
 use crate::utils::res_status;
 use crate::Db;
@@ -34,7 +34,7 @@ pub async fn delete_music(req: Request<Body>) -> Result<Response<Body>> {
             .context("couldn't parse music id as integer")?,
     );
 
-    music::delete_music(&c, id).context("couldn't delete music from db")?;
+    Music::delete(&c, id).context("couldn't delete music from db")?;
 
     Ok(Response::new(Body::empty()))
 }
