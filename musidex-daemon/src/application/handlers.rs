@@ -55,6 +55,24 @@ pub async fn youtube_upload(req: Request<Body>) -> Result<Response<Body>> {
     Ok(res_status(upload::youtube_upload(&mut c, url)?))
 }
 
+pub async fn youtube_upload_playlist(req: Request<Body>) -> Result<Response<Body>> {
+    let (parts, body) = req.into_parts();
+    let f = hyper::body::to_bytes(body)
+        .await
+        .context("could not decode body")?;
+    let b: UploadYoutube = serde_json::from_slice(&*f).context("could not parse body")?;
+    let url = b.url;
+    if url.len() < 3 {
+        return Ok(res_status(StatusCode::BAD_REQUEST));
+    }
+    let db = parts.state::<Db>();
+    let mut c = db.get().await;
+
+    Ok(res_status(
+        upload::youtube_upload_playlist(&mut c, url).await?,
+    ))
+}
+
 pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {
     let music_id = req.params().get("musicid").context("invalid music id")?;
     let id = MusicID(

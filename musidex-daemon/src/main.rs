@@ -45,6 +45,10 @@ async fn start() -> anyhow::Result<()> {
         .state(db)
         .get("/api/metadata", handlers::metadata)
         .post("/api/youtube_upload", handlers::youtube_upload)
+        .post(
+            "/api/youtube_upload/playlist",
+            handlers::youtube_upload_playlist,
+        )
         .get("/api/stream/:musicid", handlers::stream)
         .get("/api/config", handlers::get_config)
         .delete("/api/music/:id", handlers::delete_music)
