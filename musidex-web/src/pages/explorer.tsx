@@ -19,7 +19,6 @@ const Explorer = (props: ExplorerProps) => {
                     return (
                         <SongElem key={music.id} musicID={music.id}
                                   tags={metadata.music_tags_idx.get(music.id)}
-                                  sources={metadata.music_sources_idx.get(music.id)}
                                   onDelete={() => {
                                       API.deleteMusic(music.id).then((res) => {
                                           if (res.ok && res.status === 200) {
@@ -38,18 +37,17 @@ const Explorer = (props: ExplorerProps) => {
 type SongElemProps = {
     musicID: number;
     tags: Map<string, Tag> | undefined;
-    sources: Map<string, string> | undefined;
     onDelete: () => void;
 }
 
 const SongElem = (props: SongElemProps) => {
-    if (props.tags === undefined || props.sources === undefined) {
+    if (props.tags === undefined) {
         return <Fragment/>;
     }
     let cover = props.tags.get("thumbnail")?.text || null;
 
     let playable = false;
-    let it = props.sources.keys();
+    let it = props.tags.keys();
     let res = it.next();
     while (!res.done) {
         if (res.value.startsWith("local_")) {
