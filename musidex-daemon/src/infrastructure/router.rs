@@ -27,13 +27,15 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::future::Future;
-use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 
 use crate::utils::res_status;
+use futures::FutureExt;
+use hyper::body::Bytes;
 use hyper::header::{
-    ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_ALLOW_ORIGIN,
+    HeaderValue, ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS,
+    ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_ENCODING,
 };
 use hyper::http::request::Parts;
 use hyper::http::Extensions;
@@ -42,12 +44,14 @@ use hyper::{Body, Method, Request, Response, StatusCode};
 use route_recognizer::Router as InnerRouter;
 use std::io::ErrorKind;
 use std::path::PathBuf;
+use std::pin::Pin;
 
 #[derive(Default)]
 pub(crate) struct Router {
     inner: HashMap<Method, InnerRouter<Box<dyn Handler>>>,
     not_found: Option<Box<dyn Handler>>,
     state: Arc<Extensions>,
+    nocors: bool,
 }
 
 #[allow(dead_code)]
@@ -60,6 +64,11 @@ impl Router {
         Arc::get_mut(&mut self.state)
             .expect("state is being shared yet it's trying to be added")
             .insert(v);
+        self
+    }
+
+    pub(crate) fn nocors(&mut self, nocors: bool) -> &mut Self {
+        self.nocors = nocors;
         self
     }
 
@@ -155,7 +164,35 @@ impl Router {
                     let params = matcher.params().clone();
                     req.extensions_mut().insert(Params(Some(Box::new(params))));
                     req.extensions_mut().insert(self.state.clone());
-                    handler.call(req)
+                    let wants_compression = req
+                        .headers()
+                        .get(ACCEPT_ENCODING)
+                        .and_then(|x| x.to_str().ok())
+                        .map(|x| x.contains("deflate"))
+                        .unwrap_or(false);
+                    let f = handler.call(req);
+                    if !wants_compression {
+                        return f;
+                    }
+                    Box::pin(f.then(|r| async {
+                        match r {
+                            Ok(x) => {
+                                let (mut parts, b) = x.into_parts();
+                                let bytes = hyper::body::to_bytes(b).await?;
+
+                                let bytes =
+                                    Bytes::from(miniz_oxide::deflate::compress_to_vec(&*bytes, 3));
+
+                                let b = Body::from(bytes);
+
+                                parts
+                                    .headers
+                                    .insert(CONTENT_ENCODING, HeaderValue::from_static("deflate"));
+                                Ok(Response::from_parts(parts, b))
+                            }
+                            Err(e) => Err(e),
+                        }
+                    }))
                 }
                 Err(_) => match &self.not_found {
                     Some(handler) => {
@@ -249,8 +286,9 @@ impl Service<Request<Body>> for RouterService {
 
     fn call(&mut self, req: Request<Body>) -> Self::Future {
         let router = self.0.clone();
+        let nocors = router.nocors;
         let fut = router.serve(req);
-        let fut = async {
+        let fut = async move {
             #[allow(unused_mut)]
             let mut response = match fut.await {
                 Ok(x) => x,
@@ -263,16 +301,16 @@ impl Service<Request<Body>> for RouterService {
                         .unwrap()
                 }
             };
-            #[cfg(debug_assertions)]
-            set_cors(&mut response);
+            if nocors {
+                set_nocors(&mut response);
+            }
             Ok(response)
         };
         Box::pin(fut)
     }
 }
 
-#[allow(dead_code)]
-fn set_cors(req: &mut Response<Body>) {
+fn set_nocors(req: &mut Response<Body>) {
     req.headers_mut()
         .insert(ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
     req.headers_mut()

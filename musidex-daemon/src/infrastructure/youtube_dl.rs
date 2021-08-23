@@ -2,9 +2,6 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
-use std::process::Stdio;
-use tokio::io::AsyncReadExt;
-use tokio::process::Command;
 
 #[derive(Debug)]
 pub enum YoutubeDlOutput {
@@ -323,44 +320,50 @@ pub enum Protocol {
     #[serde(rename = "http_dash_segments")]
     HttpDashSegments,
 }
+use std::io::{copy, Read};
+use std::process::{Command, Stdio};
 
 pub async fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
-    let mut child = Command::new("youtube-dl")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .args(args)
-        .spawn()?;
-    // Continually read from stdout so that it does not fill up with large output and hang forever.
-    // We don't need to do this for stderr since only stdout has potentially giant JSON.
-    let mut stdout = Vec::new();
-    let child_stdout = child.stdout.take();
-    tokio::io::copy(&mut child_stdout.unwrap(), &mut stdout).await?;
+    let args: Vec<_> = args.into_iter().map(ToString::to_string).collect();
+    tokio::task::spawn_blocking(move || {
+        let mut child = Command::new("youtube-dl")
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .args(args)
+            .spawn()?;
+        // Continually read from stdout so that it does not fill up with large output and hang forever.
+        // We don't need to do this for stderr since only stdout has potentially giant JSON.
+        let mut stdout = Vec::new();
+        let child_stdout = child.stdout.take();
+        copy(&mut child_stdout.unwrap(), &mut stdout)?;
 
-    let exit_code = child.wait().await?;
+        let exit_code = child.wait()?;
 
-    if exit_code.success() {
-        let out = String::from_utf8_lossy(stdout.as_slice());
-        let out = out.trim();
-        let value: Value = serde_json::from_str(out).context("error decoding json")?;
+        if exit_code.success() {
+            let out = String::from_utf8_lossy(stdout.as_slice());
+            let out = out.trim();
+            let value: Value = serde_json::from_str(out).context("error decoding json")?;
 
-        let is_playlist = value["_type"] == serde_json::json!("playlist");
-        if is_playlist {
-            let playlist: Playlist = serde_json::from_value(value)?;
-            Ok(YoutubeDlOutput::Playlist(playlist))
+            let is_playlist = value["_type"] == serde_json::json!("playlist");
+            if is_playlist {
+                let playlist: Playlist = serde_json::from_value(value)?;
+                Ok(YoutubeDlOutput::Playlist(playlist))
+            } else {
+                let video: SingleVideo = serde_json::from_value(value)?;
+                Ok(YoutubeDlOutput::SingleVideo(video))
+            }
         } else {
-            let video: SingleVideo = serde_json::from_value(value)?;
-            Ok(YoutubeDlOutput::SingleVideo(video))
+            let mut stderr = vec![];
+            if let Some(mut reader) = child.stderr {
+                reader.read_to_end(&mut stderr)?;
+            }
+            let stderr = String::from_utf8(stderr).unwrap_or_default();
+            Err(anyhow!(
+                "error using youtubedl: {} {}",
+                exit_code.code().unwrap_or(1),
+                stderr,
+            ))
         }
-    } else {
-        let mut stderr = vec![];
-        if let Some(mut reader) = child.stderr {
-            reader.read_to_end(&mut stderr).await?;
-        }
-        let stderr = String::from_utf8(stderr).unwrap_or_default();
-        Err(anyhow!(
-            "error using youtubedl: {} {}",
-            exit_code.code().unwrap_or(1),
-            stderr,
-        ))
-    }
+    })
+    .await?
 }
