@@ -1,5 +1,5 @@
 use crate::domain::entity::MusicID;
-use crate::domain::{config, stream, sync, upload};
+use crate::domain::{config, music, stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
 use crate::utils::res_status;
 use crate::Db;
@@ -21,6 +21,22 @@ pub async fn metadata(req: Request<Body>) -> Result<Response<Body>> {
 #[derive(Deserialize)]
 pub struct UploadYoutube {
     pub url: String,
+}
+
+pub async fn delete_music(req: Request<Body>) -> Result<Response<Body>> {
+    let music_id = req.params().get("id").context("missing parameter id")?;
+    let db = req.state::<Db>();
+    let c = db.get().await;
+
+    let id = MusicID(
+        music_id
+            .parse()
+            .context("couldn't parse music id as integer")?,
+    );
+
+    music::delete_music(&c, id).context("couldn't delete music from db")?;
+
+    Ok(Response::new(Body::empty()))
 }
 
 pub async fn youtube_upload(req: Request<Body>) -> Result<Response<Body>> {

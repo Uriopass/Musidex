@@ -47,6 +47,7 @@ async fn start() -> anyhow::Result<()> {
         .post("/api/youtube_upload", handlers::youtube_upload)
         .get("/api/stream/:musicid", handlers::stream)
         .get("/api/config", handlers::get_config)
+        .delete("/api/music/:id", handlers::delete_music)
         .static_files("/", "./web/");
 
     let addr = ([127, 0, 0, 1], 3200).into();

@@ -115,7 +115,7 @@ impl Router {
     }
 
     /// Register a handler for DELETE requests
-    pub fn delete<H>(&mut self, path: &str, handler: H)
+    pub fn delete<H>(&mut self, path: &str, handler: H) -> &mut Self
     where
         H: Handler,
     {
@@ -124,6 +124,7 @@ impl Router {
             .entry(Method::DELETE)
             .or_insert_with(InnerRouter::new);
         entry.add(path, Box::new(handler));
+        self
     }
 
     /// Register a handler when no routes are matched
