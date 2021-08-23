@@ -88,7 +88,8 @@ impl YoutubeDLWorker {
             if tag.text.as_deref().unwrap_or("") != "false" {
                 continue;
             }
-            v.push((tag.music_id, unwrap_cont!(tag.text)))
+            let url = unwrap_cont!(Tag::by_id_key(c, tag.music_id, TagKey::YoutubeURL)?);
+            v.push((tag.music_id, unwrap_cont!(url.text)));
         }
         Ok(v)
     }
