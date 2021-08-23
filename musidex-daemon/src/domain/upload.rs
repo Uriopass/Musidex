@@ -1,7 +1,6 @@
 use crate::domain::entity::Tag;
 use crate::domain::{music, tags};
 use crate::infrastructure::youtube_dl::{ytdl_run_with_args, YoutubeDlOutput};
-use crate::utils::res_status;
 use anyhow::Result;
 use hyper::StatusCode;
 use rusqlite::Connection;

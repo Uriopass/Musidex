@@ -29,20 +29,21 @@ impl YoutubeDLWorker {
     }
 
     pub async fn step(&mut self) -> Result<()> {
-        let mut c = self.db.get().await;
+        let c = self.db.get().await;
         let candidates = Self::find_candidates(&c)?;
 
         for cand in candidates {
-            Self::youtube_dl_work(&mut c, cand).await?;
+            Self::youtube_dl_work(&self.db, cand).await?;
         }
         Ok(())
     }
 
-    pub async fn youtube_dl_work(c: &mut Connection, (id, url): (MusicID, String)) -> Result<()> {
+    pub async fn youtube_dl_work(db: &Db, (id, url): (MusicID, String)) -> Result<()> {
         log::info!("{}", url);
         let metadata = download(&url).await?;
         log::info!("downloaded metadata");
 
+        let mut c = db.get().await;
         let tx = c.transaction()?;
         source::insert_source(
             &tx,

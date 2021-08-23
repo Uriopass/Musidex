@@ -7,8 +7,19 @@ import API from "../domain/api";
 /* eslint-disable no-useless-escape */
 const Submit = (props: any) => {
     return (
-        <div className={"submit color-fg " + (props.hidden ? "hidden" : "")}>
-            <YTSubmit/>
+        <div className={"submit color-fg " + (props.hidden && "hidden")}>
+            <YTSubmit
+                description="Paste a valid Youtube URL to add the music to your library."
+                uploadAPI={API.youtubeUpload}
+                title="YT Music"
+                titleColor="#fb0e0f"
+                placeholder="Youtube URL"/>
+            <YTSubmit
+                description="Paste a valid Youtube Playlist URL to add all of its musics to your library."
+                uploadAPI={API.youtubeUploadPlaylist}
+                title="YT Playlist"
+                titleColor="#fb0e0f"
+                placeholder="Youtube Playlist URL"/>
         </div>
     )
 }
@@ -20,7 +31,15 @@ type YTSendState =
     | { type: "accepted" }
     | { type: "error" };
 
-const YTSubmit = () => {
+type YTSubmitProps = {
+    description: string,
+    uploadAPI: (url: string) => Promise<Response>,
+    title: string,
+    placeholder: string,
+    titleColor: string,
+}
+
+const YTSubmit = (props: YTSubmitProps) => {
     const [ytUrl, setYTUrl] = useState("");
     const [sendState, setSendState] = useState({type: "waiting_for_url"} as YTSendState);
 
@@ -42,7 +61,7 @@ const YTSubmit = () => {
             return;
         }
         setSendState({type: "sending"});
-        API.sendYTUrl(v).then((res) => {
+        props.uploadAPI(v).then((res: Response) => {
             if (res.ok) {
                 setSendState({type: "accepted"});
                 return;
@@ -83,15 +102,15 @@ const YTSubmit = () => {
 
     return (
         <>
-            <span className="title color-fg">
-                Upload
+            <span className="title" style={{borderColor: props.titleColor}}>
+                {props.title}
             </span>
             <br/>
             <br/>
-            Paste a valid Youtube URL to add the music to your library.
+            {props.description}
             <form onSubmit={YTsubmit}>
                 <TextInput onChange={onYTInputChange}
-                           name="Youtube URL"
+                           name={props.placeholder}
                            title="Input is not a valid youtube URL"
                            withLabel={true}
                            pattern={re.source}/>

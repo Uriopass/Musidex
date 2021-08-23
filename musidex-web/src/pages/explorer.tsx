@@ -12,7 +12,7 @@ export type ExplorerProps = {
 const Explorer = (props: ExplorerProps) => {
     const [metadata, syncMetadata] = useContext(MetadataCtx);
     return (
-        <div className={"explorer color-fg " + (props.hidden ? "hidden" : "")}>
+        <div className={"explorer color-fg " + (props.hidden && "hidden")}>
             <div className="explorer-title title">{props.title}</div>
             {
                 metadata.musics.map((music) => {

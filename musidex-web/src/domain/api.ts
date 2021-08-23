@@ -50,7 +50,9 @@ export class MusidexMetadata {
     }
 }
 
-export const MetadataCtx = React.createContext<[MusidexMetadata, () => void]>([emptyMetadata(), () => {return;}]);
+export const MetadataCtx = React.createContext<[MusidexMetadata, () => void]>([emptyMetadata(), () => {
+    return;
+}]);
 
 export function emptyMetadata(): MusidexMetadata {
     return new MusidexMetadata([], [], []);
@@ -73,15 +75,19 @@ export const API = {
         })
     },
 
-    async sendYTUrl(url: string): Promise<Response> {
+    async youtubeUpload(url: string): Promise<Response> {
         return fetch(apiURL + "/api/youtube_upload", {
             method: "post",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                url: url,
-            })
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({url: url,})
+        });
+    },
+
+    async youtubeUploadPlaylist(url: string): Promise<Response> {
+        return fetch(apiURL + "/api/youtube_upload/playlist", {
+            method: "post",
+            headers: {"Content-Type": "application/json",},
+            body: JSON.stringify({url: url,})
         });
     },
 
