@@ -14,10 +14,19 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
         YoutubeDlOutput::Playlist(_) => return Ok(StatusCode::BAD_REQUEST),
         YoutubeDlOutput::SingleVideo(v) => v,
     };
+    if id_exists(c, &v.id)? {
+        return Ok(StatusCode::CONFLICT);
+    }
     let tx = c.transaction()?;
     push_for_treatment(&tx, v)?;
     tx.commit()?;
     Ok(StatusCode::OK)
+}
+
+fn id_exists(c: &Connection, id: &str) -> Result<bool> {
+    Ok(Tag::by_text(c, id)?
+        .into_iter()
+        .any(|t| t.key == TagKey::YoutubeVideoID && t.text.as_deref() == Some(id)))
 }
 
 fn push_for_treatment(c: &Connection, v: SingleVideo) -> Result<()> {
@@ -40,14 +49,18 @@ pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<
     let metadata =
         ytdl_run_with_args(vec!["--flat-playlist", "--yes-playlist", "-J", &url]).await?;
 
-    let tx = c.transaction()?;
     match metadata {
         YoutubeDlOutput::Playlist(p) => {
             for entry in p.entries.into_iter().flatten() {
                 if entry.url.is_none() {
                     continue;
                 }
+                if id_exists(c, &entry.id)? {
+                    continue;
+                }
+                let tx = c.transaction()?;
                 push_for_treatment(&tx, entry)?;
+                tx.commit()?;
             }
         }
         YoutubeDlOutput::SingleVideo(_) => {
@@ -55,6 +68,5 @@ pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<
         }
     }
 
-    tx.commit()?;
     Ok(StatusCode::OK)
 }
