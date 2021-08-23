@@ -33,14 +33,14 @@ impl YoutubeDLWorker {
         let candidates = Self::find_candidates(&c)?;
 
         for cand in candidates {
-            Self::youtube_dl_work(&mut c, cand)?;
+            Self::youtube_dl_work(&mut c, cand).await?;
         }
         Ok(())
     }
 
-    pub fn youtube_dl_work(c: &mut Connection, (id, url): (MusicID, String)) -> Result<()> {
+    pub async fn youtube_dl_work(c: &mut Connection, (id, url): (MusicID, String)) -> Result<()> {
         log::info!("{}", url);
-        let metadata = download(&url)?;
+        let metadata = download(&url).await?;
         log::info!("downloaded metadata");
 
         let tx = c.transaction()?;
