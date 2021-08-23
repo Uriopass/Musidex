@@ -39,6 +39,9 @@ The repo itself.
 ```bash
 git clone https://github.com/Uriopass/Musidex
 cd Musidex
+
+# Prepare the web dependencies
+(cd musidex-web && npm install)
 ```
 
 ### Building and running
