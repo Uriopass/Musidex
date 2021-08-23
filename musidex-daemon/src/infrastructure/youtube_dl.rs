@@ -2,8 +2,9 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
-use std::io::Read;
-use std::process::{Command, Stdio};
+use std::process::Stdio;
+use tokio::io::AsyncReadExt;
+use tokio::process::Command;
 
 #[derive(Debug)]
 pub enum YoutubeDlOutput {
@@ -323,7 +324,7 @@ pub enum Protocol {
     HttpDashSegments,
 }
 
-pub fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
+pub async fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
     let mut child = Command::new("youtube-dl")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -333,9 +334,9 @@ pub fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
     // We don't need to do this for stderr since only stdout has potentially giant JSON.
     let mut stdout = Vec::new();
     let child_stdout = child.stdout.take();
-    std::io::copy(&mut child_stdout.unwrap(), &mut stdout)?;
+    tokio::io::copy(&mut child_stdout.unwrap(), &mut stdout).await?;
 
-    let exit_code = child.wait()?;
+    let exit_code = child.wait().await?;
 
     if exit_code.success() {
         let out = String::from_utf8_lossy(stdout.as_slice());
@@ -353,7 +354,7 @@ pub fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
     } else {
         let mut stderr = vec![];
         if let Some(mut reader) = child.stderr {
-            reader.read_to_end(&mut stderr)?;
+            reader.read_to_end(&mut stderr).await?;
         }
         let stderr = String::from_utf8(stderr).unwrap_or_default();
         Err(anyhow!(

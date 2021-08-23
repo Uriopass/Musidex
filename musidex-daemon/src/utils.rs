@@ -47,7 +47,7 @@ pub fn res_status(status: StatusCode) -> Response<Body> {
 pub async fn get_file_range<P: AsRef<Path>>(
     file_path: P,
     (start, end): (u64, u64),
-) -> std::io::Result<Vec<u8>> {
+) -> tokio::io::Result<Vec<u8>> {
     if end < start {
         return Err(std::io::Error::from(std::io::ErrorKind::InvalidInput));
     }

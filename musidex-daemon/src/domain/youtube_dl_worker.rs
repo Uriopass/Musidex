@@ -1,18 +1,44 @@
 use crate::domain::entity::{MusicID, Source, Tag};
 use crate::domain::{source, tags};
+use crate::infrastructure::db::Db;
 use crate::infrastructure::youtube_dl::{ytdl_run_with_args, SingleVideo, YoutubeDlOutput};
 use anyhow::{Context, Result};
 use rusqlite::Connection;
 use std::convert::TryInto;
+use std::time::Duration;
 
-pub struct YoutubeDLWorker {}
+pub struct YoutubeDLWorker {
+    db: Db,
+}
 
 impl YoutubeDLWorker {
-    pub fn youtube_dl_work(
-        &mut self,
-        c: &mut Connection,
-        (id, url): (MusicID, String),
-    ) -> Result<()> {
+    pub fn new(db: Db) -> Self {
+        YoutubeDLWorker { db }
+    }
+
+    pub fn start(mut self) {
+        let _ = tokio::spawn(async move {
+            loop {
+                tokio::time::sleep(Duration::from_secs(2)).await;
+                let v = self.step().await;
+                if let Err(e) = v {
+                    log::error!("error while running youtubedl worker: {:?}", e);
+                }
+            }
+        });
+    }
+
+    pub async fn step(&mut self) -> Result<()> {
+        let mut c = self.db.get().await;
+        let candidates = Self::find_candidates(&c)?;
+
+        for cand in candidates {
+            Self::youtube_dl_work(&mut c, cand)?;
+        }
+        Ok(())
+    }
+
+    pub fn youtube_dl_work(c: &mut Connection, (id, url): (MusicID, String)) -> Result<()> {
         log::info!("{}", url);
         let metadata = download(&url)?;
         log::info!("downloaded metadata");
@@ -67,7 +93,7 @@ impl YoutubeDLWorker {
         Ok(())
     }
 
-    pub fn find_candidates(&mut self, c: &Connection) -> Result<Vec<(MusicID, String)>> {
+    pub fn find_candidates(c: &Connection) -> Result<Vec<(MusicID, String)>> {
         let mut stmt = c.prepare_cached("SELECT * FROM tags WHERE key='youtube_url';")?;
         let tags = stmt.query_map([], |row| Ok(Into::into(row)))?;
         let mut v = vec![];
@@ -82,7 +108,7 @@ impl YoutubeDLWorker {
     }
 }
 
-pub fn download(url: &str) -> Result<SingleVideo> {
+pub async fn download(url: &str) -> Result<SingleVideo> {
     let metadata = ytdl_run_with_args(vec![
         "-o",
         "storage/%(id)s.%(ext)s",
@@ -93,7 +119,8 @@ pub fn download(url: &str) -> Result<SingleVideo> {
         "--no-progress",
         "--print-json",
         url,
-    ])?;
+    ])
+    .await?;
 
     match metadata {
         YoutubeDlOutput::Playlist(_) => {
@@ -101,10 +128,11 @@ pub fn download(url: &str) -> Result<SingleVideo> {
         }
         YoutubeDlOutput::SingleVideo(mut v) => {
             if v.thumbnail.is_some() {
-                let _ = std::fs::rename(
+                let _ = tokio::fs::rename(
                     format!("storage/{}.jpg", v.id),
                     format!("storage/{}.webp", v.id),
-                );
+                )
+                .await;
                 v.thumbnail_filename = Some(format!("{}.webp", v.id));
             }
             return Ok(v);

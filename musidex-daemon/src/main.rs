@@ -26,6 +26,7 @@ use include_dir::{include_dir, Dir};
 pub static MIGRATIONS: Dir = include_dir!("migrations");
 
 async fn start() -> anyhow::Result<()> {
+    // Init
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
     std::fs::create_dir_all("./storage/").context("could not create storage")?;
@@ -37,15 +38,7 @@ async fn start() -> anyhow::Result<()> {
 
     config::init(&db).await?;
 
-    let mut worker = YoutubeDLWorker {};
-    {
-        let mut c = db.get().await;
-        let candidates = worker.find_candidates(&c)?;
-
-        for cand in candidates {
-            worker.youtube_dl_work(&mut c, cand)?;
-        }
-    }
+    let ytdl_worker = YoutubeDLWorker::new(db.clone());
 
     let mut router = Router::new();
     router
@@ -62,6 +55,8 @@ async fn start() -> anyhow::Result<()> {
     });
 
     let service = router.into_service();
+
+    // Run
     if env_or("USE_HTTPS", false) {
         let tls_accept = infrastructure::tls::TlsAcceptor::new(
             TlsConfigBuilder::new()
@@ -76,6 +71,7 @@ async fn start() -> anyhow::Result<()> {
         return Ok(());
     }
 
+    ytdl_worker.start();
     let server = Server::builder(incoming).serve(service);
     println!("Listening on http://{}", addr);
     server.await?;
