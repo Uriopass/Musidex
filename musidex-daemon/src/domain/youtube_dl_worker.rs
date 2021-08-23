@@ -44,32 +44,25 @@ impl YoutubeDLWorker {
 
         let mut c = db.get().await;
         let tx = c.transaction()?;
-        Tag::insert(
-            &tx,
-            Tag::new_text(id, TagKey::YoutubeVideoID, metadata.id.clone()),
-        )?;
-        let ext = metadata.ext.context("no extension")?;
-        Tag::insert(
-            &tx,
-            Tag::new_text(
-                id,
-                TagKey::from(&*format!("local_{}", ext)),
-                format!("{}.{}", metadata.id, ext),
-            ),
-        )?;
 
         let txb = &tx;
         let add_tag = move |key, value| Tag::insert(txb, Tag::new_text(id, key, value));
 
-        let add_tag_opt = move |key, value| {
+        let add_tag_opt = |key, value| {
             if let Some(v) = value {
-                return Tag::insert(txb, Tag::new_text(id, key, v));
+                return add_tag(key, v);
             }
             Ok(())
         };
 
-        add_tag(TagKey::Title, metadata.title)?;
+        let ext = metadata.ext.context("no extension")?;
+        add_tag(
+            TagKey::Other(format!("local_{}", ext)),
+            format!("{}.{}", metadata.id, ext),
+        )?;
         add_tag_opt(TagKey::Thumbnail, metadata.thumbnail_filename)?;
+        add_tag(TagKey::YoutubeWorkerTreated, s!("true"))?;
+
         if let Some(v) = metadata.duration.and_then(|x| x.as_i64()) {
             Tag::insert(
                 txb,
@@ -91,8 +84,8 @@ impl YoutubeDLWorker {
 
     pub fn find_candidates(c: &Connection) -> Result<Vec<(MusicID, String)>> {
         let mut v = vec![];
-        for tag in Tag::by_key(c, TagKey::YoutubeURL)? {
-            if Tag::has(c, tag.music_id, TagKey::YoutubeVideoID)? {
+        for tag in Tag::by_key(c, TagKey::YoutubeWorkerTreated)? {
+            if tag.text.as_deref().unwrap_or("") != "false" {
                 continue;
             }
             v.push((tag.music_id, unwrap_cont!(tag.text)))

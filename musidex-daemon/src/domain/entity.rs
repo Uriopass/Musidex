@@ -79,6 +79,7 @@ tag_key! {
     LocalOGG => "local_ogg",
     YoutubeVideoID => "youtube_video_id",
     YoutubeURL => "youtube_url",
+    YoutubeWorkerTreated => "youtube_worker_treated",
     Title => "title",
     Thumbnail => "thumbnail",
     Duration => "duration",

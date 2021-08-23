@@ -52,7 +52,7 @@ pub async fn youtube_upload(req: Request<Body>) -> Result<Response<Body>> {
     let db = parts.state::<Db>();
     let mut c = db.get().await;
 
-    Ok(res_status(upload::youtube_upload(&mut c, url)?))
+    Ok(res_status(upload::youtube_upload(&mut c, url).await?))
 }
 
 pub async fn youtube_upload_playlist(req: Request<Body>) -> Result<Response<Body>> {
