@@ -69,7 +69,7 @@ const Player = (props: PlayerProps) => {
                 {
                     (thumbnail !== "") &&
                     <div className="player-current-track-thumbnail">
-                        <img src={"storage/" + thumbnail} />
+                        <img src={"storage/" + thumbnail} alt="song cover" />
                     </div>
                 }
                 <div className="player-current-track-title">
