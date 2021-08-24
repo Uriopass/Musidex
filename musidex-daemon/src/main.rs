@@ -55,7 +55,7 @@ async fn start() -> anyhow::Result<()> {
         .static_files("/storage/", "./storage/")
         .static_files("/", "./web/");
 
-    let addr = ([127, 0, 0, 1], 3200).into();
+    let addr = ([0, 0, 0, 0], env_or("PORT", 3200)).into();
     let incoming = AddrIncoming::bind(&addr).unwrap_or_else(|e| {
         panic!("error binding to {}: {}", addr, e);
     });
