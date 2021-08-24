@@ -9,17 +9,19 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
         return Ok(StatusCode::CONFLICT);
     }
 
-    let metadata = ytdl_run_with_args(vec!["--no-playlist", "-J", &url]).await?;
+    let metadata = ytdl_run_with_args(vec!["--no-playlist", "-J", &url])
+        .await
+        .context("error downloading metadata")?;
     let mut v = match metadata {
         YoutubeDlOutput::Playlist(_) => return Ok(StatusCode::BAD_REQUEST),
         YoutubeDlOutput::SingleVideo(v) => v,
     };
     v.url = Some(url);
-    if id_exists(c, &v.id)? {
+    if id_exists(c, &v.id).context("error checking if id already exists")? {
         return Ok(StatusCode::CONFLICT);
     }
     let tx = c.transaction()?;
-    push_for_treatment(&tx, v)?;
+    push_for_treatment(&tx, v).context("error pushing for treatment")?;
     tx.commit()?;
     Ok(StatusCode::OK)
 }

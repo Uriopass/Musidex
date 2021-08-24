@@ -330,26 +330,30 @@ pub async fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .args(args)
-            .spawn()?;
+            .spawn()
+            .context("error starting youtube-dl, did you install it?")?;
         // Continually read from stdout so that it does not fill up with large output and hang forever.
         // We don't need to do this for stderr since only stdout has potentially giant JSON.
         let mut stdout = Vec::new();
         let child_stdout = child.stdout.take();
-        copy(&mut child_stdout.unwrap(), &mut stdout)?;
+        copy(&mut child_stdout.unwrap(), &mut stdout).context("error reading youtube-dl output")?;
 
-        let exit_code = child.wait()?;
+        let exit_code = child.wait().context("error while waiting for youtube-dl")?;
 
         if exit_code.success() {
             let out = String::from_utf8_lossy(stdout.as_slice());
             let out = out.trim();
-            let value: Value = serde_json::from_str(out).context("error decoding json")?;
+            let value: Value =
+                serde_json::from_str(out).context("error decoding youtubedl json")?;
 
             let is_playlist = value["_type"] == serde_json::json!("playlist");
             if is_playlist {
-                let playlist: Playlist = serde_json::from_value(value)?;
+                let playlist: Playlist =
+                    serde_json::from_value(value).context("error decoding playlist")?;
                 Ok(YoutubeDlOutput::Playlist(playlist))
             } else {
-                let video: SingleVideo = serde_json::from_value(value)?;
+                let video: SingleVideo =
+                    serde_json::from_value(value).context("error decoding singlevideo")?;
                 Ok(YoutubeDlOutput::SingleVideo(video))
             }
         } else {

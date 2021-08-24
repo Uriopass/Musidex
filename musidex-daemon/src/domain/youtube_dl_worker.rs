@@ -39,7 +39,7 @@ impl YoutubeDLWorker {
 
     pub async fn youtube_dl_work(db: &Db, (id, url): (MusicID, String)) -> Result<()> {
         log::info!("{}", url);
-        let metadata = download(&url).await?;
+        let metadata = download(&url).await.context("error downloading metadata")?;
         log::info!("downloaded metadata");
 
         let mut c = db.get().await;
