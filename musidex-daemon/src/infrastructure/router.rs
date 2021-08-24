@@ -287,13 +287,14 @@ impl Service<Request<Body>> for RouterService {
     fn call(&mut self, req: Request<Body>) -> Self::Future {
         let router = self.0.clone();
         let nocors = router.nocors;
+        let route = req.uri().to_string();
         let fut = router.serve(req);
         let fut = async move {
             #[allow(unused_mut)]
             let mut response = match fut.await {
                 Ok(x) => x,
                 Err(e) => {
-                    let e = e.context("got error in request");
+                    let e = e.context(format!("got error in request for route {}", route));
                     log::error!("{:?}", e);
                     Response::builder()
                         .status(500)
