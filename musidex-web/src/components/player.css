@@ -50,6 +50,21 @@
 .player-current-track {
     flex: 1;
     display: flex;
+    max-width: 20%;
+    width: 20%;
+}
+
+.player-current-track-title {
+    padding: 10px;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player-current-track-thumbnail img {
+    object-fit: cover;
+    height: 83px;
+    width: 83px;
 }
 
 .player-button {

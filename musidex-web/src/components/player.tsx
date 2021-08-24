@@ -28,6 +28,7 @@ const Player = (props: PlayerProps) => {
     let duration = tracklist.duration || 0;
     let trackProgress = duration > 0 ? curtime / duration : 0;
     let title = (tracklist.current != null) ? (tracklist.current.tags.get("title")?.text || "No Title") : "";
+    let thumbnail = tracklist.current?.tags.get("thumbnail")?.text || "";
 
     let trackBarOnMove = (ev: React.MouseEvent<HTMLDivElement>) => {
         if (ev.buttons !== 1) return;
@@ -65,9 +66,15 @@ const Player = (props: PlayerProps) => {
     return (
         <div className="player fg color-fg">
             <div className="player-current-track">
-                <span style={{padding: 10}}>
+                {
+                    (thumbnail !== "") &&
+                    <div className="player-current-track-thumbnail">
+                        <img src={"storage/" + thumbnail} />
+                    </div>
+                }
+                <div className="player-current-track-title">
                     {title}
-                </span>
+                </div>
             </div>
             <div className="player-central-menu">
                 <div className="player-controls">
