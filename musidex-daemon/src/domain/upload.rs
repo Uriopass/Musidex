@@ -10,10 +10,11 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
     }
 
     let metadata = ytdl_run_with_args(vec!["--no-playlist", "-J", &url]).await?;
-    let v = match metadata {
+    let mut v = match metadata {
         YoutubeDlOutput::Playlist(_) => return Ok(StatusCode::BAD_REQUEST),
         YoutubeDlOutput::SingleVideo(v) => v,
     };
+    v.url = Some(url);
     if id_exists(c, &v.id)? {
         return Ok(StatusCode::CONFLICT);
     }
