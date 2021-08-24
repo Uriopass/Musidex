@@ -71,7 +71,8 @@ async fn start() -> anyhow::Result<()> {
             TlsConfigBuilder::new()
                 .cert_path(env_or("CERT_PATH", s!("./cert.pem")))
                 .key_path(env_or("CERT_KEY_PATH", s!("./cert.rsa")))
-                .build()?,
+                .build()
+                .context("error building certificates, are you authorized to read them?")?,
             incoming,
         );
         let server = Server::builder(tls_accept).serve(service);
