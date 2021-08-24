@@ -34,6 +34,9 @@ We will provide prebuilt binaries eventually.
 
 ### Dependencies
 
+You can run the `prepare.sh` script after cloning to run all of the following commands,
+or run them yourself with an explanation.
+
 [Youtube-dl](http://ytdl-org.github.io/youtube-dl/download.html) to add music from youtube URLs.
 
 ```bash
