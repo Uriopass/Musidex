@@ -45,7 +45,7 @@ Ffmpeg so that the downloaded audio files are converted to more friendly formats
 Npm for the frontend.  
 Sqlite for the db.
 ```bash
-sudo apt install ffmpeg npm libsqlite3-dev
+sudo apt install ffmpeg npm libsqlite3-dev python3 python-is-python3
 ```
 
 The [rust compiler](https://www.rust-lang.org/tools/install) for the backend.
