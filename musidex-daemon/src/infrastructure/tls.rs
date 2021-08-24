@@ -250,7 +250,7 @@ impl TlsConfigBuilder {
         config
             .set_single_cert_with_ocsp_and_sct(cert, key, self.ocsp_resp, Vec::new())
             .map_err(|err| TlsConfigError::InvalidKey(err))?;
-        config.set_protocols(&["h2".into(), "http/1.1".into()]);
+        config.set_protocols(&["http/1.1".into()]);
         Ok(config)
     }
 }

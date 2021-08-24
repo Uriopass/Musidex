@@ -55,12 +55,15 @@ async fn start() -> anyhow::Result<()> {
         .static_files("/storage/", "./storage/")
         .static_files("/", "./web/");
 
-    let addr = ([0, 0, 0, 0], env_or("PORT", 3200)).into();
+    let port = env_or("PORT", 3200);
+    let addr = ([0, 0, 0, 0], port).into();
     let incoming = AddrIncoming::bind(&addr).unwrap_or_else(|e| {
         panic!("error binding to {}: {}", addr, e);
     });
 
     let service = router.into_service();
+
+    ytdl_worker.start();
 
     // Run
     if env_or("USE_HTTPS", false) {
@@ -73,11 +76,12 @@ async fn start() -> anyhow::Result<()> {
         );
         let server = Server::builder(tls_accept).serve(service);
         println!("Listening on https://{}", addr);
+        if port != 443 {
+            log::warn!("not using port 443 for HTTPS");
+        }
         server.await?;
         return Ok(());
     }
-
-    ytdl_worker.start();
     let server = Server::builder(incoming).serve(service);
     println!("Listening on http://{}", addr);
     server.await?;
