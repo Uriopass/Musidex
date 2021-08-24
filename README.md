@@ -1,7 +1,28 @@
 <img alt="Musidex logo, a capital letter M" height="128" src="musidex-web/public/musidex_logo.png" width="128"/>
 
 # Musidex
-Your musical pokedex, Plex for music
+Your musical pokedex, Plex for music.
+
+Add songs from youtube videos or youtube playlist to your library,
+or import them from your local files.  
+Tags are automatically imported and searchable,
+sync it on your phone to enjoy free offline music, managed from your home server.
+
+### Features
+
+
+- [x] Music streaming
+- [x] Youtube import
+- [x] Web front
+- [ ] Text search
+- [ ] Tag filtering
+- [ ] Playlists through tags/Tag editor
+- [ ] Neural embedding based auto play
+- [ ] MP3 import
+- [ ] Ogg import
+- [ ] FLAC import
+- [ ] Android App
+- [ ] iOS App
 
 # Setting up the server
 
