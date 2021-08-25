@@ -75,6 +75,14 @@ body {
     display: none;
 }
 
+.gray-fg {
+    color: #88909a;
+}
+
+.small {
+    font-size: 0.9rem;
+}
+
 .btn-primary {
     font-size: 1rem;
     border: 1px solid var(--primary);

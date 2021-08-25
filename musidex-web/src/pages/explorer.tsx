@@ -68,6 +68,10 @@ const SongElem = (props: SongElemProps) => {
                 <b>
                     {props.tags.get("title")?.text || "No Title"}
                 </b>
+                <br/>
+                <span className="small gray-fg">
+                    {props.tags.get("artist")?.text || ""}
+                </span>
             </div>
             <div style={{flex: "1", padding: "10px", textAlign: "right"}}>
                 {
