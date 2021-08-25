@@ -345,6 +345,7 @@ impl Service<Request<Body>> for RedirectHTTPSService {
         Box::pin(async move {
             let s = req.uri().path();
             if !s.starts_with("http://") || s.len() < 8 {
+                log::error!("got http request, but failed to send it to https: {}", s);
                 return Ok(res_status(StatusCode::NOT_FOUND));
             }
 
