@@ -28,6 +28,7 @@ const Player = (props: PlayerProps) => {
     let duration = tracklist.duration || 0;
     let trackProgress = duration > 0 ? curtime / duration : 0;
     let title = (tracklist.current != null) ? (tracklist.current.tags.get("title")?.text || "No Title") : "";
+    let artist = tracklist.current?.tags.get("artist")?.text || "";
     let thumbnail = tracklist.current?.tags.get("thumbnail")?.text || "";
 
     let trackBarOnMove = (ev: React.MouseEvent<HTMLDivElement>) => {
@@ -48,7 +49,7 @@ const Player = (props: PlayerProps) => {
         }
         let p = x / ev.currentTarget.offsetWidth;
         p = clamp(p, 0, 1);
-        if(p < 0.02) {
+        if (p < 0.02) {
             p = 0;
         }
         props.onVolumeChange(p);
@@ -56,10 +57,10 @@ const Player = (props: PlayerProps) => {
 
     let volumeIcon = "volume_up";
     let v = tracklist.audio.volume;
-    if(v <= 0.5) {
+    if (v <= 0.5) {
         volumeIcon = "volume_down";
     }
-    if(v <= 0.0) {
+    if (v <= 0.0) {
         volumeIcon = "volume_mute";
     }
 
@@ -69,11 +70,15 @@ const Player = (props: PlayerProps) => {
                 {
                     (thumbnail !== "") &&
                     <div className="player-current-track-thumbnail">
-                        <img src={"storage/" + thumbnail} alt="song cover" />
+                        <img src={"storage/" + thumbnail} alt="song cover"/>
                     </div>
                 }
                 <div className="player-current-track-title">
                     {title}
+                    <br/>
+                    <span className="small gray-fg">
+                        {artist}
+                    </span>
                 </div>
             </div>
             <div className="player-central-menu">
