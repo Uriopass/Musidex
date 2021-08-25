@@ -2,7 +2,15 @@ import './utils.css'
 import React from "react";
 
 export const MaterialIcon = React.memo((props: any) => {
-    return (<span className="material-icons" style={{...props.style, fontSize: props.size}}>{props.name}</span>)
+    let size = props.size || 24;
+    return (<span className="material-icons"
+                  style={{
+                      ...props.style,
+                      fontSize: size,
+                      maxWidth: size,
+                  }}>
+        {props.name}
+    </span>)
 })
 
 type ProgressBarProps = {

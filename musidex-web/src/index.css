@@ -38,6 +38,7 @@ body {
 
 .material-icons {
     user-select: none;
+    overflow: hidden;
 }
 
 .title {
