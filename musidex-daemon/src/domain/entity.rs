@@ -84,7 +84,9 @@ tag_key! {
     YoutubeVideoID => "youtube_video_id",
     YoutubeURL => "youtube_url",
     YoutubeWorkerTreated => "youtube_worker_treated",
+    YoutubeOriginalTitle => "youtube_original_title",
     Title => "title",
+    Artist => "artist",
     Thumbnail => "thumbnail",
     Duration => "duration",
 }
