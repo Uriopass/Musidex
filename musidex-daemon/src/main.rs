@@ -15,7 +15,7 @@ use crate::domain::config;
 use crate::domain::youtube_dl_worker::YoutubeDLWorker;
 use crate::infrastructure::db::Db;
 use crate::infrastructure::migrate::migrate;
-use crate::infrastructure::router::Router;
+use crate::infrastructure::router::{RedirectHTTPSService, Router};
 use crate::infrastructure::tls::TlsConfigBuilder;
 use crate::utils::env_or;
 use anyhow::Context;
@@ -80,7 +80,21 @@ async fn start() -> anyhow::Result<()> {
         if port != 443 {
             log::warn!("not using port 443 for HTTPS");
         }
-        server.await?;
+
+        if env_or("DONT_REDIRECT_HTTP", false) {
+            server.await?;
+            return Ok(());
+        }
+
+        let incoming_http = AddrIncoming::bind(&([0, 0, 0, 0], 80).into()).unwrap_or_else(|e| {
+            panic!("error binding to {}: {}", addr, e);
+        });
+        let red_server = Server::builder(incoming_http).serve(RedirectHTTPSService.into_service());
+
+        let (v1, v2) = futures::join!(red_server, server);
+        v1?;
+        v2?;
+
         return Ok(());
     }
     let server = Server::builder(incoming).serve(service);
