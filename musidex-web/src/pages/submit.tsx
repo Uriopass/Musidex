@@ -29,7 +29,7 @@ type YTSendState =
     | { type: "invalid_url" }
     | { type: "sending" }
     | { type: "accepted" }
-    | { type: "error" };
+    | { type: "error", message?: string };
 
 type YTSubmitProps = {
     description: string,
@@ -66,6 +66,10 @@ const YTSubmit = (props: YTSubmitProps) => {
                 setSendState({type: "accepted"});
                 return;
             }
+            if(res.status === 409) {
+                setSendState({"type": "error", message: "track already in library"});
+                return;
+            }
             console.log("not ok", res);
             setSendState({"type": "error"});
         }).catch((e) => {
@@ -87,7 +91,7 @@ const YTSubmit = (props: YTSubmitProps) => {
             break;
         case "error":
             icon = "error";
-            message = "Server/Network error";
+            message = sendState.message || "Server/Network error";
             color = "var(--danger)";
             break;
         case "sending":
