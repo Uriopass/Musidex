@@ -35,7 +35,7 @@ use futures::FutureExt;
 use hyper::body::Bytes;
 use hyper::header::{
     HeaderValue, ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS,
-    ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_ENCODING, LOCATION,
+    ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_ENCODING, HOST, LOCATION,
 };
 use hyper::http::request::Parts;
 use hyper::http::Extensions;
@@ -343,13 +343,16 @@ impl Service<Request<Body>> for RedirectHTTPSService {
 
     fn call(&mut self, req: Request<Body>) -> Self::Future {
         Box::pin(async move {
-            let s = req.uri().path();
-            if !s.starts_with("http://") || s.len() < 8 {
-                log::error!("got http request, but failed to send it to https: {}", s);
-                return Ok(res_status(StatusCode::NOT_FOUND));
-            }
+            let h = req.headers();
+            let host = match h.get(HOST).and_then(|x| x.to_str().ok()) {
+                Some(x) => x,
+                None => {
+                    log::error!("no host header or invalid host header while redirecting to https");
+                    return Ok(res_status(StatusCode::NOT_FOUND));
+                }
+            };
 
-            let redirect_url = format!("https://{}", &s[8..]);
+            let redirect_url = format!("https://{}{}", host, req.uri());
 
             Response::builder()
                 .status(StatusCode::TEMPORARY_REDIRECT)
