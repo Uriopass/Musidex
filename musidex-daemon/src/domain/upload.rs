@@ -16,7 +16,7 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
         YoutubeDlOutput::Playlist(_) => return Ok(StatusCode::BAD_REQUEST),
         YoutubeDlOutput::SingleVideo(v) => v,
     };
-    v.url = Some(url);
+    v.webpage_url = Some(url);
     if id_exists(c, &v.id).context("error checking if id already exists")? {
         return Ok(StatusCode::CONFLICT);
     }
@@ -38,7 +38,7 @@ fn push_for_treatment(c: &Connection, v: SingleVideo) -> Result<()> {
     let mk_tag = |key, v| Tag::insert(&c, Tag::new_text(id, key, v));
 
     let (title, artist) = parse_title(&v.title, &v);
-    mk_tag(TagKey::YoutubeURL, v.url.context("no url")?)?;
+    mk_tag(TagKey::YoutubeURL, v.webpage_url.context("no url")?)?;
     mk_tag(TagKey::YoutubeVideoID, v.id)?;
     mk_tag(TagKey::YoutubeWorkerTreated, s!("false"))?;
     mk_tag(TagKey::Title, title)?;
@@ -58,15 +58,15 @@ fn parse_title(title: &str, v: &SingleVideo) -> (String, Option<String>) {
     if let (Some(track), Some(artist)) = (&v.track, &v.artist) {
         return (track.clone(), Some(artist.clone()));
     }
-    let (mut gtitle, mut gartist) = guess_title(title);
+    let (mut gtrack, mut gartist) = guess_title(title);
     if let Some(ref x) = v.artist {
         gartist = Some(x.clone());
     }
     if let Some(ref x) = v.track {
-        gtitle = x.clone();
+        gtrack = x.clone();
     }
 
-    (gtitle, gartist)
+    (gtrack, gartist)
 }
 
 /// Guess track and artist from title
@@ -95,7 +95,7 @@ pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<
     match metadata {
         YoutubeDlOutput::Playlist(p) => {
             for entry in p.entries.into_iter().flatten() {
-                if entry.url.is_none() {
+                if entry.url.is_none() || entry.webpage_url.is_none() {
                     continue;
                 }
                 if id_exists(c, &entry.id)? {
