@@ -116,30 +116,47 @@ pub async fn download(url: &str) -> Result<SingleVideo> {
         }
         YoutubeDlOutput::SingleVideo(mut v) => {
             if v.thumbnail.is_some() {
-                let err = try_convert(&v.id)
+                let thumb_name = try_convert(&v.id)
                     .await
                     .context("failed converting thumbnail");
-                if let Err(err) = err {
-                    log::error!("{:?}", err);
+                match thumb_name {
+                    Ok(x) => v.thumbnail_filename = Some(x),
+                    Err(err) => log::error!("{:?}", err),
                 }
-                v.thumbnail_filename = Some(format!("{}.jpg", v.id));
             }
             return Ok(v);
         }
     }
 }
 
-pub async fn try_convert(id: &str) -> Result<()> {
+pub async fn try_convert(id: &str) -> Result<String> {
     let p = format!("storage/{}.jpg", id);
-    let img_data = tokio::fs::read(&p).await?;
+    let pwebp = format!("storage/{}.webp", id);
+    if tokio::fs::File::open(&pwebp).await.is_ok() {
+        tokio::fs::rename(&pwebp, &p)
+            .await
+            .context("couldn't rename image")?;
+    }
+
+    let img_data = tokio::fs::read(&p).await.context("couldn't read data")?;
+    let format = image::guess_format(&*img_data).unwrap_or(ImageFormat::WebP);
+
     let img = {
-        let decoded = webp::Decoder::new(&img_data)
-            .decode()
-            .context("failed decoding webp image")?;
-        decoded.to_image()
+        if format == ImageFormat::WebP {
+            let decoded = webp::Decoder::new(&img_data)
+                .decode()
+                .context("failed decoding webp image")?;
+            decoded.to_image()
+        } else if format == ImageFormat::Jpeg {
+            log::info!("image {} is already a jpeg", &id);
+            return Ok(format!("{}.jpg", id));
+        } else {
+            bail!("couldn't decode image")
+        }
     };
 
     let v = tokio::task::spawn_blocking(move || img.save_with_format(&p, ImageFormat::Jpeg)).await;
     v?.context("failed saving image to jpg")?;
-    Ok(())
+    log::info!("succesfully converted {} to jpg", &id);
+    Ok(format!("{}.jpg", id))
 }
