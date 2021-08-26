@@ -4,7 +4,6 @@ import API, {Tag} from "./api";
 export type Track = {
     id: number;
     tags: Map<string, Tag>;
-    duration?: number;
 }
 
 type Tracklist = {
@@ -64,7 +63,7 @@ export function applyTracklist(tracklist: Tracklist, action: TrackAction): Track
             return {
                 ...tracklist,
                 current: action.track,
-                duration: action.track.duration || 0,
+                duration: action.track.tags.get("duration")?.integer || 0,
                 loading: true,
                 paused: false,
             }
@@ -81,7 +80,9 @@ export function applyTracklist(tracklist: Tracklist, action: TrackAction): Track
             if (!tracklist.audio.paused) {
                 tracklist.loading = false;
             }
-            tracklist.duration = tracklist.audio.duration;
+            if (tracklist.audio.duration) {
+                tracklist.duration = tracklist.audio.duration;
+            }
             return {
                 ...tracklist,
             }

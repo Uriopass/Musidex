@@ -24,7 +24,7 @@ const Player = (props: PlayerProps) => {
     }, [forceUpdate, tracklist.audio])
 
     let curtime = tracklist.audio.currentTime || 0;
-    let duration = tracklist.duration || 0;
+    let duration = tracklist.duration || (tracklist.current?.tags.get("duration")?.integer || 0);
     let trackProgress = duration > 0 ? curtime / duration : 0;
     let title = (tracklist.current != null) ? (tracklist.current.tags.get("title")?.text || "No Title") : "";
     let artist = tracklist.current?.tags.get("artist")?.text || "";
