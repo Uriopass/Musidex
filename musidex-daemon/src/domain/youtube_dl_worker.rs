@@ -64,6 +64,8 @@ impl YoutubeDLWorker {
             format!("{}.{}", metadata.id, ext),
         )?;
         add_tag_opt(TagKey::Thumbnail, metadata.thumbnail_filename)?;
+        add_tag_opt(TagKey::Artist, metadata.artist)?;
+        add_tag_opt(TagKey::Title, metadata.track)?;
         add_tag(TagKey::YoutubeWorkerTreated, s!("true"))?;
 
         if let Some(v) = metadata.duration.and_then(|x| x.as_i64()) {
