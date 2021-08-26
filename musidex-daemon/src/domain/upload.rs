@@ -40,6 +40,9 @@ fn push_for_treatment(c: &Connection, v: SingleVideo) -> Result<()> {
     mk_tag(TagKey::YoutubeVideoID, v.id)?;
     mk_tag(TagKey::YoutubeWorkerTreated, s!("false"))?;
     mk_tag(TagKey::Title, title)?;
+    if let Some(p) = v.playlist_title {
+        mk_tag(TagKey::YoutubePlaylist, p)?;
+    }
     if let Some(artist) = artist {
         mk_tag(TagKey::Artist, artist)?;
     }
@@ -96,12 +99,13 @@ pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<
             if p.entries.as_ref().map(|x| x.is_empty()).unwrap_or(true) {
                 log::warn!("no entries in playlist");
             }
-            for entry in p.entries.into_iter().flatten() {
+            for mut entry in p.entries.into_iter().flatten() {
                 if id_exists(c, &entry.id)? {
                     log::info!("music from playlist was already in library: {}", &entry.id);
                     continue;
                 }
                 let tx = c.transaction()?;
+                entry.playlist_title = p.title.clone();
                 push_for_treatment(&tx, entry)?;
                 tx.commit()?;
             }

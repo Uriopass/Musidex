@@ -96,6 +96,7 @@ tag_key! {
     YoutubeVideoID => "youtube_video_id",
     YoutubeWorkerTreated => "youtube_worker_treated",
     YoutubeOriginalTitle => "youtube_original_title",
+    YoutubePlaylist => "youtube_playlist",
     Title => "title",
     Artist => "artist",
     Thumbnail => "thumbnail",
