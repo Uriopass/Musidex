@@ -93,7 +93,7 @@ export const API = {
 async function fetchJson(url: string): Promise<any | null> {
     try {
         let v = await fetch(url);
-        if (v.status !== 200) {
+        if (!v.ok) {
             console.log("failed fetching " + url);
             return null;
         }

@@ -10,10 +10,14 @@ import {clearInterval} from "timers";
 function App() {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
     let [metadataSc, updateMetadata] = useState(0);
+    let [syncProblem, setSyncProblem] = useState(false);
 
     useEffect(() => {
         API.getMetadata().then((metadata) => {
-            if (metadata == null) return;
+            setSyncProblem(metadata === null);
+            if (metadata === null) {
+                return;
+            }
             setMetadata(metadata);
         })
     }, [metadataSc]);
@@ -35,7 +39,7 @@ function App() {
 
     return (
         <>
-            <Navbar setCurPage={setCurPage} onSync={() => updateMetadata((v) => v+1)}/>
+            <Navbar syncProblem={syncProblem} setCurPage={setCurPage} onSync={() => updateMetadata((v) => v+1)}/>
             <MetadataCtx.Provider value={[metadata, () => updateMetadata((v) => v+1)]}>
                 <TracklistCtx.Provider value={[tracklist, dispatch]}>
                     <div className="scrollable-element content">
