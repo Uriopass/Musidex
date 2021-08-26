@@ -13,12 +13,12 @@ const App = () => {
     let [syncProblem, setSyncProblem] = useState(false);
 
     useEffect(() => {
-        API.getMetadata().then((metadata) => {
-            setSyncProblem(metadata === null);
-            if (metadata === null) {
+        API.getMetadata().then((fmetadata) => {
+            setSyncProblem(fmetadata === null);
+            if (fmetadata === null || fmetadata.hash === metadata.hash) {
                 return;
             }
-            setMetadata(metadata);
+            setMetadata(fmetadata);
         })
     }, [metadataSc]);
 

@@ -16,17 +16,20 @@ export type Tag = {
 type RawMusidexMetadata = {
     musics: number[];
     tags: Tag[];
+    hash: string;
 }
 
 export class MusidexMetadata {
     musics: number[];
     tags: Tag[];
     music_tags_idx: Map<number, Map<string, Tag>>;
+    hash: string;
 
-    constructor(musics: number[], tags: Tag[]) {
+    constructor(musics: number[], tags: Tag[], hash: string) {
         this.musics = musics;
         this.tags = tags;
         this.music_tags_idx = new Map();
+        this.hash = hash;
 
         this.musics.forEach((m) => {
             this.music_tags_idx.set(m, new Map());
@@ -43,7 +46,7 @@ export const MetadataCtx = React.createContext<[MusidexMetadata, () => void]>([e
 }]);
 
 export function emptyMetadata(): MusidexMetadata {
-    return new MusidexMetadata([], []);
+    return new MusidexMetadata([], [], "");
 }
 
 export function buildTrack(id: number, metadata: MusidexMetadata): Track | null {
@@ -59,7 +62,7 @@ export const API = {
     async getMetadata(): Promise<MusidexMetadata | null> {
         return fetchJson(apiURL + "/api/metadata").then((v: RawMusidexMetadata) => {
             if (v == null) return null;
-            return new MusidexMetadata(v.musics, v.tags);
+            return new MusidexMetadata(v.musics, v.tags, v.hash);
         })
     },
 
