@@ -7,7 +7,7 @@ import useLocalStorage from "use-local-storage";
 import PageNavigator, {PageEnum} from "./pages/navigator";
 import {clearInterval} from "timers";
 
-function App() {
+const App = () => {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
     let [metadataSc, updateMetadata] = useState(0);
     let [syncProblem, setSyncProblem] = useState(false);
