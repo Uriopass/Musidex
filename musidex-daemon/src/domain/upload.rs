@@ -12,11 +12,10 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
     let metadata = ytdl_run_with_args(vec!["--no-playlist", "-J", &url])
         .await
         .context("error downloading metadata")?;
-    let mut v = match metadata {
+    let v = match metadata {
         YoutubeDlOutput::Playlist(_) => return Ok(StatusCode::BAD_REQUEST),
         YoutubeDlOutput::SingleVideo(v) => v,
     };
-    v.webpage_url = Some(url);
     if id_exists(c, &v.id).context("error checking if id already exists")? {
         return Ok(StatusCode::CONFLICT);
     }
@@ -38,7 +37,6 @@ fn push_for_treatment(c: &Connection, v: SingleVideo) -> Result<()> {
     let mk_tag = |key, v| Tag::insert(&c, Tag::new_text(id, key, v));
 
     let (title, artist) = parse_title(&v.title, &v);
-    mk_tag(TagKey::YoutubeURL, v.webpage_url.context("no url")?)?;
     mk_tag(TagKey::YoutubeVideoID, v.id)?;
     mk_tag(TagKey::YoutubeWorkerTreated, s!("false"))?;
     mk_tag(TagKey::Title, title)?;
@@ -96,13 +94,11 @@ pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<
     match metadata {
         YoutubeDlOutput::Playlist(p) => {
             if p.entries.as_ref().map(|x| x.is_empty()).unwrap_or(true) {
-                log::error!("no entries in playlist ?");
+                log::warn!("no entries in playlist");
             }
             for entry in p.entries.into_iter().flatten() {
-                if entry.url.is_none() || entry.webpage_url.is_none() {
-                    continue;
-                }
                 if id_exists(c, &entry.id)? {
+                    log::info!("music from playlist was already in library: {}", &entry.id);
                     continue;
                 }
                 let tx = c.transaction()?;

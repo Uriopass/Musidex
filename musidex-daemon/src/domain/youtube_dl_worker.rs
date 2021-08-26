@@ -38,9 +38,11 @@ impl YoutubeDLWorker {
         Ok(())
     }
 
-    pub async fn youtube_dl_work(db: &Db, (id, url): (MusicID, String)) -> Result<()> {
-        log::info!("{}", url);
-        let metadata = download(&url).await.context("error downloading metadata")?;
+    pub async fn youtube_dl_work(db: &Db, (id, vid_id): (MusicID, String)) -> Result<()> {
+        log::info!("{}", vid_id);
+        let metadata = download(&vid_id)
+            .await
+            .context("error downloading metadata")?;
         log::info!("downloaded metadata");
 
         let mut c = db.get().await;
@@ -79,7 +81,7 @@ impl YoutubeDLWorker {
         }
 
         tx.commit()?;
-        log::info!("success downloaded {}", url);
+        log::info!("success downloaded {}", vid_id);
         Ok(())
     }
 
@@ -89,14 +91,14 @@ impl YoutubeDLWorker {
             if tag.text.as_deref().unwrap_or("") != "false" {
                 continue;
             }
-            let url = unwrap_cont!(Tag::by_id_key(c, tag.music_id, TagKey::YoutubeURL)?);
-            v.push((tag.music_id, unwrap_cont!(url.text)));
+            let vid_id = unwrap_cont!(Tag::by_id_key(c, tag.music_id, TagKey::YoutubeVideoID)?);
+            v.push((tag.music_id, unwrap_cont!(vid_id.text)));
         }
         Ok(v)
     }
 }
 
-pub async fn download(url: &str) -> Result<SingleVideo> {
+pub async fn download(vid_id: &str) -> Result<SingleVideo> {
     let metadata = ytdl_run_with_args(vec![
         "-o",
         "storage/%(id)s.%(ext)s",
@@ -109,7 +111,7 @@ pub async fn download(url: &str) -> Result<SingleVideo> {
         "--write-thumbnail",
         "--no-progress",
         "--print-json",
-        url,
+        vid_id,
     ])
     .await?;
 

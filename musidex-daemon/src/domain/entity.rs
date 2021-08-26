@@ -94,7 +94,6 @@ tag_key! {
     LocalM4A => "local_m4a",
     LocalOGG => "local_ogg",
     YoutubeVideoID => "youtube_video_id",
-    YoutubeURL => "youtube_url",
     YoutubeWorkerTreated => "youtube_worker_treated",
     YoutubeOriginalTitle => "youtube_original_title",
     Title => "title",
