@@ -101,9 +101,7 @@ pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {
             )
             .try_into()?,
         );
-        if meta.range_size.0 > 0 && meta.range_size.1 < meta.range_size.2 {
-            *r.status_mut() = StatusCode::PARTIAL_CONTENT;
-        }
+        *r.status_mut() = StatusCode::PARTIAL_CONTENT;
     }
 
     Ok(r)

@@ -46,16 +46,17 @@ pub fn res_status(status: StatusCode) -> Response<Body> {
 pub async fn get_file_range<P: AsRef<Path>>(
     file_path: P,
     (start, end): (u64, u64),
-) -> tokio::io::Result<Vec<u8>> {
+) -> tokio::io::Result<(Vec<u8>, u64)> {
     if end < start {
         return Err(std::io::Error::from(std::io::ErrorKind::InvalidInput));
     }
     let mut f = tokio::fs::File::open(file_path).await?;
+    let tot_size = f.metadata().await?.len();
     let mut buffer = Vec::new();
     f.seek(SeekFrom::Start(start)).await?;
     BufReader::new(f)
         .take(end - start + 1)
         .read_to_end(&mut buffer)
         .await?;
-    Ok(buffer)
+    Ok((buffer, tot_size))
 }

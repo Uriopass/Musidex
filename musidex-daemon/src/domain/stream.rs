@@ -57,11 +57,12 @@ pub async fn stream_music(
             rangev.to_str().unwrap()
         );
         let r = range.get(0).context("no ranges")?;
-        let buf = get_file_range(file_path, (r.start, r.start + r.length)).await?;
-        let len = r.start + buf.len() as u64;
+        let (buf, len) = get_file_range(file_path, (r.start, r.start + r.length)).await?;
         let range_size = (
             r.start,
-            (r.start + r.length).min(len.saturating_sub(1)),
+            (r.start + r.length)
+                .saturating_sub(1)
+                .min(len.saturating_sub(1)),
             len,
         );
         return Ok(MusicMetadata {
