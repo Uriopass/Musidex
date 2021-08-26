@@ -1,5 +1,5 @@
 import './utils.css'
-import React from "react";
+import React, {useCallback, useState} from "react";
 
 export const MaterialIcon = React.memo((props: any) => {
     let size = props.size || 24;
@@ -34,6 +34,12 @@ export function clamp(v: number, lower: number, upper: number) {
     if (v < lower) return lower;
     if (v > upper) return upper;
     return v;
+}
+
+export function useUpdate(): [number, () => void] {
+    let [v, setV] = useState(0);
+    let update = useCallback(() => setV((v) => v+1), [setV]);
+    return [v, update];
 }
 
 export type Setter<T> = React.Dispatch<React.SetStateAction<T>>;

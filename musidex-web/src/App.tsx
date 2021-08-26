@@ -1,34 +1,32 @@
-import {useEffect, useReducer, useState} from 'react';
+import {useCallback, useEffect, useReducer, useState} from 'react';
 import API, {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/api";
 import Navbar from "./components/navbar";
 import Player from "./components/player";
 import {applyTracklist, newTracklist, setupListeners, TracklistCtx} from "./domain/tracklist";
 import useLocalStorage from "use-local-storage";
 import PageNavigator, {PageEnum} from "./pages/navigator";
-import {clearInterval} from "timers";
 
 const App = () => {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
-    let [metadataSc, updateMetadata] = useState(0);
     let [syncProblem, setSyncProblem] = useState(false);
 
-    useEffect(() => {
+    let fetchMetadata = useCallback(() => {
         API.getMetadata().then((fmetadata) => {
-            setSyncProblem(fmetadata === null);
+            let sp = fmetadata === null;
+            if (syncProblem !== sp) {
+                setSyncProblem(sp);
+            }
             if (fmetadata === null || fmetadata.hash === metadata.hash) {
                 return;
             }
             setMetadata(fmetadata);
         })
-    }, [metadataSc]);
+    }, [syncProblem, metadata]);
 
     useEffect(() => {
-        let v = setInterval(() => {
-            updateMetadata((v) => v+1)
-        }, 2000)
-        
+        let v = setInterval(fetchMetadata, 2000);
         return () => clearInterval(v);
-    }, [])
+    }, [fetchMetadata])
 
     let [volume, setVolume] = useLocalStorage("volume", 1);
     let [tracklist, dispatch] = useReducer(applyTracklist, newTracklist());
@@ -39,13 +37,13 @@ const App = () => {
 
     return (
         <>
-            <Navbar syncProblem={syncProblem} setCurPage={setCurPage} onSync={() => updateMetadata((v) => v+1)}/>
-            <MetadataCtx.Provider value={[metadata, () => updateMetadata((v) => v+1)]}>
+            <Navbar syncProblem={syncProblem} setCurPage={setCurPage} onSync={fetchMetadata}/>
+            <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
                 <TracklistCtx.Provider value={[tracklist, dispatch]}>
                     <div className="scrollable-element content">
                         <PageNavigator page={curPage} />
                     </div>
-                    <Player onVolumeChange={(volume) => setVolume(volume)}/>
+                    <Player onVolumeChange={setVolume}/>
                 </TracklistCtx.Provider>
             </MetadataCtx.Provider>
         </>

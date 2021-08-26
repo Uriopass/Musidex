@@ -1,4 +1,4 @@
-import {clamp, MaterialIcon, ProgressBar} from "./utils";
+import {clamp, MaterialIcon, ProgressBar, useUpdate} from "./utils";
 import './player.css'
 import {TracklistCtx} from "../domain/tracklist";
 import React, {useContext, useEffect, useState} from "react";
@@ -16,12 +16,11 @@ interface PlayerProps {
 
 const Player = (props: PlayerProps) => {
     let [tracklist, dispatch] = useContext(TracklistCtx);
-    let forceUpdate = useState(1)[1];
+    let [, forceUpdate] = useUpdate();
 
     useEffect(() => {
-        let h = () => forceUpdate((v) => v + 1);
-        tracklist.audio.addEventListener("timeupdate", h);
-        return () => tracklist.audio.removeEventListener("timeupdate", h);
+        tracklist.audio.addEventListener("timeupdate", forceUpdate);
+        return () => tracklist.audio.removeEventListener("timeupdate", forceUpdate);
     }, [forceUpdate, tracklist.audio])
 
     let curtime = tracklist.audio.currentTime || 0;
