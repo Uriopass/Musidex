@@ -3,9 +3,10 @@ use rusqlite::types::ToSqlOutput;
 use rusqlite::{Row, ToSql};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{Debug, Display, Formatter};
+use std::hash::{Hash, Hasher};
 use std::ops::Deref;
 
-#[derive(Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Debug)]
+#[derive(Copy, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Debug)]
 #[serde(transparent)]
 pub struct MusicID(pub i32);
 
@@ -14,7 +15,7 @@ pub struct Music {
     pub id: MusicID,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Tag {
     pub music_id: MusicID,
     pub key: TagKey,
@@ -26,22 +27,33 @@ pub struct Tag {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub vector: Option<Vec<f32>>,
+    pub vector: Option<Vector>,
 }
 
-impl Eq for Tag {}
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Vector(Vec<f32>);
 
 #[derive(Serialize)]
 pub struct MusidexMetadata {
     pub musics: Vec<MusicID>,
     pub tags: Vec<Tag>,
+    pub hash: String,
+}
+
+impl Eq for Vector {}
+impl Hash for Vector {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        for v in &self.0 {
+            state.write_u32(v.to_bits());
+        }
+    }
 }
 
 macro_rules! tag_key {
     {
      $($key:ident => $name:literal,)+
     } => {
-        #[derive(Clone, Debug, PartialEq, Eq)]
+        #[derive(Clone, Debug, Hash, PartialEq, Eq)]
         pub enum TagKey {
             $($key,)+
             Other(String)
@@ -138,7 +150,7 @@ impl<'a, 'b> From<&'a Row<'b>> for Tag {
                 .and_then(|v| DateTime::parse_from_rfc3339(&v).ok().map(Into::into)),
             vector: row
                 .get_unwrap::<_, Option<Vec<u8>>>("vector")
-                .map(|x| x.iter().map(|&x| x as f32).collect()),
+                .map(|x| Vector(x.iter().map(|&x| x as f32).collect())),
         }
     }
 }
