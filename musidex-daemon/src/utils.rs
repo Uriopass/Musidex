@@ -55,7 +55,7 @@ pub async fn get_file_range<P: AsRef<Path>>(
     let mut buffer = Vec::new();
     f.seek(SeekFrom::Start(start)).await?;
     BufReader::new(f)
-        .take(end - start + 1)
+        .take(end - start)
         .read_to_end(&mut buffer)
         .await?;
     Ok((buffer, tot_size))
