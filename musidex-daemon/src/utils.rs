@@ -20,6 +20,21 @@ macro_rules! unwrap_cont {
     };
 }
 
+macro_rules! unwrap_ret {
+    ($e: expr) => {
+        match $e {
+            Some(x) => x,
+            None => return,
+        }
+    };
+    ($e: expr, $ret:expr) => {
+        match $e {
+            Some(x) => x,
+            None => return $ret,
+        }
+    };
+}
+
 macro_rules! s {
     ($e: expr) => {
         $e.to_string()

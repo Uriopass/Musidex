@@ -19,7 +19,7 @@ impl YoutubeDLWorker {
     pub fn start(mut self) {
         let _ = tokio::spawn(async move {
             loop {
-                tokio::time::sleep(Duration::from_secs(2)).await;
+                tokio::time::sleep(Duration::from_secs(5)).await;
                 let v = self.step().await;
                 if let Err(e) = v {
                     log::error!("error while running youtubedl worker: {:?}", e);
@@ -30,11 +30,8 @@ impl YoutubeDLWorker {
 
     pub async fn step(&mut self) -> Result<()> {
         let c = self.db.get().await;
-        let candidates = Self::find_candidates(&c)?;
-
-        for cand in candidates {
-            Self::youtube_dl_work(&self.db, cand).await?;
-        }
+        let candidate = unwrap_ret!(Self::find_candidate(&c)?, Ok(()));
+        Self::youtube_dl_work(&self.db, candidate).await?;
         Ok(())
     }
 
@@ -87,16 +84,19 @@ impl YoutubeDLWorker {
         Ok(())
     }
 
-    pub fn find_candidates(c: &Connection) -> Result<Vec<(MusicID, String)>> {
-        let mut v = vec![];
-        for tag in Tag::by_key(c, TagKey::YoutubeWorkerTreated)? {
-            if tag.text.as_deref().unwrap_or("") != "false" {
+    pub fn find_candidate(c: &Connection) -> Result<Option<(MusicID, String)>> {
+        for yt_treated in Tag::by_key(c, TagKey::YoutubeWorkerTreated)? {
+            if yt_treated.text.as_deref().unwrap_or("") != "false" {
                 continue;
             }
-            let vid_id = unwrap_cont!(Tag::by_id_key(c, tag.music_id, TagKey::YoutubeVideoID)?);
-            v.push((tag.music_id, unwrap_cont!(vid_id.text)));
+            let vid_id = unwrap_cont!(Tag::by_id_key(
+                c,
+                yt_treated.music_id,
+                TagKey::YoutubeVideoID
+            )?);
+            return Ok(Some((yt_treated.music_id, unwrap_cont!(vid_id.text))));
         }
-        Ok(v)
+        Ok(None)
     }
 }
 
