@@ -78,8 +78,8 @@ const SongElem = (props: SongElemProps) => {
                     playable &&
                     <PlayButton musicID={props.musicID}/>
                 }
-                <button className="player-button" onClick={props.onDelete}>
-                    <MaterialIcon name="remove"/>
+                <button className="player-button" onClick={props.onDelete} title="Remove from library">
+                    <MaterialIcon name="delete"/>
                 </button>
             </div>
         </div>

@@ -11,6 +11,7 @@ export const PlayButton = (props: PlayButtonProps) => {
     let [tracklist, dispatch] = useContext(TracklistCtx);
     let [metadata,] = useContext(MetadataCtx);
     let same_v = (tracklist.current?.id || -1) === props.musicID;
+    let title = metadata.music_tags_idx.get(props.musicID || -1)?.get("title")?.text || "No Title";
 
     let onClick = () => {
         let track = buildTrack(props.musicID, metadata);
@@ -18,25 +19,26 @@ export const PlayButton = (props: PlayButtonProps) => {
         dispatch({action: "play", track: track})
     };
 
-    let chooseIcon = () => {
-        if (same_v) {
-            if (tracklist.loading) {
-                return <MaterialIcon name="pending"/>
-            } else if (tracklist.paused) {
-                return <MaterialIcon name="play_arrow"/>
-            } else {
-                return <MaterialIcon name="pause"/>
-            }
+    let titlePrefix = "Play ";
+    let icon;
+
+    if (same_v) {
+        if (tracklist.loading) {
+            icon = "pending";
+            titlePrefix = "Loading ";
+        } else if (tracklist.paused) {
+            icon = "play_arrow";
         } else {
-            return <MaterialIcon name="play_arrow"/>
+            icon = "pause";
+            titlePrefix = "Pause ";
         }
+    } else {
+        icon = "play_arrow";
     }
 
     return (
-        <button className="player-button" onClick={onClick}>
-            {
-                chooseIcon()
-            }
+        <button className="player-button" onClick={onClick} title={titlePrefix + title}>
+            <MaterialIcon name={icon}/>
         </button>
     )
 }

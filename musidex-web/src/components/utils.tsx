@@ -2,7 +2,7 @@ import './utils.css'
 import React, {useCallback, useState} from "react";
 
 export const MaterialIcon = React.memo((props: any) => {
-    let size = props.size || 24;
+    let size = props.size || 20;
     return (<span className="material-icons"
                   style={{
                       ...props.style,
