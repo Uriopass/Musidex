@@ -26,3 +26,5 @@ dateparser = "0.1.5"
 miniz_oxide = "0.4.4"
 regex = "1.5.4"
 lazy_static = "1.4.0"
+webp = { version = "0.1.3", features=["image"]}
+image = { version = "0.23.14", default-features = false, features=["jpeg"] }

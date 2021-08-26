@@ -2,6 +2,7 @@ use crate::domain::entity::{MusicID, Tag, TagKey};
 use crate::infrastructure::db::Db;
 use crate::infrastructure::youtube_dl::{ytdl_run_with_args, SingleVideo, YoutubeDlOutput};
 use anyhow::{Context, Result};
+use image::ImageFormat;
 use rusqlite::Connection;
 use std::convert::TryInto;
 use std::time::Duration;
@@ -115,14 +116,30 @@ pub async fn download(url: &str) -> Result<SingleVideo> {
         }
         YoutubeDlOutput::SingleVideo(mut v) => {
             if v.thumbnail.is_some() {
-                let _ = tokio::fs::rename(
-                    format!("storage/{}.jpg", v.id),
-                    format!("storage/{}.webp", v.id),
-                )
-                .await;
-                v.thumbnail_filename = Some(format!("{}.webp", v.id));
+                let err = try_convert(&v.id)
+                    .await
+                    .context("failed converting thumbnail");
+                if let Err(err) = err {
+                    log::error!("{:?}", err);
+                }
+                v.thumbnail_filename = Some(format!("{}.jpg", v.id));
             }
             return Ok(v);
         }
     }
+}
+
+pub async fn try_convert(id: &str) -> Result<()> {
+    let p = format!("storage/{}.jpg", id);
+    let img_data = tokio::fs::read(&p).await?;
+    let img = {
+        let decoded = webp::Decoder::new(&img_data)
+            .decode()
+            .context("failed decoding webp image")?;
+        decoded.to_image()
+    };
+
+    let v = tokio::task::spawn_blocking(move || img.save_with_format(&p, ImageFormat::Jpeg)).await;
+    v?.context("failed saving image to jpg")?;
+    Ok(())
 }
