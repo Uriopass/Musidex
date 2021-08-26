@@ -89,11 +89,15 @@ fn guess_title(title: &str) -> (String, Option<String>) {
 }
 
 pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<StatusCode> {
-    let metadata =
-        ytdl_run_with_args(vec!["--flat-playlist", "--yes-playlist", "-J", &url]).await?;
+    let metadata = ytdl_run_with_args(vec!["--flat-playlist", "--yes-playlist", "-J", &url])
+        .await
+        .context("failed reading playlist metadata")?;
 
     match metadata {
         YoutubeDlOutput::Playlist(p) => {
+            if p.entries.as_ref().map(|x| x.is_empty()).unwrap_or(true) {
+                log::error!("no entries in playlist ?");
+            }
             for entry in p.entries.into_iter().flatten() {
                 if entry.url.is_none() || entry.webpage_url.is_none() {
                     continue;
