@@ -102,6 +102,9 @@ pub async fn download(url: &str) -> Result<SingleVideo> {
         "storage/%(id)s.%(ext)s",
         "-f",
         "bestaudio",
+        "--audio-format",
+        "mp3",
+        "--extract-audio",
         "--no-playlist",
         "--write-thumbnail",
         "--no-progress",
@@ -124,6 +127,12 @@ pub async fn download(url: &str) -> Result<SingleVideo> {
                     Err(err) => log::error!("{:?}", err),
                 }
             }
+            if tokio::fs::metadata(format!("storage/{}.mp3", &v.id))
+                .await
+                .is_ok()
+            {
+                v.ext = Some(s!("mp3"));
+            }
             return Ok(v);
         }
     }
@@ -132,7 +141,7 @@ pub async fn download(url: &str) -> Result<SingleVideo> {
 pub async fn try_convert(id: &str) -> Result<String> {
     let p = format!("storage/{}.jpg", id);
     let pwebp = format!("storage/{}.webp", id);
-    if tokio::fs::File::open(&pwebp).await.is_ok() {
+    if tokio::fs::metadata(&pwebp).await.is_ok() {
         tokio::fs::rename(&pwebp, &p)
             .await
             .context("couldn't rename image")?;

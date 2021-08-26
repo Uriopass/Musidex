@@ -325,6 +325,9 @@ use std::process::{Command, Stdio};
 
 pub async fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
     let args: Vec<_> = args.into_iter().map(ToString::to_string).collect();
+
+    log::info!("running yt dl with args: {}", args.join(" "));
+
     tokio::task::spawn_blocking(move || {
         let mut child = Command::new("youtube-dl")
             .stdout(Stdio::piped())
