@@ -71,7 +71,7 @@ fn parse_title(title: &str, v: &SingleVideo) -> (String, Option<String>) {
 fn guess_title(title: &str) -> (String, Option<String>) {
     let title = OFFICIAL_REMOVER.replace_all(title, "");
     let title = title.trim();
-    let sp: Vec<_> = title.splitn(2, |x| x == '-' || x == '•').collect();
+    let sp: Vec<_> = title.splitn(2, " - ").collect();
 
     if sp.len() == 2 {
         let artist = sp[0].trim();
@@ -180,6 +180,10 @@ mod tests {
             "Mr. Blue. Sky",
             "a -",
             "-",
+            "a-a",
+            "a -ba",
+            "a- ba",
+            "Princess Mononoke Suite「03. TA-TA-RI-GAMI (The Demon God)」",
             "",
         ];
 
