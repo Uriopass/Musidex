@@ -1,5 +1,6 @@
 import React from "react";
 import API, {Tag} from "./api";
+import {DecideNextCallback} from "./tracklist";
 
 export type Track = {
     id: number;
@@ -7,21 +8,21 @@ export type Track = {
 }
 
 type TrackPlayer = {
-    current: Track | null;
+    current: Track | undefined;
     duration: number;
     paused: boolean;
     loading: boolean;
     audio: HTMLAudioElement;
 }
 
-type TrackPlayerAction =
+export type TrackPlayerAction =
     { action: "play", track: Track }
     | { action: "audioTick" }
     | { action: "setTime", time: number }
 
 export function newTrackPlayer(): TrackPlayer {
     return {
-        current: null,
+        current: undefined,
         audio: new Audio(),
         duration: 0,
         paused: true,
@@ -29,11 +30,11 @@ export function newTrackPlayer(): TrackPlayer {
     }
 }
 
-export function setupListeners(trackplayer: TrackPlayer, dispatch: React.Dispatch<TrackPlayerAction>) {
+export function setupListeners(trackplayer: TrackPlayer, onNext: DecideNextCallback, dispatch: React.Dispatch<TrackPlayerAction>) {
     trackplayer.audio.onloadeddata = () => dispatch({action: "audioTick"});
     trackplayer.audio.onplaying = () => dispatch({action: "audioTick"});
     trackplayer.audio.onpause = () => dispatch({action: "audioTick"});
-    trackplayer.audio.onended = () => dispatch({action: "audioTick"});
+    trackplayer.audio.onended = onNext;
     trackplayer.audio.oncanplay = () => {
         trackplayer.loading = false;
         if (!trackplayer.paused) {
@@ -46,7 +47,7 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
     switch (action.action) {
         case "play":
             if (action.track.id < 0) return trackplayer;
-            if (trackplayer.current && (trackplayer.current.id === action.track.id)) {
+            if (trackplayer.current?.id === action.track.id) {
                 if (trackplayer.paused) {
                     trackplayer.audio.play().catch((e) => console.log(e));
                 } else {
@@ -73,7 +74,7 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
                 ...trackplayer
             }
         case "audioTick":
-            if (trackplayer.current === null) return trackplayer;
+            if (trackplayer.current === undefined) return trackplayer;
             if (trackplayer.audio.ended) {
                 trackplayer.paused = true;
             }

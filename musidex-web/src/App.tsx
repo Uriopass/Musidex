@@ -5,10 +5,16 @@ import Player from "./components/player";
 import {applyTrackPlayer, newTrackPlayer, setupListeners, TrackplayerCtx} from "./domain/trackplayer";
 import useLocalStorage from "use-local-storage";
 import PageNavigator, {PageEnum} from "./pages/navigator";
+import Tracklist, {emptyTracklist, useDecideNextCallback} from "./domain/tracklist";
 
 const App = () => {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
     let [syncProblem, setSyncProblem] = useState(false);
+    let [volume, setVolume] = useLocalStorage("volume", 1);
+    let [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
+    let [list, setList] = useState<Tracklist>(emptyTracklist())
+    let [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
+    let onNext = useDecideNextCallback(list, setList, dispatchPlayer, metadata, trackplayer.current?.id);
 
     let fetchMetadata = useCallback(() => {
         API.getMetadata().then((fmetadata) => {
@@ -28,22 +34,18 @@ const App = () => {
         return () => clearInterval(v);
     }, [fetchMetadata])
 
-    let [volume, setVolume] = useLocalStorage("volume", 1);
-    let [trackplayer, dispatch] = useReducer(applyTrackPlayer, newTrackPlayer());
-    let [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
-
     trackplayer.audio.volume = volume;
-    setupListeners(trackplayer, dispatch);
+    setupListeners(trackplayer, onNext, dispatchPlayer);
 
     return (
         <>
             <Navbar syncProblem={syncProblem} setCurPage={setCurPage} onSync={fetchMetadata}/>
             <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
-                <TrackplayerCtx.Provider value={[trackplayer, dispatch]}>
+                <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
                     <div className="scrollable-element content">
                         <PageNavigator page={curPage} />
                     </div>
-                    <Player onVolumeChange={setVolume}/>
+                    <Player onVolumeChange={setVolume} onNext={onNext}/>
                 </TrackplayerCtx.Provider>
             </MetadataCtx.Provider>
         </>

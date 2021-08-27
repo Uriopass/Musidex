@@ -1,7 +1,7 @@
 import {clamp, MaterialIcon, ProgressBar, useUpdate} from "./utils";
 import './player.css'
 import {TrackplayerCtx} from "../domain/trackplayer";
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useEffect} from "react";
 import {PlayButton} from "./playbutton";
 
 function timeFormat(total: number): string {
@@ -12,6 +12,7 @@ function timeFormat(total: number): string {
 
 interface PlayerProps {
     onVolumeChange: (volume: number) => void;
+    onNext: () => void;
 }
 
 const Player = (props: PlayerProps) => {
@@ -26,7 +27,7 @@ const Player = (props: PlayerProps) => {
     let curtime = trackplayer.audio.currentTime || 0;
     let duration = trackplayer.duration || (trackplayer.current?.tags.get("duration")?.integer || 0);
     let trackProgress = duration > 0 ? curtime / duration : 0;
-    let title = (trackplayer.current != null) ? (trackplayer.current.tags.get("title")?.text || "No Title") : "";
+    let title = (trackplayer.current !== undefined) ? (trackplayer.current.tags.get("title")?.text || "No Title") : "";
     let artist = trackplayer.current?.tags.get("artist")?.text || "";
     let thumbnail = trackplayer.current?.tags.get("thumbnail")?.text || "";
 
@@ -82,12 +83,14 @@ const Player = (props: PlayerProps) => {
             </div>
             <div className="player-central-menu">
                 <div className="player-controls">
-                    <button className="player-button" onClick={() => console.log("prev")}><MaterialIcon size={20}
-                                                                                                        name="skip_previous"/>
+                    <button className="player-button" onClick={() => console.log("prev")}>
+                        <MaterialIcon size={20}
+                                      name="skip_previous"/>
                     </button>
                     <PlayButton musicID={trackplayer.current?.id || -2}/>
-                    <button className=" player-button" onClick={() => console.log("next")}><MaterialIcon size={20}
-                                                                                                         name=" skip_next"/>
+                    <button className=" player-button" onClick={props.onNext}>
+                        <MaterialIcon size={20}
+                                      name=" skip_next"/>
                     </button>
                 </div>
                 <div className="player-track-bar">
