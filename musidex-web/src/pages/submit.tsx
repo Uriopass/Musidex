@@ -26,7 +26,6 @@ const Submit = (props: any) => {
 
 type YTSendState =
     { type: "waiting_for_url" }
-    | { type: "invalid_url" }
     | { type: "sending" }
     | { type: "accepted" }
     | { type: "error", message?: string };
@@ -55,10 +54,6 @@ const YTSubmit = (props: YTSubmitProps) => {
             setSendState({type: "waiting_for_url"});
             return;
         }
-        if (!re.test(v)) {
-            setSendState({type: "invalid_url"});
-            return;
-        }
         setSendState({type: "sending"});
         props.uploadAPI(v).then((res: Response) => {
             if (res.ok) {
@@ -82,11 +77,6 @@ const YTSubmit = (props: YTSubmitProps) => {
     let color: string = "var(--color-fg)";
     switch (sendState.type) {
         case "waiting_for_url":
-            break;
-        case "invalid_url":
-            icon = "error";
-            message = "Invalid URL";
-            color = "var(--danger)";
             break;
         case "error":
             icon = "error";
