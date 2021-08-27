@@ -5,7 +5,7 @@ import Player from "./components/player";
 import {applyTrackPlayer, newTrackPlayer, setupListeners, TrackplayerCtx} from "./domain/trackplayer";
 import useLocalStorage from "use-local-storage";
 import PageNavigator, {PageEnum} from "./pages/navigator";
-import Tracklist, {emptyTracklist, useDecideNextCallback} from "./domain/tracklist";
+import Tracklist, {emptyTracklist, useCanPrev, useNextTrackCallback, usePrevTrackCallback} from "./domain/tracklist";
 
 const App = () => {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
@@ -14,7 +14,9 @@ const App = () => {
     let [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     let [list, setList] = useState<Tracklist>(emptyTracklist())
     let [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
-    let onNext = useDecideNextCallback(list, setList, dispatchPlayer, metadata, trackplayer.current?.id);
+    let onNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, trackplayer.current?.id);
+    let onPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
+    let canPrev = useCanPrev(list);
 
     let fetchMetadata = useCallback(() => {
         API.getMetadata().then((fmetadata) => {
@@ -45,7 +47,7 @@ const App = () => {
                     <div className="scrollable-element content">
                         <PageNavigator page={curPage}/>
                     </div>
-                    <Player onVolumeChange={setVolume} onNext={onNext}/>
+                    <Player onVolumeChange={setVolume} onNext={onNext} onPrev={onPrev} canPrev={canPrev}/>
                 </TrackplayerCtx.Provider>
             </MetadataCtx.Provider>
         </>

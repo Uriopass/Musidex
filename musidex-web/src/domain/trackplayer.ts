@@ -1,6 +1,6 @@
 import React from "react";
 import API, {Tag} from "./api";
-import {DecideNextCallback} from "./tracklist";
+import {NextTrackCallback} from "./tracklist";
 
 export type Track = {
     id: number;
@@ -30,7 +30,7 @@ export function newTrackPlayer(): TrackPlayer {
     }
 }
 
-export function setupListeners(trackplayer: TrackPlayer, onNext: DecideNextCallback, dispatch: React.Dispatch<TrackPlayerAction>) {
+export function setupListeners(trackplayer: TrackPlayer, onNext: NextTrackCallback, dispatch: React.Dispatch<TrackPlayerAction>) {
     trackplayer.audio.onloadeddata = () => dispatch({action: "audioTick"});
     trackplayer.audio.onplaying = () => dispatch({action: "audioTick"});
     trackplayer.audio.onpause = () => dispatch({action: "audioTick"});

@@ -13,6 +13,8 @@ function timeFormat(total: number): string {
 interface PlayerProps {
     onVolumeChange: (volume: number) => void;
     onNext: () => void;
+    onPrev: () => void;
+    canPrev: () => boolean;
 }
 
 const Player = (props: PlayerProps) => {
@@ -83,7 +85,7 @@ const Player = (props: PlayerProps) => {
             </div>
             <div className="player-central-menu">
                 <div className="player-controls">
-                    <button className="player-button" onClick={() => console.log("prev")}>
+                    <button className="player-button" onClick={props.onPrev} disabled={props.canPrev()}>
                         <MaterialIcon size={20}
                                       name="skip_previous"/>
                     </button>

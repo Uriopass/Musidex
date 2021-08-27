@@ -15,15 +15,18 @@ export function emptyTracklist(): Tracklist {
     }
 }
 
-export type DecideNextCallback = () => void;
+export type NextTrackCallback = () => void;
+export type PrevTrackCallback = () => void;
 
-export function useDecideNextCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, current?: number): DecideNextCallback {
+export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, current?: number): NextTrackCallback {
     return useCallback(() => {
         const list = {
             ...curlist,
         };
         if (current !== undefined) {
-            list.last_played = list.last_played.slice(1);
+            if(list.last_played.length > list.last_played_maxsize) {
+                list.last_played = list.last_played.slice(1);
+            }
             list.last_played.push(current);
         }
 
@@ -45,6 +48,27 @@ export function useDecideNextCallback(curlist: Tracklist, setList: Setter<Trackl
             dispatch({action: "play", track: {id: maxmusic, tags: tags}})
         }
     }, [curlist, setList, metadata, current, dispatch])
+}
+
+export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata): PrevTrackCallback {
+    return useCallback(() => {
+        const list = {
+            ...curlist,
+        };
+        const prev_music = list.last_played.pop();
+
+        if (prev_music !== undefined) {
+            setList(list);
+            let tags = metadata.music_tags_idx.get(prev_music) || new Map();
+            dispatch({action: "play", track: {id: prev_music, tags: tags}})
+        }
+    }, [curlist, setList, metadata, dispatch])
+}
+
+export function useCanPrev(curlist: Tracklist): () => boolean {
+    return useCallback(() => {
+        return curlist.last_played.length === 0;
+    }, [curlist])
 }
 
 export default Tracklist;

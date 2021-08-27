@@ -92,3 +92,8 @@
     color: var(--primary);
     transition: 0.2s;
 }
+
+.player-button:disabled {
+    border-color: gray;
+    color: gray;
+}
