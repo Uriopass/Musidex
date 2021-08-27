@@ -16,7 +16,7 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
         YoutubeDlOutput::Playlist(_) => return Ok(StatusCode::BAD_REQUEST),
         YoutubeDlOutput::SingleVideo(v) => v,
     };
-    if id_exists(c, &v.id).context("error checking if id already exists")? {
+    if id_exists(c, &v.id)? {
         return Ok(StatusCode::CONFLICT);
     }
     let tx = c.transaction()?;
@@ -26,9 +26,10 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
 }
 
 fn id_exists(c: &Connection, id: &str) -> Result<bool> {
-    Ok(Tag::by_text(c, id)?
+    Ok(Tag::by_text(c, id)
+        .context("error getting ids")?
         .into_iter()
-        .any(|t| t.key == TagKey::YoutubeVideoID && t.text.as_deref() == Some(id)))
+        .any(|t| t.key == TagKey::YoutubeDLVideoID && t.text.as_deref() == Some(id)))
 }
 
 fn push_for_treatment(c: &Connection, v: SingleVideo) -> Result<()> {
@@ -37,16 +38,17 @@ fn push_for_treatment(c: &Connection, v: SingleVideo) -> Result<()> {
     let mk_tag = |key, v| Tag::insert(&c, Tag::new_text(id, key, v));
 
     let (title, artist) = parse_title(&v.title, &v);
-    mk_tag(TagKey::YoutubeVideoID, v.id)?;
-    mk_tag(TagKey::YoutubeWorkerTreated, s!("false"))?;
+    mk_tag(TagKey::YoutubeDLURL, v.url.context("no url")?)?;
+    mk_tag(TagKey::YoutubeDLVideoID, v.id)?;
+    mk_tag(TagKey::YoutubeDLWorkerTreated, s!("false"))?;
     mk_tag(TagKey::Title, title)?;
     if let Some(p) = v.playlist_title {
-        mk_tag(TagKey::YoutubePlaylist, p)?;
+        mk_tag(TagKey::YoutubeDLPlaylist, p)?;
     }
     if let Some(artist) = artist {
         mk_tag(TagKey::Artist, artist)?;
     }
-    mk_tag(TagKey::YoutubeOriginalTitle, v.title)?;
+    mk_tag(TagKey::YoutubeDLOriginalTitle, v.title)?;
     Ok(())
 }
 

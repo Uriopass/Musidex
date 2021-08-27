@@ -48,7 +48,6 @@ const YTSubmit = (props: YTSubmitProps) => {
 
         console.log(ytUrl);
     };
-    const re = new RegExp(/^(https:\/\/)?(www\.)?(youtu|youtube)\.(com|be)\b[-a-zA-Z0-9@:%_+.~#?&/=]*/);
 
     const onYTInputChange = (v: string) => {
         setYTUrl(v);
@@ -116,8 +115,7 @@ const YTSubmit = (props: YTSubmitProps) => {
                 <TextInput onChange={onYTInputChange}
                            name={props.placeholder}
                            title="Input is not a valid youtube URL"
-                           withLabel={true}
-                           pattern={re.source}/>
+                           withLabel={true}/>
             </form>
             <p style={{fontSize: "20px", display: "flex", alignItems: "center", color: color}}>
                 <MaterialIcon name={icon} size="25px"/>

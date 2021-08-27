@@ -35,9 +35,9 @@ impl YoutubeDLWorker {
         Ok(())
     }
 
-    pub async fn youtube_dl_work(db: &Db, (id, vid_id): (MusicID, String)) -> Result<()> {
-        log::info!("{}", vid_id);
-        let metadata = download(&vid_id)
+    pub async fn youtube_dl_work(db: &Db, (id, vid_url): (MusicID, String)) -> Result<()> {
+        log::info!("{}", vid_url);
+        let metadata = download(&vid_url)
             .await
             .context("error downloading metadata")?;
         log::info!("downloaded metadata");
@@ -63,7 +63,7 @@ impl YoutubeDLWorker {
         add_tag_opt(TagKey::Thumbnail, metadata.thumbnail_filename)?;
         add_tag_opt(TagKey::Artist, metadata.artist)?;
         add_tag_opt(TagKey::Title, metadata.track)?;
-        add_tag(TagKey::YoutubeWorkerTreated, s!("true"))?;
+        add_tag(TagKey::YoutubeDLWorkerTreated, s!("true"))?;
 
         if let Some(v) = metadata.duration.and_then(|x| x.as_i64()) {
             Tag::insert(
@@ -80,27 +80,27 @@ impl YoutubeDLWorker {
         }
 
         tx.commit()?;
-        log::info!("success downloaded {}", vid_id);
+        log::info!("success downloaded {}", vid_url);
         Ok(())
     }
 
     pub fn find_candidate(c: &Connection) -> Result<Option<(MusicID, String)>> {
-        for yt_treated in Tag::by_key(c, TagKey::YoutubeWorkerTreated)? {
+        for yt_treated in Tag::by_key(c, TagKey::YoutubeDLWorkerTreated)? {
             if yt_treated.text.as_deref().unwrap_or("") != "false" {
                 continue;
             }
-            let vid_id = unwrap_cont!(Tag::by_id_key(
+            let vid_url = unwrap_cont!(Tag::by_id_key(
                 c,
                 yt_treated.music_id,
-                TagKey::YoutubeVideoID
+                TagKey::YoutubeDLURL
             )?);
-            return Ok(Some((yt_treated.music_id, unwrap_cont!(vid_id.text))));
+            return Ok(Some((yt_treated.music_id, unwrap_cont!(vid_url.text))));
         }
         Ok(None)
     }
 }
 
-pub async fn download(vid_id: &str) -> Result<SingleVideo> {
+pub async fn download(vid_url: &str) -> Result<SingleVideo> {
     let metadata = ytdl_run_with_args(vec![
         "-o",
         "storage/%(id)s.%(ext)s",
@@ -113,7 +113,7 @@ pub async fn download(vid_id: &str) -> Result<SingleVideo> {
         "--write-thumbnail",
         "--no-progress",
         "--print-json",
-        vid_id,
+        vid_url,
     ])
     .await?;
 
