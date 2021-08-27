@@ -9,7 +9,7 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
         return Ok(StatusCode::CONFLICT);
     }
 
-    let metadata = ytdl_run_with_args(vec!["--no-playlist", "-J", &url])
+    let metadata = ytdl_run_with_args(vec!["-f", "bestaudio", "--no-playlist", "-J", &url])
         .await
         .context("error downloading metadata")?;
     let v = match metadata {
