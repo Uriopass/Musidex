@@ -43,7 +43,7 @@ const App = () => {
             <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
                 <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
                     <div className="scrollable-element content">
-                        <PageNavigator page={curPage} />
+                        <PageNavigator page={curPage}/>
                     </div>
                     <Player onVolumeChange={setVolume} onNext={onNext}/>
                 </TrackplayerCtx.Provider>

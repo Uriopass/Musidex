@@ -69,6 +69,7 @@
 .player-current-track-thumbnail {
     display: flex;
 }
+
 .player-current-track-thumbnail img {
     object-fit: cover;
     height: 83px;

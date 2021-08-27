@@ -42,7 +42,7 @@ export function setupListeners(trackplayer: TrackPlayer, onNext: DecideNextCallb
         }
     }
     document.body.onkeydown = (e) => {
-        if (e.code === "Space" || e.code == "KeyK") {
+        if (e.code === "Space" || e.code === "KeyK") {
             e.preventDefault();
             if (!trackplayer.current) {
                 onNext();

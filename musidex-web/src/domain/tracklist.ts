@@ -40,7 +40,7 @@ export function useDecideNextCallback(curlist: Tracklist, setList: Setter<Trackl
         }
 
         setList(list);
-        if(maxmusic !== undefined) {
+        if (maxmusic !== undefined) {
             let tags = metadata.music_tags_idx.get(maxmusic) || new Map();
             dispatch({action: "play", track: {id: maxmusic, tags: tags}})
         }

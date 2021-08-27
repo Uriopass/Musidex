@@ -25,7 +25,8 @@ const Navbar = React.memo((props: NavbarProps) => {
                 <button onClick={() => props.setCurPage("submit")} title="Add musics to the library">
                     <MaterialIcon name="file_upload" size={25}/>
                 </button>
-                <button onClick={() => props.onSync()} style={syncStyle} title={props.syncProblem ? "There is a problem connecting to the server" : ""}>
+                <button onClick={() => props.onSync()} style={syncStyle}
+                        title={props.syncProblem ? "There is a problem connecting to the server" : ""}>
                     <MaterialIcon name={props.syncProblem ? "sync_problem" : "sync"} size={25}/>
                 </button>
             </NavbarElement>
@@ -33,7 +34,7 @@ const Navbar = React.memo((props: NavbarProps) => {
                 <TextInput onChange={(v) => console.log("search v changed", v)} name="Search" minWidth="50%"/>
                 <MaterialIcon name="search" style={{marginLeft: "25px"}}/>
             </NavbarElement>
-            <NavbarElement size="1" />
+            <NavbarElement size="1"/>
         </ul>
     )
 })

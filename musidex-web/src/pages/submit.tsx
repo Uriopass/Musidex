@@ -66,7 +66,7 @@ const YTSubmit = (props: YTSubmitProps) => {
                 setSendState({type: "accepted"});
                 return;
             }
-            if(res.status === 409) {
+            if (res.status === 409) {
                 setSendState({"type": "error", message: "track already in library"});
                 return;
             }

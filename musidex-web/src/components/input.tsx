@@ -14,7 +14,8 @@ const TextInput = React.memo((props: TextInputProps) => {
     let id = "form_id_" + props.name.toLowerCase();
     const showl = props.withLabel === true;
     return (
-        <div className={"form_group field "+(showl ? " form_show_label": "")} style={{minWidth: props.minWidth || 0}}>
+        <div className={"form_group field " + (showl ? " form_show_label" : "")}
+             style={{minWidth: props.minWidth || 0}}>
             <input type="input"
                    onChange={(ev) => props.onChange(ev.target.value)}
                    className="form_field"
