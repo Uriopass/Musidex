@@ -1,5 +1,5 @@
 import {useContext} from "react";
-import {TracklistCtx} from "../domain/tracklist";
+import {TrackplayerCtx} from "../domain/trackplayer";
 import {buildTrack, MetadataCtx} from "../domain/api";
 import {MaterialIcon} from "./utils";
 
@@ -8,9 +8,9 @@ export type PlayButtonProps = {
 }
 
 export const PlayButton = (props: PlayButtonProps) => {
-    let [tracklist, dispatch] = useContext(TracklistCtx);
+    let [trackplayer, dispatch] = useContext(TrackplayerCtx);
     let [metadata,] = useContext(MetadataCtx);
-    let same_v = (tracklist.current?.id || -1) === props.musicID;
+    let same_v = (trackplayer.current?.id || -1) === props.musicID;
     let title = metadata.music_tags_idx.get(props.musicID || -1)?.get("title")?.text || "No Title";
 
     let onClick = () => {
@@ -23,10 +23,10 @@ export const PlayButton = (props: PlayButtonProps) => {
     let icon;
 
     if (same_v) {
-        if (tracklist.loading) {
+        if (trackplayer.loading) {
             icon = "pending";
             titlePrefix = "Loading ";
-        } else if (tracklist.paused) {
+        } else if (trackplayer.paused) {
             icon = "play_arrow";
         } else {
             icon = "pause";

@@ -1,4 +1,4 @@
-import {Track} from "./tracklist";
+import {Track} from "./trackplayer";
 import React from "react";
 
 let apiURL = window.location.origin;

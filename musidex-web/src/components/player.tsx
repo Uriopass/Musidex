@@ -1,6 +1,6 @@
 import {clamp, MaterialIcon, ProgressBar, useUpdate} from "./utils";
 import './player.css'
-import {TracklistCtx} from "../domain/tracklist";
+import {TrackplayerCtx} from "../domain/trackplayer";
 import React, {useContext, useEffect, useState} from "react";
 import {PlayButton} from "./playbutton";
 
@@ -15,20 +15,20 @@ interface PlayerProps {
 }
 
 const Player = (props: PlayerProps) => {
-    let [tracklist, dispatch] = useContext(TracklistCtx);
+    let [trackplayer, dispatch] = useContext(TrackplayerCtx);
     let [, forceUpdate] = useUpdate();
 
     useEffect(() => {
-        tracklist.audio.addEventListener("timeupdate", forceUpdate);
-        return () => tracklist.audio.removeEventListener("timeupdate", forceUpdate);
-    }, [forceUpdate, tracklist.audio])
+        trackplayer.audio.addEventListener("timeupdate", forceUpdate);
+        return () => trackplayer.audio.removeEventListener("timeupdate", forceUpdate);
+    }, [forceUpdate, trackplayer.audio])
 
-    let curtime = tracklist.audio.currentTime || 0;
-    let duration = tracklist.duration || (tracklist.current?.tags.get("duration")?.integer || 0);
+    let curtime = trackplayer.audio.currentTime || 0;
+    let duration = trackplayer.duration || (trackplayer.current?.tags.get("duration")?.integer || 0);
     let trackProgress = duration > 0 ? curtime / duration : 0;
-    let title = (tracklist.current != null) ? (tracklist.current.tags.get("title")?.text || "No Title") : "";
-    let artist = tracklist.current?.tags.get("artist")?.text || "";
-    let thumbnail = tracklist.current?.tags.get("thumbnail")?.text || "";
+    let title = (trackplayer.current != null) ? (trackplayer.current.tags.get("title")?.text || "No Title") : "";
+    let artist = trackplayer.current?.tags.get("artist")?.text || "";
+    let thumbnail = trackplayer.current?.tags.get("thumbnail")?.text || "";
 
     let trackBarOnMove = (ev: React.MouseEvent<HTMLDivElement>) => {
         if (ev.buttons !== 1) return;
@@ -55,7 +55,7 @@ const Player = (props: PlayerProps) => {
     }
 
     let volumeIcon = "volume_up";
-    let v = tracklist.audio.volume;
+    let v = trackplayer.audio.volume;
     if (v <= 0.5) {
         volumeIcon = "volume_down";
     }
@@ -85,7 +85,7 @@ const Player = (props: PlayerProps) => {
                     <button className="player-button" onClick={() => console.log("prev")}><MaterialIcon size={20}
                                                                                                         name="skip_previous"/>
                     </button>
-                    <PlayButton musicID={tracklist.current?.id || -2}/>
+                    <PlayButton musicID={trackplayer.current?.id || -2}/>
                     <button className=" player-button" onClick={() => console.log("next")}><MaterialIcon size={20}
                                                                                                          name=" skip_next"/>
                     </button>
@@ -105,7 +105,7 @@ const Player = (props: PlayerProps) => {
                     <span className="player-track-info">
                         <MaterialIcon size={15} name={volumeIcon}/>
                     </span>
-                    <ProgressBar onMouseMove={volumeOnMove} progress={tracklist.audio.volume}/>
+                    <ProgressBar onMouseMove={volumeOnMove} progress={trackplayer.audio.volume}/>
                     <div style={{flex: 1}}/>
                 </div>
             </div>

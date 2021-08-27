@@ -2,7 +2,7 @@ import {useCallback, useEffect, useReducer, useState} from 'react';
 import API, {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/api";
 import Navbar from "./components/navbar";
 import Player from "./components/player";
-import {applyTracklist, newTracklist, setupListeners, TracklistCtx} from "./domain/tracklist";
+import {applyTrackPlayer, newTrackPlayer, setupListeners, TrackplayerCtx} from "./domain/trackplayer";
 import useLocalStorage from "use-local-storage";
 import PageNavigator, {PageEnum} from "./pages/navigator";
 
@@ -29,22 +29,22 @@ const App = () => {
     }, [fetchMetadata])
 
     let [volume, setVolume] = useLocalStorage("volume", 1);
-    let [tracklist, dispatch] = useReducer(applyTracklist, newTracklist());
+    let [trackplayer, dispatch] = useReducer(applyTrackPlayer, newTrackPlayer());
     let [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
 
-    tracklist.audio.volume = volume;
-    setupListeners(tracklist, dispatch);
+    trackplayer.audio.volume = volume;
+    setupListeners(trackplayer, dispatch);
 
     return (
         <>
             <Navbar syncProblem={syncProblem} setCurPage={setCurPage} onSync={fetchMetadata}/>
             <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
-                <TracklistCtx.Provider value={[tracklist, dispatch]}>
+                <TrackplayerCtx.Provider value={[trackplayer, dispatch]}>
                     <div className="scrollable-element content">
                         <PageNavigator page={curPage} />
                     </div>
                     <Player onVolumeChange={setVolume}/>
-                </TracklistCtx.Provider>
+                </TrackplayerCtx.Provider>
             </MetadataCtx.Provider>
         </>
     );
