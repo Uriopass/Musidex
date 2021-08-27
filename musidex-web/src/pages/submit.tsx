@@ -26,7 +26,6 @@ const Submit = (props: any) => {
 
 type YTSendState =
     { type: "waiting_for_url" }
-    | { type: "invalid_url" }
     | { type: "sending" }
     | { type: "accepted" }
     | { type: "error", message?: string };
@@ -48,16 +47,11 @@ const YTSubmit = (props: YTSubmitProps) => {
 
         console.log(ytUrl);
     };
-    const re = new RegExp(/^(https:\/\/)?(www\.)?(youtu|youtube)\.(com|be)\b[-a-zA-Z0-9@:%_+.~#?&/=]*/);
 
     const onYTInputChange = (v: string) => {
         setYTUrl(v);
         if (v === "") {
             setSendState({type: "waiting_for_url"});
-            return;
-        }
-        if (!re.test(v)) {
-            setSendState({type: "invalid_url"});
             return;
         }
         setSendState({type: "sending"});
@@ -83,11 +77,6 @@ const YTSubmit = (props: YTSubmitProps) => {
     let color: string = "var(--color-fg)";
     switch (sendState.type) {
         case "waiting_for_url":
-            break;
-        case "invalid_url":
-            icon = "error";
-            message = "Invalid URL";
-            color = "var(--danger)";
             break;
         case "error":
             icon = "error";
@@ -116,8 +105,7 @@ const YTSubmit = (props: YTSubmitProps) => {
                 <TextInput onChange={onYTInputChange}
                            name={props.placeholder}
                            title="Input is not a valid youtube URL"
-                           withLabel={true}
-                           pattern={re.source}/>
+                           withLabel={true}/>
             </form>
             <p style={{fontSize: "20px", display: "flex", alignItems: "center", color: color}}>
                 <MaterialIcon name={icon} size="25px"/>
