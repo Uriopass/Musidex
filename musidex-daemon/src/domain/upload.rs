@@ -9,18 +9,19 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
         return Ok(StatusCode::CONFLICT);
     }
 
-    let metadata = ytdl_run_with_args(vec!["-f", "bestaudio", "--no-playlist", "-J", &url])
+    let metadata = ytdl_run_with_args(vec!["--no-playlist", "-J", &url])
         .await
         .context("error downloading metadata")?;
-    let v = match metadata {
+    let mut v = match metadata {
         YoutubeDlOutput::Playlist(_) => return Ok(StatusCode::BAD_REQUEST),
         YoutubeDlOutput::SingleVideo(v) => v,
     };
     if id_exists(c, &v.id)? {
         return Ok(StatusCode::CONFLICT);
     }
+    let wp = v.webpage_url.take().context("no webpage url")?;
     let tx = c.transaction()?;
-    push_for_treatment(&tx, v).context("error pushing for treatment")?;
+    push_for_treatment(&tx, v, wp).context("error pushing for treatment")?;
     tx.commit()?;
     Ok(StatusCode::OK)
 }
@@ -32,13 +33,13 @@ fn id_exists(c: &Connection, id: &str) -> Result<bool> {
         .any(|t| t.key == TagKey::YoutubeDLVideoID && t.text.as_deref() == Some(id)))
 }
 
-fn push_for_treatment(c: &Connection, v: SingleVideo) -> Result<()> {
+fn push_for_treatment(c: &Connection, v: SingleVideo, url: String) -> Result<()> {
     let id = Music::mk(&c)?;
 
     let mk_tag = |key, v| Tag::insert(&c, Tag::new_text(id, key, v));
 
     let (title, artist) = parse_title(&v.title, &v);
-    mk_tag(TagKey::YoutubeDLURL, v.url.context("no url")?)?;
+    mk_tag(TagKey::YoutubeDLURL, url)?;
     mk_tag(TagKey::YoutubeDLVideoID, v.id)?;
     mk_tag(TagKey::YoutubeDLWorkerTreated, s!("false"))?;
     mk_tag(TagKey::Title, title)?;
@@ -102,13 +103,18 @@ pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<
                 log::warn!("no entries in playlist");
             }
             for mut entry in p.entries.into_iter().flatten() {
+                if entry.ie_key.as_deref() != Some("Youtube") {
+                    bail!("only yt playlist are supported at the moment");
+                }
                 if id_exists(c, &entry.id)? {
                     log::info!("music from playlist was already in library: {}", &entry.id);
                     continue;
                 }
                 let tx = c.transaction()?;
                 entry.playlist_title = p.title.clone();
-                push_for_treatment(&tx, entry)?;
+                let url = entry.url.take().context("no url?")?;
+
+                push_for_treatment(&tx, entry, url)?;
                 tx.commit()?;
             }
         }

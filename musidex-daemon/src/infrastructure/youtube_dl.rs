@@ -226,6 +226,7 @@ pub struct SingleVideo {
     pub http_headers: Option<BTreeMap<String, Option<String>>>,
     pub id: String,
     pub is_live: Option<bool>,
+    pub ie_key: Option<String>,
     pub language: Option<String>,
     pub language_preference: Option<i64>,
     pub license: Option<String>,
