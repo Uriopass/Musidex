@@ -41,6 +41,16 @@ export function setupListeners(trackplayer: TrackPlayer, onNext: DecideNextCallb
             trackplayer.audio.play().catch((e) => console.log(e));
         }
     }
+    document.body.onkeydown = (e) => {
+        if (e.code === "Space" || e.code == "KeyK") {
+            e.preventDefault();
+            if (!trackplayer.current) {
+                onNext();
+                return;
+            }
+            dispatch({action: "play", track: trackplayer.current});
+        }
+    };
 }
 
 export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAction): TrackPlayer {
