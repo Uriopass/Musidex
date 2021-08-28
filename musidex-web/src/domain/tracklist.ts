@@ -11,7 +11,7 @@ interface Tracklist {
 export function emptyTracklist(): Tracklist {
     return {
         last_played: [],
-        last_played_maxsize: 0,
+        last_played_maxsize: 100,
     }
 }
 
@@ -34,7 +34,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         let maxmusic = undefined;
 
         for (let music of metadata.musics) {
-            let score = list.last_played.length - list.last_played.indexOf(music) + Math.random();
+            let score = list.last_played.length - list.last_played.lastIndexOf(music) + Math.random();
 
             if (maxscore === undefined || score > maxscore) {
                 maxscore = score;
