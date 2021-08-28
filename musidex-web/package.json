@@ -28,7 +28,12 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "react-hooks/exhaustive-deps": ["warn", {
+        "additionalHooks": "useDebouncedEffect"
+      }]
+    }
   },
   "proxy": "http://localhost:3200",
   "browserslist": {

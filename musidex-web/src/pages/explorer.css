@@ -6,17 +6,17 @@
 }
 
 .song-elem {
-    min-height: 80px;
+    min-height: 60px;
     display: flex;
     background-color: var(--fg);
     border-radius: 5px;
-    margin-top: 10px;
+    margin-top: 5px;
     align-items: center;
 }
 
 .cover-image-container {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
 }
 
 .cover-image-container img {

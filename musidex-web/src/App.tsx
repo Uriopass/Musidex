@@ -32,6 +32,9 @@ const App = () => {
         })
     }, [syncProblem, metadata]);
 
+    // eslint-disable-next-line
+    useEffect(fetchMetadata, []);
+
     useEffect(() => {
         let v = setInterval(fetchMetadata, 2000);
         return () => clearInterval(v);

@@ -1,5 +1,5 @@
 import './utils.css'
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 
 export const MaterialIcon = React.memo((props: any) => {
     let size = props.size || 20;
@@ -40,6 +40,15 @@ export function useUpdate(): [number, () => void] {
     let [v, setV] = useState(0);
     let update = useCallback(() => setV((v) => v + 1), [setV]);
     return [v, update];
+}
+
+export const useDebouncedEffect = (effect: React.EffectCallback, deps: React.DependencyList, delay: number) => {
+    useEffect(() => {
+        const handler = setTimeout(() => effect(), delay);
+
+        return () => clearTimeout(handler);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [...deps || [], delay]);
 }
 
 export type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
