@@ -1,10 +1,20 @@
 import React from "react";
-import API, {Tag} from "./api";
+import API from "./api";
 import {NextTrackCallback} from "./tracklist";
+import {MusidexMetadata, Tag} from "./entity";
 
 export type Track = {
     id: number;
     tags: Map<string, Tag>;
+}
+
+export function buildTrack(id: number, metadata: MusidexMetadata): Track | null {
+    let tags = metadata.music_tags_idx.get(id);
+    if (tags === undefined) return null;
+    return {
+        id: id,
+        tags: tags,
+    }
 }
 
 type TrackPlayer = {

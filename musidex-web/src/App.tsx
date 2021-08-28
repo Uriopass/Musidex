@@ -1,11 +1,12 @@
 import {useCallback, useEffect, useReducer, useState} from 'react';
-import API, {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/api";
+import API from "./domain/api";
 import Navbar from "./components/navbar";
 import Player from "./components/player";
 import {applyTrackPlayer, newTrackPlayer, setupListeners, TrackplayerCtx} from "./domain/trackplayer";
 import useLocalStorage from "use-local-storage";
 import PageNavigator, {PageEnum} from "./pages/navigator";
 import Tracklist, {emptyTracklist, useCanPrev, useNextTrackCallback, usePrevTrackCallback} from "./domain/tracklist";
+import {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/entity";
 
 const App = () => {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());

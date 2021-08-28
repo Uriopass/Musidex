@@ -1,7 +1,7 @@
 import {useContext} from "react";
-import {TrackplayerCtx} from "../domain/trackplayer";
-import {buildTrack, MetadataCtx} from "../domain/api";
+import {buildTrack, TrackplayerCtx} from "../domain/trackplayer";
 import {MaterialIcon} from "./utils";
+import {MetadataCtx} from "../domain/entity";
 
 export type PlayButtonProps = {
     musicID: number;

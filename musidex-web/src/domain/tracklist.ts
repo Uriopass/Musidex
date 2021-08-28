@@ -1,7 +1,7 @@
-import {MusidexMetadata} from "./api";
 import {Setter} from "../components/utils";
 import {Dispatch, useCallback} from "react";
 import {TrackPlayerAction} from "./trackplayer";
+import {MusidexMetadata} from "./entity";
 
 interface Tracklist {
     last_played: number[],
