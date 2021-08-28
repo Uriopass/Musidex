@@ -41,3 +41,12 @@ export const MetadataCtx = React.createContext<[MusidexMetadata, () => void]>([e
 export function emptyMetadata(): MusidexMetadata {
     return new MusidexMetadata([], [], "");
 }
+
+export function canPlay(tags: Tags): boolean {
+    for (let key of tags.keys()) {
+        if (key.startsWith("local_")) {
+            return true;
+        }
+    }
+    return false;
+}

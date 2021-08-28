@@ -1,7 +1,7 @@
 import {Setter} from "../components/utils";
 import {Dispatch, useCallback} from "react";
 import {TrackPlayerAction} from "./trackplayer";
-import {MusidexMetadata} from "./entity";
+import {canPlay, MusidexMetadata} from "./entity";
 
 interface Tracklist {
     last_played: number[],
@@ -34,6 +34,10 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         let maxmusic = undefined;
 
         for (let music of metadata.musics) {
+            let tags = metadata.music_tags_idx.get(music);
+            if (tags === undefined || !canPlay(tags)) {
+                continue;
+            }
             let score = list.last_played.length - list.last_played.lastIndexOf(music) + Math.random();
 
             if (maxscore === undefined || score > maxscore) {

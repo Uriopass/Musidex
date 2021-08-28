@@ -3,7 +3,7 @@ import API from "../domain/api";
 import {Fragment, useContext} from "react";
 import {PlayButton} from "../components/playbutton";
 import {MaterialIcon} from "../components/utils";
-import {MetadataCtx, Tag} from "../domain/entity";
+import {canPlay, MetadataCtx, Tag} from "../domain/entity";
 
 export type ExplorerProps = {
     title: string;
@@ -47,15 +47,7 @@ const SongElem = (props: SongElemProps) => {
     }
     let cover = props.tags.get("thumbnail")?.text || null;
 
-    let playable = false;
-    let it = props.tags.keys();
-    let res = it.next();
-    while (!res.done) {
-        if (res.value.startsWith("local_")) {
-            playable = true;
-        }
-        res = it.next();
-    }
+    let playable = canPlay(props.tags);
 
     return (
         <div className="song-elem">
