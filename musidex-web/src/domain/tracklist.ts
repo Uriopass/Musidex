@@ -1,7 +1,7 @@
 import {Setter} from "../components/utils";
 import {Dispatch, useCallback} from "react";
 import {buildTrack, TrackPlayerAction} from "./trackplayer";
-import {canPlay, MusidexMetadata} from "./entity";
+import {canPlay, dot, MusidexMetadata} from "./entity";
 
 interface Tracklist {
     last_played: number[],
@@ -34,17 +34,26 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
             let maxscore = undefined;
             let maxmusic = undefined;
 
+            let lastplayedvec = metadata.embeddings.get(list.last_played[list.last_played.length-1] || (current || -1));
+
             for (let music of metadata.musics) {
                 let tags = metadata.music_tags_idx.get(music);
                 if (tags === undefined || !canPlay(tags)) {
                     continue;
                 }
-                let score = list.last_played.length - list.last_played.lastIndexOf(music) + Math.random();
-
+                let score = Math.random() * 0.01;
+                if (list.last_played.lastIndexOf(music) >= 0) {
+                    score -= 5;
+                }
+                let emb = metadata.embeddings.get(music);
+                if (emb !== undefined && lastplayedvec !== undefined) {
+                    score += dot(lastplayedvec, emb) / (lastplayedvec.mag * emb.mag);
+                }
                 if (maxscore === undefined || score > maxscore) {
                     maxscore = score;
                     maxmusic = music;
                 }
+                console.log(music, score);
             }
 
             id = maxmusic;

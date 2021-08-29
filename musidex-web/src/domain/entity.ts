@@ -4,23 +4,29 @@ export interface Tag {
     music_id: number;
     key: string;
 
-    text: string | null;
-    integer: number | null;
-    date: string | null;
-    vector: number[] | null;
+    text?: string;
+    integer?: number;
+    date?: string;
+    vector?: number[];
 }
 
 export type Tags = Map<string, Tag>;
+export type Vector = {
+    v: number[],
+    mag: number,
+};
 
 export class MusidexMetadata {
     musics: number[];
     tags: Tag[];
     music_tags_idx: Map<number, Tags>;
+    embeddings: Map<number, Vector>;
 
     constructor(musics: number[], tags: Tag[]) {
         this.musics = musics;
         this.tags = tags;
         this.music_tags_idx = new Map();
+        this.embeddings = new Map();
 
         this.musics.forEach((m) => {
             this.music_tags_idx.set(m, new Map());
@@ -28,6 +34,14 @@ export class MusidexMetadata {
 
         this.tags.forEach((tag) => {
             this.music_tags_idx.get(tag.music_id)?.set(tag.key, tag);
+            if (tag.key === "embedding" && tag.vector !== undefined) {
+                let mag = 0;
+                for (let v of tag.vector) {
+                    mag += v * v;
+                }
+                mag = Math.sqrt(mag);
+                this.embeddings.set(tag.music_id, {v: tag.vector, mag: mag});
+            }
         })
     }
 }
@@ -47,4 +61,14 @@ export function canPlay(tags: Tags): boolean {
         }
     }
     return false;
+}
+
+export function dot(v1v: Vector, v2v: Vector): number {
+    let v1 = v1v.v;
+    let v2 = v2v.v;
+    let d = 0;
+    for (let i=0; i < v1.length && i < v2.length; i++) {
+        d += v1[i] * v2[i];
+    }
+    return d;
 }

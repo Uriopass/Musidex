@@ -68,7 +68,7 @@ const Player = (props: PlayerProps) => {
     }
 
     let doNext = props.doNext;
-    let clickNext = useCallback(() => doNext, [doNext]);
+    let clickNext = useCallback(() => doNext(), [doNext]);
 
     return (
         <div className="player fg color-fg">
