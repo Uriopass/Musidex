@@ -71,7 +71,7 @@ export function getScore(list: Tracklist, lastvec: Vector | undefined, id: numbe
     if (tags === undefined || !canPlay(tags)) {
         return undefined;
     }
-    let score = Math.random() * 0.005;
+    let score = Math.random() * 0.001;
     if (list.last_played.lastIndexOf(id) >= 0) {
         score -= 5;
     }
