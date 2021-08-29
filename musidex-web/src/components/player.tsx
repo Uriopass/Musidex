@@ -1,8 +1,9 @@
 import {clamp, MaterialIcon, ProgressBar, useUpdate} from "./utils";
 import './player.css'
 import {TrackplayerCtx} from "../domain/trackplayer";
-import React, {useContext, useEffect} from "react";
+import React, {useCallback, useContext, useEffect} from "react";
 import {PlayButton} from "./playbutton";
+import {NextTrackCallback} from "../domain/tracklist";
 
 function timeFormat(total: number): string {
     let minutes = Math.floor(total / 60);
@@ -12,7 +13,7 @@ function timeFormat(total: number): string {
 
 interface PlayerProps {
     onVolumeChange: (volume: number) => void;
-    onNext: () => void;
+    doNext: NextTrackCallback;
     onPrev: () => void;
     canPrev: () => boolean;
 }
@@ -66,6 +67,8 @@ const Player = (props: PlayerProps) => {
         volumeIcon = "volume_mute";
     }
 
+    let clickNext = useCallback(() => props.doNext(), [props.doNext]);
+
     return (
         <div className="player fg color-fg">
             <div className="player-current-track">
@@ -89,8 +92,8 @@ const Player = (props: PlayerProps) => {
                         <MaterialIcon size={20}
                                       name="skip_previous"/>
                     </button>
-                    <PlayButton musicID={trackplayer.current?.id || -2}/>
-                    <button className=" player-button" onClick={props.onNext}>
+                    <PlayButton musicID={trackplayer.current?.id} doNext={props.doNext}/>
+                    <button className=" player-button" onClick={clickNext}>
                         <MaterialIcon size={20}
                                       name=" skip_next"/>
                     </button>

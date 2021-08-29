@@ -4,10 +4,12 @@ import {Fragment, useContext} from "react";
 import {PlayButton} from "../components/playbutton";
 import {MaterialIcon} from "../components/utils";
 import {canPlay, MetadataCtx, Tag} from "../domain/entity";
+import {NextTrackCallback} from "../domain/tracklist";
 
 export type ExplorerProps = {
     title: string;
     hidden: boolean;
+    doNext: NextTrackCallback;
 }
 
 const Explorer = (props: ExplorerProps) => {
@@ -27,6 +29,7 @@ const Explorer = (props: ExplorerProps) => {
                                           }
                                       })
                                   }}
+                                  doNext={props.doNext}
                         />
                     )
                 })
@@ -39,6 +42,7 @@ type SongElemProps = {
     musicID: number;
     tags: Map<string, Tag> | undefined;
     onDelete: () => void;
+    doNext: NextTrackCallback;
 }
 
 const SongElem = (props: SongElemProps) => {
@@ -69,7 +73,7 @@ const SongElem = (props: SongElemProps) => {
             <div style={{flex: "1", padding: "10px", textAlign: "right"}}>
                 {
                     playable &&
-                    <PlayButton musicID={props.musicID}/>
+                    <PlayButton doNext={props.doNext} musicID={props.musicID}/>
                 }
                 <button className="player-button" onClick={props.onDelete} title="Remove from library">
                     <MaterialIcon name="delete"/>

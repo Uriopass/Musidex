@@ -1,6 +1,6 @@
 import {Setter} from "../components/utils";
 import {Dispatch, useCallback} from "react";
-import {TrackPlayerAction} from "./trackplayer";
+import {buildTrack, TrackPlayerAction} from "./trackplayer";
 import {canPlay, MusidexMetadata} from "./entity";
 
 interface Tracklist {
@@ -15,41 +15,48 @@ export function emptyTracklist(): Tracklist {
     }
 }
 
-export type NextTrackCallback = () => void;
+export type NextTrackCallback = (id?: number) => void;
 export type PrevTrackCallback = () => void;
 
 export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, current?: number): NextTrackCallback {
-    return useCallback(() => {
+    return useCallback((id) => {
         const list = {
             ...curlist,
         };
         if (current !== undefined) {
-            if(list.last_played.length > list.last_played_maxsize) {
+            if (list.last_played.length > list.last_played_maxsize) {
                 list.last_played = list.last_played.slice(1);
             }
             list.last_played.push(current);
         }
 
-        let maxscore = undefined;
-        let maxmusic = undefined;
+        if (id === undefined) {
+            let maxscore = undefined;
+            let maxmusic = undefined;
 
-        for (let music of metadata.musics) {
-            let tags = metadata.music_tags_idx.get(music);
-            if (tags === undefined || !canPlay(tags)) {
-                continue;
-            }
-            let score = list.last_played.length - list.last_played.lastIndexOf(music) + Math.random();
+            for (let music of metadata.musics) {
+                let tags = metadata.music_tags_idx.get(music);
+                if (tags === undefined || !canPlay(tags)) {
+                    continue;
+                }
+                let score = list.last_played.length - list.last_played.lastIndexOf(music) + Math.random();
 
-            if (maxscore === undefined || score > maxscore) {
-                maxscore = score;
-                maxmusic = music;
+                if (maxscore === undefined || score > maxscore) {
+                    maxscore = score;
+                    maxmusic = music;
+                }
             }
+
+            id = maxmusic;
         }
 
         setList(list);
-        if (maxmusic !== undefined) {
-            let tags = metadata.music_tags_idx.get(maxmusic) || new Map();
-            dispatch({action: "play", track: {id: maxmusic, tags: tags}})
+        if (id !== undefined) {
+            const track = buildTrack(id, metadata);
+            if (track === undefined) {
+                return;
+            }
+            dispatch({action: "play", track: track})
         }
     }, [curlist, setList, metadata, current, dispatch])
 }

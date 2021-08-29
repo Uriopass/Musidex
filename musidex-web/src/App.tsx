@@ -16,8 +16,8 @@ const App = () => {
     let [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     let [list, setList] = useState<Tracklist>(emptyTracklist())
     let [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
-    let onNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, trackplayer.current?.id);
-    let onPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
+    let doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, trackplayer.current?.id);
+    let doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     let canPrev = useCanPrev(list);
     let ws = useRef<undefined | ReconnectingWebSocket>();
 
@@ -40,7 +40,7 @@ const App = () => {
     }, [ws]);
 
     trackplayer.audio.volume = volume;
-    setupListeners(trackplayer, onNext, dispatchPlayer);
+    setupListeners(trackplayer, doNext, dispatchPlayer);
 
     return (
         <>
@@ -48,9 +48,9 @@ const App = () => {
             <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
                 <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
                     <div className="scrollable-element content">
-                        <PageNavigator page={curPage}/>
+                        <PageNavigator page={curPage} doNext={doNext}/>
                     </div>
-                    <Player onVolumeChange={setVolume} onNext={onNext} onPrev={onPrev} canPrev={canPrev}/>
+                    <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev} canPrev={canPrev}/>
                 </TrackplayerCtx.Provider>
             </MetadataCtx.Provider>
         </>

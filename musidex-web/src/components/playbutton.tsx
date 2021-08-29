@@ -1,23 +1,22 @@
-import {useContext} from "react";
+import {useCallback, useContext} from "react";
 import {buildTrack, TrackplayerCtx} from "../domain/trackplayer";
 import {MaterialIcon} from "./utils";
 import {MetadataCtx} from "../domain/entity";
 
 export type PlayButtonProps = {
-    musicID: number;
+    musicID?: number;
+    doNext: (id?: number) => void;
 }
 
 export const PlayButton = (props: PlayButtonProps) => {
-    let [trackplayer, dispatch] = useContext(TrackplayerCtx);
+    let [trackplayer] = useContext(TrackplayerCtx);
     let [metadata,] = useContext(MetadataCtx);
     let same_v = (trackplayer.current?.id || -1) === props.musicID;
     let title = metadata.music_tags_idx.get(props.musicID || -1)?.get("title")?.text || "No Title";
 
-    let onClick = () => {
-        let track = buildTrack(props.musicID, metadata);
-        if (track === null) return;
-        dispatch({action: "play", track: track})
-    };
+    let onClick = useCallback(() => {
+        props.doNext(props.musicID);
+    }, [props.doNext, props.musicID]);
 
     let titlePrefix = "Play ";
     let icon;

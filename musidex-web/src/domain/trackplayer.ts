@@ -8,9 +8,9 @@ export type Track = {
     tags: Map<string, Tag>;
 }
 
-export function buildTrack(id: number, metadata: MusidexMetadata): Track | null {
+export function buildTrack(id: number, metadata: MusidexMetadata): Track | undefined {
     let tags = metadata.music_tags_idx.get(id);
-    if (tags === undefined) return null;
+    if (tags === undefined) return;
     return {
         id: id,
         tags: tags,
@@ -40,11 +40,11 @@ export function newTrackPlayer(): TrackPlayer {
     }
 }
 
-export function setupListeners(trackplayer: TrackPlayer, onNext: NextTrackCallback, dispatch: React.Dispatch<TrackPlayerAction>) {
+export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallback, dispatch: React.Dispatch<TrackPlayerAction>) {
     trackplayer.audio.onloadeddata = () => dispatch({action: "audioTick"});
     trackplayer.audio.onplaying = () => dispatch({action: "audioTick"});
     trackplayer.audio.onpause = () => dispatch({action: "audioTick"});
-    trackplayer.audio.onended = onNext;
+    trackplayer.audio.onended = () => doNext();
     trackplayer.audio.oncanplay = () => {
         trackplayer.loading = false;
         if (!trackplayer.paused) {
@@ -55,7 +55,7 @@ export function setupListeners(trackplayer: TrackPlayer, onNext: NextTrackCallba
         if (e.code === "Space" || e.code === "KeyK") {
             e.preventDefault();
             if (!trackplayer.current) {
-                onNext();
+                doNext();
                 return;
             }
             dispatch({action: "play", track: trackplayer.current});
