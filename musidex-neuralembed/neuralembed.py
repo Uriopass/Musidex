@@ -34,5 +34,7 @@ for id, (taggram, labels, features) in zip(ids, extractor(names, model="MSD_musi
     blob = vecToBlob(vector)
 
     conn.execute("INSERT INTO tags (music_id, key, vector) VALUES (?, 'embedding', ?);", (id, blob))
-    print("inserted embedding for", id)
+    conn.commit()
+    print("inserted embedding for", id, vector, blob)
 
+conn.close()
