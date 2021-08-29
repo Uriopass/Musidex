@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
+import {useCallback, useMemo, useReducer, useState} from 'react';
 import API from "./domain/api";
 import Navbar from "./components/navbar";
 import Player from "./components/player";

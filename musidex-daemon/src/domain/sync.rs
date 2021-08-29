@@ -95,6 +95,7 @@ pub async fn serve_sync_websocket(
                 let message: Message = message?;
                 match message {
                     Message::Close(_) => {
+                        log::info!("closing WS");
                         return Ok(());
                     }
                     Message::Ping(v) => {

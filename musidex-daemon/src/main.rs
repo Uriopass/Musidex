@@ -47,7 +47,7 @@ async fn start() -> anyhow::Result<()> {
         .state(db)
         .state(sub)
         .get("/api/metadata", handlers::metadata)
-        .get("api/metadata/ws", handlers::subscribe_sync)
+        .get("/api/metadata/ws", handlers::subscribe_sync)
         .post("/api/youtube_upload", handlers::youtube_upload)
         .post(
             "/api/youtube_upload/playlist",

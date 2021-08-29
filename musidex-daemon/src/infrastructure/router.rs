@@ -35,7 +35,7 @@ use futures::FutureExt;
 use hyper::body::Bytes;
 use hyper::header::{
     HeaderValue, ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS,
-    ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_ENCODING, HOST, LOCATION,
+    ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_ENCODING, FORWARDED, HOST, LOCATION,
 };
 use hyper::http::request::Parts;
 use hyper::http::Extensions;
@@ -285,6 +285,15 @@ impl Service<Request<Body>> for RouterService {
     }
 
     fn call(&mut self, req: Request<Body>) -> Self::Future {
+        log::info!(
+            "seeing req at {} for {}",
+            req.uri(),
+            req.headers()
+                .get(FORWARDED)
+                .and_then(|x| x.to_str().ok())
+                .unwrap_or("unknown host")
+        );
+
         let router = self.0.clone();
         let nocors = router.nocors;
         let route = req.uri().to_string();
