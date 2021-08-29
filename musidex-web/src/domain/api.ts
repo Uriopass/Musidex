@@ -12,7 +12,7 @@ type RawMusidexMetadata = {
 
 export const API = {
     metadataWSInit(): ReconnectingWebSocket {
-        return new ReconnectingWebSocket("ws:://"+ apiURL + "/api/metadata/sub");
+        return new ReconnectingWebSocket("ws://"+ window.location.host + "/api/metadata/sub");
     },
 
     useMetadataWSSet(setMetadata: Setter<MusidexMetadata>): (m: MessageEvent) => void {
