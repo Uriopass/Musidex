@@ -1,6 +1,5 @@
 import {MusidexMetadata, Tag} from "./entity";
 import {Setter} from "../components/utils";
-import {useCallback} from "react";
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 let apiURL = window.location.origin;
@@ -15,12 +14,12 @@ export const API = {
         return new ReconnectingWebSocket("ws://"+ window.location.host + "/api/metadata/ws");
     },
 
-    useMetadataWSSet(setMetadata: Setter<MusidexMetadata>): (m: MessageEvent) => void {
-        return useCallback((m) => {
+    metadataWSSet(setMetadata: Setter<MusidexMetadata>): (m: MessageEvent) => void {
+        return (m) => {
             let v: RawMusidexMetadata = JSON.parse(m.data);
             let meta = new MusidexMetadata(v.musics, v.tags);
             setMetadata(meta);
-        }, [setMetadata]);
+        };
     },
 
     async getMetadata(): Promise<MusidexMetadata | null> {

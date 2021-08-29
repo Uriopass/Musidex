@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useReducer, useState} from 'react';
+import {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 import API from "./domain/api";
 import Navbar from "./components/navbar";
 import Player from "./components/player";
@@ -7,6 +7,7 @@ import useLocalStorage from "use-local-storage";
 import PageNavigator, {PageEnum} from "./pages/navigator";
 import Tracklist, {emptyTracklist, useCanPrev, useNextTrackCallback, usePrevTrackCallback} from "./domain/tracklist";
 import {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/entity";
+import ReconnectingWebSocket from "reconnecting-websocket";
 
 const App = () => {
     let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
@@ -18,17 +19,24 @@ const App = () => {
     let onNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, trackplayer.current?.id);
     let onPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     let canPrev = useCanPrev(list);
-    let ws = useMemo(() => API.metadataWSInit(), []);
+    let ws = useRef<undefined | ReconnectingWebSocket>();
 
-    ws.onmessage = API.useMetadataWSSet(setMetadata);
-    ws.onclose = (_) => {
-        setSyncProblem(true);
-    };
-    ws.onopen = (_) => {
-        setSyncProblem(true);
-    };
+    useEffect(() => {
+        if(ws.current === undefined) {
+            ws.current = API.metadataWSInit();
+        }
+
+        ws.current.onmessage = API.metadataWSSet(setMetadata);
+        ws.current.onclose = (_) => {
+            setSyncProblem(true);
+        };
+        ws.current.onopen = (_) => {
+            setSyncProblem(false);
+        };
+    }, [setSyncProblem, setMetadata])
+
     let fetchMetadata = useCallback(() => {
-        ws.send("refresh");
+        ws.current?.send("refresh");
     }, [ws]);
 
     trackplayer.audio.volume = volume;
