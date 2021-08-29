@@ -9,7 +9,7 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
         return Ok(StatusCode::CONFLICT);
     }
 
-    let metadata = ytdl_run_with_args(vec!["--no-playlist", "-J", &url])
+    let metadata = ytdl_run_with_args(vec!["--no-playlist", "-J", "--", &url])
         .await
         .context("error downloading metadata")?;
     let mut v = match metadata {
@@ -93,7 +93,7 @@ fn guess_title(title: &str) -> (String, Option<String>) {
 }
 
 pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<StatusCode> {
-    let metadata = ytdl_run_with_args(vec!["--flat-playlist", "--yes-playlist", "-J", &url])
+    let metadata = ytdl_run_with_args(vec!["--flat-playlist", "--yes-playlist", "-J", "--", &url])
         .await
         .context("failed reading playlist metadata")?;
 

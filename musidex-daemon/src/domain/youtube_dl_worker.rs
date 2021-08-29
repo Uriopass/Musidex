@@ -113,6 +113,7 @@ pub async fn download(vid_url: &str) -> Result<SingleVideo> {
         "--write-thumbnail",
         "--no-progress",
         "--print-json",
+        "--",
         vid_url,
     ])
     .await?;
