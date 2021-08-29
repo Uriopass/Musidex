@@ -3,3 +3,4 @@
 web
 storage
 mdx-daemon
+*.pyc
