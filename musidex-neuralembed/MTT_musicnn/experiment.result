@@ -1,0 +1,3 @@
+Results on the MagnaTagATune test set:
+ROC-AUC: 0.9066769123674747
+PR-AUC: 0.38310571748763617
