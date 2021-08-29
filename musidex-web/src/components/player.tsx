@@ -67,7 +67,8 @@ const Player = (props: PlayerProps) => {
         volumeIcon = "volume_mute";
     }
 
-    let clickNext = useCallback(() => props.doNext(), [props.doNext]);
+    let doNext = props.doNext;
+    let clickNext = useCallback(() => doNext, [doNext]);
 
     return (
         <div className="player fg color-fg">
