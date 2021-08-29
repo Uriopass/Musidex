@@ -5,7 +5,7 @@ import Player from "./components/player";
 import {applyTrackPlayer, newTrackPlayer, setupListeners, TrackplayerCtx} from "./domain/trackplayer";
 import useLocalStorage from "use-local-storage";
 import PageNavigator, {PageEnum} from "./pages/navigator";
-import Tracklist, {emptyTracklist, useCanPrev, useNextTrackCallback, usePrevTrackCallback} from "./domain/tracklist";
+import Tracklist, {emptyTracklist, TracklistCtx, useCanPrev, useNextTrackCallback, usePrevTrackCallback} from "./domain/tracklist";
 import {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/entity";
 import ReconnectingWebSocket from "reconnecting-websocket";
 
@@ -47,10 +47,12 @@ const App = () => {
             <Navbar syncProblem={syncProblem} setCurPage={setCurPage} onSync={fetchMetadata}/>
             <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
                 <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
-                    <div className="scrollable-element content">
-                        <PageNavigator page={curPage} doNext={doNext}/>
-                    </div>
-                    <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev} canPrev={canPrev}/>
+                    <TracklistCtx.Provider value={list}>
+                        <div className="scrollable-element content">
+                            <PageNavigator page={curPage} doNext={doNext}/>
+                        </div>
+                        <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev} canPrev={canPrev}/>
+                    </TracklistCtx.Provider>
                 </TrackplayerCtx.Provider>
             </MetadataCtx.Provider>
         </>

@@ -1,7 +1,7 @@
 import {Setter} from "../components/utils";
-import {Dispatch, useCallback} from "react";
+import React, {Dispatch, useCallback} from "react";
 import {buildTrack, TrackPlayerAction} from "./trackplayer";
-import {canPlay, dot, MusidexMetadata} from "./entity";
+import {canPlay, dot, MusidexMetadata, Vector} from "./entity";
 
 interface Tracklist {
     last_played: number[],
@@ -34,20 +34,12 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
             let maxscore = undefined;
             let maxmusic = undefined;
 
-            let lastplayedvec = metadata.embeddings.get(list.last_played[list.last_played.length-1] || (current || -1));
+            let lastplayedvec = getLastvec(list, metadata, current);
 
             for (let music of metadata.musics) {
-                let tags = metadata.music_tags_idx.get(music);
-                if (tags === undefined || !canPlay(tags)) {
+                let score = getScore(list, lastplayedvec, music, metadata);
+                if (score === undefined) {
                     continue;
-                }
-                let score = Math.random() * 0.01;
-                if (list.last_played.lastIndexOf(music) >= 0) {
-                    score -= 5;
-                }
-                let emb = metadata.embeddings.get(music);
-                if (emb !== undefined && lastplayedvec !== undefined) {
-                    score += dot(lastplayedvec, emb) / (lastplayedvec.mag * emb.mag);
                 }
                 if (maxscore === undefined || score > maxscore) {
                     maxscore = score;
@@ -70,6 +62,26 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
     }, [curlist, setList, metadata, current, dispatch])
 }
 
+export function getLastvec(list: Tracklist, metadata: MusidexMetadata, current: number | undefined): Vector | undefined {
+    return metadata.embeddings.get(current || (list.last_played[list.last_played.length - 1] || -1))
+}
+
+export function getScore(list: Tracklist, lastvec: Vector | undefined, id: number, metadata: MusidexMetadata): number | undefined {
+    let tags = metadata.music_tags_idx.get(id);
+    if (tags === undefined || !canPlay(tags)) {
+        return undefined;
+    }
+    let score = Math.random() * 0.005;
+    if (list.last_played.lastIndexOf(id) >= 0) {
+        score -= 5;
+    }
+    let emb = metadata.embeddings.get(id);
+    if (emb !== undefined && lastvec !== undefined) {
+        score += dot(lastvec, emb) / (lastvec.mag * emb.mag);
+    }
+    return score;
+}
+
 export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata): PrevTrackCallback {
     return useCallback(() => {
         const list = {
@@ -90,5 +102,7 @@ export function useCanPrev(curlist: Tracklist): () => boolean {
         return curlist.last_played.length === 0;
     }, [curlist])
 }
+
+export const TracklistCtx = React.createContext<Tracklist>(emptyTracklist());
 
 export default Tracklist;

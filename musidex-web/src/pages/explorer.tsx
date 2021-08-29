@@ -2,9 +2,10 @@ import './explorer.css'
 import API from "../domain/api";
 import {Fragment, useContext} from "react";
 import {PlayButton} from "../components/playbutton";
-import {MaterialIcon} from "../components/utils";
+import {clamp, MaterialIcon} from "../components/utils";
 import {canPlay, MetadataCtx, Tag} from "../domain/entity";
-import {NextTrackCallback} from "../domain/tracklist";
+import {getLastvec, getScore, NextTrackCallback, TracklistCtx} from "../domain/tracklist";
+import {TrackplayerCtx} from "../domain/trackplayer";
 
 export type ExplorerProps = {
     title: string;
@@ -14,6 +15,11 @@ export type ExplorerProps = {
 
 const Explorer = (props: ExplorerProps) => {
     const [metadata, syncMetadata] = useContext(MetadataCtx);
+    const [player] = useContext(TrackplayerCtx);
+    const list = useContext(TracklistCtx);
+
+    let lastvec = getLastvec(list, metadata, player.current?.id);
+
     return (
         <div className={"explorer color-fg " + (props.hidden ? "hidden" : "")}>
             <div className="explorer-title title">{props.title}</div>
@@ -30,6 +36,7 @@ const Explorer = (props: ExplorerProps) => {
                                       })
                                   }}
                                   doNext={props.doNext}
+                                  progress={getScore(list, lastvec, id, metadata)}
                         />
                     )
                 })
@@ -43,6 +50,7 @@ type SongElemProps = {
     tags: Map<string, Tag> | undefined;
     onDelete: () => void;
     doNext: NextTrackCallback;
+    progress?: number;
 }
 
 const SongElem = (props: SongElemProps) => {
@@ -53,8 +61,12 @@ const SongElem = (props: SongElemProps) => {
 
     let playable = canPlay(props.tags);
 
+    let c = `#28222f`;
+    let p = clamp(100 * (props.progress || 0), 0, 100);
+    let grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
+
     return (
-        <div className="song-elem">
+        <div className="song-elem" style={{background: grad}}>
             <div className="cover-image-container">
                 {
                     (cover !== null) &&
