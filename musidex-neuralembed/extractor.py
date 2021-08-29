@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import librosa
+import musicnn.extractor as lol
 
 import tensorflow as tf
 # disable eager mode for tf.v1 compatibility with tf.v2
@@ -147,7 +148,7 @@ def extractor(file_names, model='MTT_musicnn', input_length=3, input_overlap=Fal
         sess.run(tf.compat.v1.global_variables_initializer())
         saver = tf.compat.v1.train.Saver()
         try:
-            saver.restore(sess, os.path.dirname(__file__)+'/'+model+'/')
+            saver.restore(sess, os.path.dirname(lol.__file__)+'/'+model+'/')
         except:
             if model == 'MSD_musicnn_big':
                 raise ValueError('MSD_musicnn_big model is only available if you install from source: python setup.py install')
