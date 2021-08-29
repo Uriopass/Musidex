@@ -12,6 +12,7 @@ mod tests;
 
 use crate::application::handlers;
 use crate::domain::config;
+use crate::domain::sync::SyncBroadcast;
 use crate::domain::youtube_dl_worker::YoutubeDLWorker;
 use crate::infrastructure::db::Db;
 use crate::infrastructure::migrate::migrate;
@@ -39,11 +40,14 @@ async fn start() -> anyhow::Result<()> {
     config::init(&db).await?;
 
     let ytdl_worker = YoutubeDLWorker::new(db.clone());
+    let (broadcast, sub) = SyncBroadcast::new()?;
 
     let mut router = Router::new();
     router
         .state(db)
+        .state(sub)
         .get("/api/metadata", handlers::metadata)
+        .get("api/metadata/ws", handlers::subscribe_sync)
         .post("/api/youtube_upload", handlers::youtube_upload)
         .post(
             "/api/youtube_upload/playlist",
@@ -64,6 +68,7 @@ async fn start() -> anyhow::Result<()> {
     let service = router.into_service();
 
     ytdl_worker.start();
+    broadcast.start_workers();
 
     // Run
     if env_or("USE_HTTPS", false) {

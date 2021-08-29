@@ -1,4 +1,5 @@
 use crate::domain::entity::{Music, MusicID};
+use crate::domain::sync::{serve_sync_websocket, SyncBroadcastSubscriber};
 use crate::domain::{config, stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
 use crate::utils::res_status;
@@ -16,6 +17,22 @@ pub async fn metadata(req: Request<Body>) -> Result<Response<Body>> {
     let metadata = sync::fetch_metadata(&c).context("failed fetching metadata")?;
 
     Ok(Response::new(Body::from(serde_json::to_string(&metadata)?)))
+}
+
+pub async fn subscribe_sync(request: Request<Body>) -> Result<Response<Body>> {
+    if !hyper_tungstenite::is_upgrade_request(&request) {
+        return Ok(Response::new(Body::empty()));
+    }
+    let st = request.state::<SyncBroadcastSubscriber>().clone();
+    let (response, websocket) = hyper_tungstenite::upgrade(request, None)?;
+
+    tokio::spawn(async move {
+        if let Err(e) = serve_sync_websocket(websocket, st).await {
+            log::error!("error in websocket connection: {}", e);
+        }
+    });
+
+    Ok(response)
 }
 
 #[derive(Deserialize)]

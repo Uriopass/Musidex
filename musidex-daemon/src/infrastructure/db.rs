@@ -22,20 +22,20 @@ impl Db {
     pub async fn connect() -> Result<Db> {
         let mut pool = DbInner::default();
         for _ in 0..N_CONN {
-            pool.conns.push(Self::mk_conn()?);
+            pool.conns.push(Mutex::new(Self::mk_conn()?));
         }
         Ok(Db(Arc::new(pool)))
     }
 
-    fn mk_conn() -> Result<Mutex<Connection>> {
+    pub fn mk_conn() -> Result<Connection> {
         let conn = Connection::open(env_or("DB_LOCATION", s!("./storage/db.db")))
             .context("cannot open connection to sqlite db")?;
         conn.set_prepared_statement_cache_capacity(256);
         conn.execute_batch("PRAGMA foreign_keys = ON;")?;
-        Ok(Mutex::new(conn))
+        Ok(conn)
     }
 
-    #[allow(dead_code)]
+    #[cfg(test)]
     pub async fn connect_in_memory() -> Db {
         let conn = Connection::open_in_memory().unwrap();
         conn.execute_batch("PRAGMA foreign_keys = ON;").unwrap();

@@ -33,11 +33,10 @@ pub struct Tag {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Vector(Vec<f32>);
 
-#[derive(Serialize)]
+#[derive(Serialize, Hash, Default)]
 pub struct MusidexMetadata {
     pub musics: Vec<MusicID>,
     pub tags: Vec<Tag>,
-    pub hash: String,
 }
 
 impl Eq for Vector {}
