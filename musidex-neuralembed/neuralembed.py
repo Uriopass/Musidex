@@ -6,6 +6,8 @@ import struct
 conn = sqlite.connect("storage/db.db")
 
 conn.execute("PRAGMA foreign_keys = ON;")
+#conn.execute("DELETE FROM tags WHERE key='embedding'")
+conn.commit()
 
 def has_embedding(id):
     cur = conn.cursor()
@@ -30,7 +32,7 @@ for tag in conn.execute("SELECT * FROM tags WHERE key='local_mp3';"):
     names.append("storage/"+str(value))
     ids.append(id)
 
-for id, name, (taggram, labels, features) in zip(ids, names, extractor(names, model="MSD_musicnn")):
+for id, name, (taggram, labels, features) in zip(ids, names, extractor(names, model="MTT_musicnn")):
     vector = np.mean(features["penultimate"], axis=0)
     blob = vecToBlob(vector)
 
