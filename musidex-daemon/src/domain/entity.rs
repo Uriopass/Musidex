@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use rusqlite::types::ToSqlOutput;
 use rusqlite::{Row, ToSql};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::convert::TryFrom;
 use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::ops::Deref;
@@ -150,7 +151,20 @@ impl<'a, 'b> From<&'a Row<'b>> for Tag {
                 .and_then(|v| DateTime::parse_from_rfc3339(&v).ok().map(Into::into)),
             vector: row
                 .get_unwrap::<_, Option<Vec<u8>>>("vector")
-                .map(|x| Vector(x.iter().map(|&x| x as f32).collect())),
+                .and_then(reconstruct),
         }
     }
+}
+
+pub fn reconstruct(x: Vec<u8>) -> Option<Vector> {
+    if x.len() % 4 != 0 {
+        return None;
+    }
+    let mut res = Vec::with_capacity(x.len() % 4);
+    for a in x.chunks_exact(4) {
+        let a: [u8; 4] = <[u8; 4]>::try_from(a).unwrap();
+        let lol = f32::from_le_bytes(a);
+        res.push(lol);
+    }
+    Some(Vector(res))
 }
