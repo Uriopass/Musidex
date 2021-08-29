@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useReducer, useState} from 'react';
+import {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import API from "./domain/api";
 import Navbar from "./components/navbar";
 import Player from "./components/player";
@@ -18,27 +18,18 @@ const App = () => {
     let onNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, trackplayer.current?.id);
     let onPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     let canPrev = useCanPrev(list);
+    let ws = useMemo(() => API.metadataWSInit(), []);
 
+    ws.onmessage = API.useMetadataWSSet(setMetadata);
+    ws.onclose = (_) => {
+        setSyncProblem(true);
+    };
+    ws.onopen = (_) => {
+        setSyncProblem(true);
+    };
     let fetchMetadata = useCallback(() => {
-        API.getMetadata().then((fmetadata) => {
-            let sp = fmetadata === null;
-            if (syncProblem !== sp) {
-                setSyncProblem(sp);
-            }
-            if (fmetadata === null || fmetadata.hash === metadata.hash) {
-                return;
-            }
-            setMetadata(fmetadata);
-        })
-    }, [syncProblem, metadata]);
-
-    // eslint-disable-next-line
-    useEffect(fetchMetadata, []);
-
-    useEffect(() => {
-        let v = setInterval(fetchMetadata, 2000);
-        return () => clearInterval(v);
-    }, [fetchMetadata])
+        ws.send("refresh");
+    }, [ws]);
 
     trackplayer.audio.volume = volume;
     setupListeners(trackplayer, onNext, dispatchPlayer);

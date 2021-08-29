@@ -16,13 +16,11 @@ export class MusidexMetadata {
     musics: number[];
     tags: Tag[];
     music_tags_idx: Map<number, Tags>;
-    hash: string;
 
-    constructor(musics: number[], tags: Tag[], hash: string) {
+    constructor(musics: number[], tags: Tag[]) {
         this.musics = musics;
         this.tags = tags;
         this.music_tags_idx = new Map();
-        this.hash = hash;
 
         this.musics.forEach((m) => {
             this.music_tags_idx.set(m, new Map());
@@ -39,7 +37,7 @@ export const MetadataCtx = React.createContext<[MusidexMetadata, () => void]>([e
 }]);
 
 export function emptyMetadata(): MusidexMetadata {
-    return new MusidexMetadata([], [], "");
+    return new MusidexMetadata([], []);
 }
 
 export function canPlay(tags: Tags): boolean {
