@@ -12,7 +12,7 @@ type RawMusidexMetadata = {
 export const API = {
     metadataWSInit(): ReconnectingWebSocket {
         let prefix = "ws";
-        if (location.protocol === "https:") {
+        if (window.location.protocol === "https:") {
             prefix = "wss";
         }
 
