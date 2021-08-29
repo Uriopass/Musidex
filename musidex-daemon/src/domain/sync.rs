@@ -85,6 +85,10 @@ pub async fn serve_sync_websocket(
 ) -> Result<()> {
     let mut websocket = websocket.await?;
 
+    let meta = b.rx.borrow_and_update().clone();
+    let encoded = serde_json::to_string(&*meta).expect("could not encode metadata");
+    websocket.send(Message::Text(encoded)).await?;
+
     loop {
         tokio::select! {
             Some(message) = websocket.next() => {
