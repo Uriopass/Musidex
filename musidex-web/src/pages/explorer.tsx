@@ -16,7 +16,7 @@ const Explorer = (props: ExplorerProps) => {
     const [metadata, syncMetadata] = useContext(MetadataCtx);
     const [shown, setShown] = useState(40);
     const list = useContext(TracklistCtx);
-
+    let cur: number | undefined = list.last_played[list.last_played.length - 1];
     let onScroll = (e: any) => {
         const elem: HTMLDivElement = e.target;
         if (elem.scrollHeight - elem.scrollTop < elem.clientHeight + 500) {
@@ -26,12 +26,32 @@ const Explorer = (props: ExplorerProps) => {
         }
     };
 
+    const colorCur = "#1d2f23";
+    const colorSongs = "#28222f";
+    let curPlaying = <></>;
+    if (cur) {
+        const tags = metadata.music_tags_idx.get(cur);
+        if (tags !== undefined) {
+            curPlaying =
+                <SongElem musicID={cur}
+                          doNext={props.doNext}
+                          syncMetadata={syncMetadata}
+                          tags={tags}
+                          progress={1.0}
+                          progressColor={colorCur}/>;
+        }
+    }
+
     return (
-        <div className={"scrollable-element content"  + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
+        <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
             <div className="explorer color-fg">
                 <div className="explorer-title title">{props.title}</div>
+                {curPlaying}
                 {
                     list.cached_scores.slice(0, shown).map(({id, score}) => {
+                        if (id === cur) {
+                            return <Fragment key={id}/>;
+                        }
                         const tags = metadata.music_tags_idx.get(id);
                         if (tags === undefined) {
                             return <Fragment key={id}/>;
@@ -39,15 +59,10 @@ const Explorer = (props: ExplorerProps) => {
                         return (
                             <SongElem key={id} musicID={id}
                                       tags={tags}
-                                      onDelete={() => {
-                                          API.deleteMusic(id).then((res) => {
-                                              if (res.ok && res.status === 200) {
-                                                  syncMetadata()
-                                              }
-                                          })
-                                      }}
+                                      syncMetadata={syncMetadata}
                                       doNext={props.doNext}
                                       progress={score}
+                                      progressColor={colorSongs}
                             />
                         )
                     })
@@ -67,9 +82,10 @@ const Explorer = (props: ExplorerProps) => {
 type SongElemProps = {
     musicID: number;
     tags: Map<string, Tag>;
-    onDelete: () => void;
     doNext: NextTrackCallback;
+    syncMetadata: () => void;
     progress?: number,
+    progressColor?: string;
 }
 
 const SongElem = (props: SongElemProps) => {
@@ -81,9 +97,17 @@ const SongElem = (props: SongElemProps) => {
         window.open("https://youtube.com/watch?v=" + id, "_blank")?.focus();
     };
 
-    const c = `#28222f`;
+    const c = props.progressColor;
     const p = clamp(100 * (props.progress || 0), 0, 100);
     const grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
+
+    let onDelete = () => {
+        API.deleteMusic(props.musicID).then((res) => {
+            if (res.ok && res.status === 200) {
+                props.syncMetadata()
+            }
+        })
+    };
 
     return (
         <div className="song-elem" style={{background: grad}}>
@@ -113,7 +137,7 @@ const SongElem = (props: SongElemProps) => {
                     playable &&
                     <PlayButton doNext={props.doNext} musicID={props.musicID}/>
                 }
-                <button className="player-button" onClick={props.onDelete} title="Remove from library">
+                <button className="player-button" onClick={onDelete} title="Remove from library">
                     <MaterialIcon name="delete"/>
                 </button>
             </div>
