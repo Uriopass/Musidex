@@ -111,10 +111,10 @@ const SongElem = (props: SongElemProps) => {
                     {props.tags.get("artist")?.text || ""}
                 </span>
             </div>
-            <div style={{flex: "1", padding: "10px", textAlign: "right"}}>
+            <div style={{flex: "1", padding: "0 10px", textAlign: "right"}}>
                 {
                     hasYT &&
-                    <button className="player-button" onClick={() => goToYT(hasYT)} style={{marginRight: "4px"}}>
+                    <button className="player-button" onClick={() => goToYT(hasYT)}>
                         <img src="yt_icon.png" width={20} height={20} alt="Go to Youtube"/>
                     </button>
                 }

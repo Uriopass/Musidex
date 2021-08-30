@@ -85,7 +85,7 @@
     background-color: transparent;
     border: transparent;
     color: var(--color-fg);
-    padding: 5px 10px;
+    padding: 0 10px;
     display: inline-flex;
 }
 
