@@ -57,13 +57,17 @@ const SongElem = (props: SongElemProps) => {
     if (props.tags === undefined) {
         return <Fragment/>;
     }
-    let cover = props.tags.get("thumbnail")?.text || null;
+    const cover = props.tags.get("thumbnail")?.text || null;
 
-    let playable = canPlay(props.tags);
+    const playable = canPlay(props.tags);
+    const hasYT = props.tags.get("youtube_video_id")?.text;
+    const goToYT = (id: string) => {
+        window.open("https://youtube.com/watch?v="+id, "_blank")?.focus();
+    };
 
-    let c = `#28222f`;
-    let p = clamp(100 * (props.progress || 0), 0, 100);
-    let grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
+    const c = `#28222f`;
+    const p = clamp(100 * (props.progress || 0), 0, 100);
+    const grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
 
     return (
         <div className="song-elem" style={{background: grad}}>
@@ -83,6 +87,12 @@ const SongElem = (props: SongElemProps) => {
                 </span>
             </div>
             <div style={{flex: "1", padding: "10px", textAlign: "right"}}>
+                {
+                    hasYT &&
+                    <button className="player-button" onClick={() => goToYT(hasYT)} style={{marginRight: "4px"}}>
+                        <img src="yt_icon.png" width={20} height={20}/>
+                    </button>
+                }
                 {
                     playable &&
                     <PlayButton doNext={props.doNext} musicID={props.musicID}/>

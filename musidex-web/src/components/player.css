@@ -89,15 +89,25 @@
     display: inline-flex;
 }
 
-.player-button:hover .material-icons {
+.player-button:hover * {
     color: var(--primary);
     transition: 0.2s;
     transform: scale(1.2);
 }
 
-.player-button:hover:disabled .material-icons {
+.player-button:hover:disabled * {
     transform: none;
     color: gray;
+}
+
+.player-button img {
+    user-select: none;
+    filter: hue-rotate(180deg) saturate(0%);
+}
+
+.player-button:hover img {
+    user-select: none;
+    filter: saturate(80%);
 }
 
 .player-button:disabled {
