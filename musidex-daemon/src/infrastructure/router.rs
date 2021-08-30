@@ -35,7 +35,7 @@ use futures::FutureExt;
 use hyper::body::Bytes;
 use hyper::header::{
     HeaderValue, ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS,
-    ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_ENCODING, HOST, LOCATION, USER_AGENT,
+    ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_ENCODING, HOST, LOCATION, USER_AGENT,
 };
 use hyper::http::request::Parts;
 use hyper::http::Extensions;
@@ -230,7 +230,8 @@ impl Handler for StaticHandle {
         log::info!("serving file: {}", url);
         let mut p = self.dir_location.clone();
         p.push(url);
-        Box::pin((|| async {
+        let is_img = url.ends_with("jpg") || url.ends_with("png");
+        Box::pin((move || async move {
             let f = match tokio::fs::read(p).await {
                 Ok(x) => x,
                 Err(e) => {
@@ -240,7 +241,12 @@ impl Handler for StaticHandle {
                     return Err(e).context("failed reading file");
                 }
             };
-            Ok(Response::new(Body::from(f)))
+
+            let mut r = Response::builder();
+            if is_img {
+                r = r.header(CACHE_CONTROL, "public, max-age=604800, immutable");
+            }
+            Ok(r.body(Body::from(f)).unwrap())
         })())
     }
 }
