@@ -1,6 +1,6 @@
 import React from "react";
 import API from "./api";
-import {NextTrackCallback} from "./tracklist";
+import {NextTrackCallback, PrevTrackCallback} from "./tracklist";
 import {MusidexMetadata, Tag} from "./entity";
 
 export type Track = {
@@ -40,7 +40,7 @@ export function newTrackPlayer(): TrackPlayer {
     }
 }
 
-export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallback, dispatch: React.Dispatch<TrackPlayerAction>) {
+export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallback, doPrev: PrevTrackCallback, dispatch: React.Dispatch<TrackPlayerAction>, metadata: MusidexMetadata) {
     trackplayer.audio.onloadeddata = () => dispatch({action: "audioTick"});
     trackplayer.audio.onplaying = () => dispatch({action: "audioTick"});
     trackplayer.audio.onpause = () => dispatch({action: "audioTick"});
@@ -51,6 +51,31 @@ export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallba
             trackplayer.audio.play().catch((e) => console.log(e));
         }
     }
+
+    if ('mediaSession' in navigator) {
+        let curtags = trackplayer.current?.tags;
+        let artwork = [];
+        let thumb = curtags?.get("thumbnail")?.text;
+        if (thumb) {
+            artwork.push({ src: "storage/"+thumb,   type: 'image/jpeg' });
+        }
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: curtags?.get("title")?.text || "No Title",
+            artist: curtags?.get("artist")?.text || "No Artist",
+            artwork: artwork,
+        });
+
+        navigator.mediaSession.setActionHandler('play', () => doNext(trackplayer.current?.id));
+        navigator.mediaSession.setActionHandler('pause', () => doNext(trackplayer.current?.id));
+        navigator.mediaSession.setActionHandler('seekto', (e) => {
+            if (e.seekTime) {
+                dispatch(({action: "setTime", time: e.seekTime}))
+            }
+        });
+        navigator.mediaSession.setActionHandler('previoustrack', doPrev);
+        navigator.mediaSession.setActionHandler('nexttrack', () => doNext());
+    }
+
     document.body.onkeydown = (e) => {
         if (e.target !== document.body) {
             return;
@@ -107,6 +132,10 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
             if (trackplayer.audio.duration) {
                 trackplayer.duration = trackplayer.audio.duration;
             }
+            navigator.mediaSession.setPositionState({
+                duration: trackplayer.duration,
+                position: trackplayer.audio.currentTime,
+            });
             return {
                 ...trackplayer,
             }

@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useReducer, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import API from "./domain/api";
 import Navbar from "./components/navbar";
 import Player from "./components/player";
@@ -40,7 +40,7 @@ const App = () => {
     }, [setMetadata, list, setList, trackplayer, doNext]);
 
     useEffect(() => {
-        if(ws.current === undefined) {
+        if (ws.current === undefined) {
             ws.current = API.metadataWSInit();
         }
 
@@ -58,7 +58,7 @@ const App = () => {
     }, [ws]);
 
     trackplayer.audio.volume = volume;
-    setupListeners(trackplayer, doNext, dispatchPlayer);
+    useMemo(() => setupListeners(trackplayer, doNext, doPrev, dispatchPlayer, metadata), [trackplayer, doNext, doPrev, dispatchPlayer, metadata]);
 
     return (
         <>
