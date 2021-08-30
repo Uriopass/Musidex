@@ -9,7 +9,7 @@ Tags are automatically imported and searchable,
 sync it on your phone to enjoy free offline music, managed from your home server.
 
 Don't want to bother making playlists?  
-Let Musidex handle it for you, a neural network analysis your musics and checks for similarity
+Let Musidex handle it for you, a neural network analyses your musics and checks for similarity
 to provide semantic autoplaying.  
 Choose a starting point and let it choose the next song for you!
 
