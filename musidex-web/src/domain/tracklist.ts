@@ -6,7 +6,7 @@ import {canPlay, dot, MusidexMetadata, Vector} from "./entity";
 interface Tracklist {
     last_played: number[],
     last_played_maxsize: number,
-    cached_scores: {id: number, score: number}[]
+    cached_scores: {id: number, score: number | undefined}[]
 }
 
 export function emptyTracklist(): Tracklist {
@@ -27,7 +27,10 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         };
 
         if (id === undefined) {
-            id = list.cached_scores[0]?.id;
+            let s = list.cached_scores[0];
+            if (s.score !== undefined) {
+                id = s?.id;
+            }
         }
         if (id === undefined) {
             return;
@@ -54,13 +57,12 @@ export function updateCache(list: Tracklist, metadata: MusidexMetadata): Trackli
 
     for (let music of metadata.musics) {
         let score = getScore(list, lastplayedvec, music, metadata);
-        if (score === undefined) {
-            continue;
-        }
         cache.push({id: music, score: score});
     }
 
-    cache.sort((a, b) => b.score - a.score);
+    cache.sort((a, b) => {
+        return (b.score || -100000) - (a.score || -100000);
+    });
     list.cached_scores = cache;
     return list;
 }
