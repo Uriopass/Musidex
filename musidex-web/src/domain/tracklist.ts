@@ -13,7 +13,7 @@ interface Tracklist {
 export function emptyTracklist(): Tracklist {
     return {
         last_played: [],
-        last_played_maxsize: 100,
+        last_played_maxsize: 30,
         best_tracks: [],
         score_map: new Map(),
     }
@@ -94,8 +94,10 @@ export function getScore(list: Tracklist, lastvec: Vector | undefined, id: numbe
         return undefined;
     }
     let score = Math.random() * 0.0001;
-    if (list.last_played.lastIndexOf(id) >= 0) {
-        score -= 5;
+    let idx = list.last_played.lastIndexOf(id);
+    if (idx >= 0) {
+        let d = list.last_played.length - idx;
+        score -= 1 / d;
     }
     let emb = metadata.embeddings.get(id);
     if (emb !== undefined && lastvec !== undefined) {
