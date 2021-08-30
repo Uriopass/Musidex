@@ -6,7 +6,7 @@ import {canPlay, dot, MusidexMetadata, Vector} from "./entity";
 interface Tracklist {
     last_played: number[],
     last_played_maxsize: number,
-    cached_scores: {id: number, score: number | undefined}[]
+    cached_scores: { id: number, score: number | undefined }[]
 }
 
 export function emptyTracklist(): Tracklist {
@@ -40,13 +40,15 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
             return;
         }
 
-        list.last_played.push(id);
-        if (list.last_played.length > list.last_played_maxsize) {
-            list.last_played = list.last_played.slice(1);
+        if (id !== list.last_played[list.last_played.length - 1]) {
+            list.last_played.push(id);
+            if (list.last_played.length > list.last_played_maxsize) {
+                list.last_played = list.last_played.slice(1);
+            }
+            list = updateCache(list, metadata);
+            setList(list);
         }
 
-        list = updateCache(list, metadata);
-        setList(list);
         dispatch({action: "play", track: track})
     }, [curlist, setList, metadata, dispatch])
 }
@@ -98,7 +100,7 @@ export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         if (list.last_played.length === 0) {
             return;
         }
-        let last = list.last_played[list.last_played.length-1];
+        let last = list.last_played[list.last_played.length - 1];
         let tags = metadata.music_tags_idx.get(last) || new Map();
         dispatch({action: "play", track: {id: last, tags: tags}})
     }, [curlist, setList, metadata, dispatch])
