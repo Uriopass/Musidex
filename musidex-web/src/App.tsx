@@ -30,11 +30,14 @@ const App = () => {
 
     let onMessage = useCallback((ev) => {
         let meta = API.metadataFromWSMsg(ev);
+        if (!meta.music_tags_idx.has(trackplayer.current?.id || -1)) {
+            doNext();
+        }
         setMetadata(meta);
         let l = {...list};
         l = updateCache(l, meta);
         setList(l);
-    }, [setMetadata, list, setList]);
+    }, [setMetadata, list, setList, trackplayer, doNext]);
 
     useEffect(() => {
         if(ws.current === undefined) {

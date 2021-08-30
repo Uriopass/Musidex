@@ -28,7 +28,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
 
         if (id === undefined) {
             let s = list.cached_scores[0];
-            if (s.score !== undefined) {
+            if (s !== undefined && s.score !== undefined) {
                 id = s?.id;
             }
         }
@@ -54,6 +54,14 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
 }
 
 export function updateCache(list: Tracklist, metadata: MusidexMetadata): Tracklist {
+    let i = list.last_played.length;
+    while (i--) {
+        // @ts-ignore
+        if (!metadata.music_tags_idx.has(list.last_played[i])) {
+            list.last_played.splice(i, 1);
+        }
+    }
+
     const lastplayedvec = getLastvec(list, metadata);
     let cache = [];
 
@@ -66,13 +74,6 @@ export function updateCache(list: Tracklist, metadata: MusidexMetadata): Trackli
         return (b.score || -100000) - (a.score || -100000);
     });
     list.cached_scores = cache;
-
-    let i = list.last_played.length;
-    while (i--) {
-        if (!metadata.music_tags_idx.has(list.last_played[i])) {
-            list.last_played.splice(i, 1);
-        }
-    }
 
     return list;
 }
@@ -105,10 +106,10 @@ export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         list.last_played.pop();
         updateCache(list, metadata);
         setList(list);
-        if (list.last_played.length === 0) {
+        let last = list.last_played[list.last_played.length - 1];
+        if (last === undefined) {
             return;
         }
-        let last = list.last_played[list.last_played.length - 1];
         let tags = metadata.music_tags_idx.get(last) || new Map();
         dispatch({action: "play", track: {id: last, tags: tags}})
     }, [curlist, setList, metadata, dispatch])
