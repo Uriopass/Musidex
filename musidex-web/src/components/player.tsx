@@ -89,7 +89,7 @@ const Player = (props: PlayerProps) => {
             </div>
             <div className="player-central-menu">
                 <div className="player-controls">
-                    <button className="player-button" onClick={props.onPrev} disabled={props.canPrev()} title="Previous Track">
+                    <button className="player-button" onClick={props.onPrev} disabled={!props.canPrev()} title="Previous Track">
                         <MaterialIcon size={20}
                                       name="skip_previous"/>
                     </button>

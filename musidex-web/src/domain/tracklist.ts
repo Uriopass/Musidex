@@ -90,19 +90,21 @@ export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         const list = {
             ...curlist,
         };
-        const prev_music = list.last_played.pop();
-
-        if (prev_music !== undefined) {
-            setList(list);
-            let tags = metadata.music_tags_idx.get(prev_music) || new Map();
-            dispatch({action: "play", track: {id: prev_music, tags: tags}})
+        list.last_played.pop();
+        updateCache(list, metadata);
+        setList(list);
+        if (list.last_played.length === 0) {
+            return;
         }
+        let last = list.last_played[list.last_played.length-1];
+        let tags = metadata.music_tags_idx.get(last) || new Map();
+        dispatch({action: "play", track: {id: last, tags: tags}})
     }, [curlist, setList, metadata, dispatch])
 }
 
 export function useCanPrev(curlist: Tracklist): () => boolean {
     return useCallback(() => {
-        return curlist.last_played.length === 0;
+        return curlist.last_played.length > 1;
     }, [curlist])
 }
 
