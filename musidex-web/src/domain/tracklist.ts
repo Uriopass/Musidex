@@ -6,64 +6,67 @@ import {canPlay, dot, MusidexMetadata, Vector} from "./entity";
 interface Tracklist {
     last_played: number[],
     last_played_maxsize: number,
+    cached_scores: {id: number, score: number}[]
 }
 
 export function emptyTracklist(): Tracklist {
     return {
         last_played: [],
         last_played_maxsize: 100,
+        cached_scores: [],
     }
 }
 
 export type NextTrackCallback = (id?: number) => void;
 export type PrevTrackCallback = () => void;
 
-export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, current?: number): NextTrackCallback {
+export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata): NextTrackCallback {
     return useCallback((id) => {
-        const list = {
+        let list = {
             ...curlist,
         };
-        if (current !== undefined) {
-            if (list.last_played.length > list.last_played_maxsize) {
-                list.last_played = list.last_played.slice(1);
-            }
-            list.last_played.push(current);
-        }
 
         if (id === undefined) {
-            let maxscore = undefined;
-            let maxmusic = undefined;
-
-            let lastplayedvec = getLastvec(list, metadata, current);
-
-            for (let music of metadata.musics) {
-                let score = getScore(list, lastplayedvec, music, metadata);
-                if (score === undefined) {
-                    continue;
-                }
-                if (maxscore === undefined || score > maxscore) {
-                    maxscore = score;
-                    maxmusic = music;
-                }
-                console.log(music, score);
-            }
-
-            id = maxmusic;
+            id = list.cached_scores[0]?.id;
+        }
+        if (id === undefined) {
+            return;
+        }
+        const track = buildTrack(id, metadata);
+        if (track === undefined) {
+            return;
         }
 
+        list.last_played.push(id);
+        if (list.last_played.length > list.last_played_maxsize) {
+            list.last_played = list.last_played.slice(1);
+        }
+
+        list = updateCache(list, metadata);
         setList(list);
-        if (id !== undefined) {
-            const track = buildTrack(id, metadata);
-            if (track === undefined) {
-                return;
-            }
-            dispatch({action: "play", track: track})
-        }
-    }, [curlist, setList, metadata, current, dispatch])
+        dispatch({action: "play", track: track})
+    }, [curlist, setList, metadata, dispatch])
 }
 
-export function getLastvec(list: Tracklist, metadata: MusidexMetadata, current: number | undefined): Vector | undefined {
-    return metadata.embeddings.get(current || (list.last_played[list.last_played.length - 1] || -1))
+export function updateCache(list: Tracklist, metadata: MusidexMetadata): Tracklist {
+    const lastplayedvec = getLastvec(list, metadata);
+    let cache = [];
+
+    for (let music of metadata.musics) {
+        let score = getScore(list, lastplayedvec, music, metadata);
+        if (score === undefined) {
+            continue;
+        }
+        cache.push({id: music, score: score});
+    }
+
+    cache.sort((a, b) => b.score - a.score);
+    list.cached_scores = cache;
+    return list;
+}
+
+export function getLastvec(list: Tracklist, metadata: MusidexMetadata): Vector | undefined {
+    return metadata.embeddings.get(list.last_played[list.last_played.length - 1] || -1)
 }
 
 export function getScore(list: Tracklist, lastvec: Vector | undefined, id: number, metadata: MusidexMetadata): number | undefined {
@@ -71,7 +74,7 @@ export function getScore(list: Tracklist, lastvec: Vector | undefined, id: numbe
     if (tags === undefined || !canPlay(tags)) {
         return undefined;
     }
-    let score = Math.random() * 0.001;
+    let score = Math.random() * 0.0001;
     if (list.last_played.lastIndexOf(id) >= 0) {
         score -= 5;
     }

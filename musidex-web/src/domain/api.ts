@@ -1,5 +1,4 @@
 import {MusidexMetadata, Tag} from "./entity";
-import {Setter} from "../components/utils";
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 let apiURL = window.location.origin;
@@ -19,12 +18,9 @@ export const API = {
         return new ReconnectingWebSocket(prefix+"://"+ window.location.host + "/api/metadata/ws");
     },
 
-    metadataWSSet(setMetadata: Setter<MusidexMetadata>): (m: MessageEvent) => void {
-        return (m) => {
-            let v: RawMusidexMetadata = JSON.parse(m.data);
-            let meta = new MusidexMetadata(v.musics, v.tags);
-            setMetadata(meta);
-        };
+    metadataFromWSMsg(m: MessageEvent): MusidexMetadata {
+        let v: RawMusidexMetadata = JSON.parse(m.data);
+        return new MusidexMetadata(v.musics, v.tags);
     },
 
     async getMetadata(): Promise<MusidexMetadata | null> {

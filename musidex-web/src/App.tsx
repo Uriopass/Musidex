@@ -5,7 +5,14 @@ import Player from "./components/player";
 import {applyTrackPlayer, newTrackPlayer, setupListeners, TrackplayerCtx} from "./domain/trackplayer";
 import useLocalStorage from "use-local-storage";
 import PageNavigator, {PageEnum} from "./pages/navigator";
-import Tracklist, {emptyTracklist, TracklistCtx, useCanPrev, useNextTrackCallback, usePrevTrackCallback} from "./domain/tracklist";
+import Tracklist, {
+    emptyTracklist,
+    TracklistCtx,
+    updateCache,
+    useCanPrev,
+    useNextTrackCallback,
+    usePrevTrackCallback
+} from "./domain/tracklist";
 import {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/entity";
 import ReconnectingWebSocket from "reconnecting-websocket";
 
@@ -16,24 +23,32 @@ const App = () => {
     let [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     let [list, setList] = useState<Tracklist>(emptyTracklist())
     let [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
-    let doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, trackplayer.current?.id);
+    let doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata);
     let doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     let canPrev = useCanPrev(list);
     let ws = useRef<undefined | ReconnectingWebSocket>();
+
+    let onMessage = useCallback((ev) => {
+        let meta = API.metadataFromWSMsg(ev);
+        setMetadata(meta);
+        let l = {...list};
+        l = updateCache(l, meta);
+        setList(l);
+    }, [setMetadata, list, setList]);
 
     useEffect(() => {
         if(ws.current === undefined) {
             ws.current = API.metadataWSInit();
         }
 
-        ws.current.onmessage = API.metadataWSSet(setMetadata);
+        ws.current.onmessage = onMessage;
         ws.current.onclose = (_) => {
             setSyncProblem(true);
         };
         ws.current.onopen = (_) => {
             setSyncProblem(false);
         };
-    }, [setSyncProblem, setMetadata])
+    }, [setSyncProblem, onMessage])
 
     let fetchMetadata = useCallback(() => {
         ws.current?.send("refresh");
