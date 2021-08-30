@@ -1,5 +1,4 @@
 import './navbar.css'
-import TextInput from "./input";
 import {MaterialIcon, Setter} from "./utils";
 import React from "react";
 import {PageEnum} from "../pages/navigator";
@@ -30,11 +29,7 @@ const Navbar = React.memo((props: NavbarProps) => {
                     <MaterialIcon name={props.syncProblem ? "sync_problem" : "sync"} size={25}/>
                 </button>
             </NavbarElement>
-            <NavbarElement size="4">
-                <TextInput onChange={(v) => console.log("search v changed", v)} name="Search" minWidth="50%"/>
-                <MaterialIcon name="search" style={{marginLeft: "25px"}}/>
-            </NavbarElement>
-            <NavbarElement size="1"/>
+            <NavbarElement size="3" />
         </ul>
     )
 })

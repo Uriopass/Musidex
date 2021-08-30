@@ -1,10 +1,11 @@
 import './explorer.css'
 import API from "../domain/api";
-import {Fragment, useContext, useState} from "react";
+import React, {Fragment, useContext, useState} from "react";
 import {PlayButton} from "../components/playbutton";
 import {clamp, MaterialIcon} from "../components/utils";
 import {canPlay, MetadataCtx, Tag} from "../domain/entity";
 import {NextTrackCallback, TracklistCtx} from "../domain/tracklist";
+import TextInput from "../components/input";
 
 export type ExplorerProps = {
     title: string;
@@ -16,6 +17,9 @@ const Explorer = (props: ExplorerProps) => {
     const [metadata, syncMetadata] = useContext(MetadataCtx);
     const [shown, setShown] = useState(40);
     const list = useContext(TracklistCtx);
+    const [searchQry, setSearchQry] = useState("");
+    console.log(searchQry);
+
     let cur: number | undefined = list.last_played[list.last_played.length - 1];
     let onScroll = (e: any) => {
         const elem: HTMLDivElement = e.target;
@@ -45,7 +49,9 @@ const Explorer = (props: ExplorerProps) => {
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
             <div className="explorer color-fg">
-                <div className="explorer-title title">{props.title}</div>
+                <div className="explorer-search">
+                    <TextInput onChange={setSearchQry} name="Search"/>
+                </div>
                 {curPlaying}
                 {
                     list.cached_scores.slice(0, shown).map(({id, score}) => {
