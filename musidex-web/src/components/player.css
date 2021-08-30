@@ -13,6 +13,10 @@
     align-items: center;
 }
 
+.player-controls .player-button {
+    margin: 0 5px;
+}
+
 .player-central-menu {
     flex: 3;
     display: flex;
@@ -81,17 +85,19 @@
     background-color: transparent;
     border: transparent;
     color: var(--color-fg);
-    margin: 0 10px;
-    border: 2px var(--color-fg) solid;
-    border-radius: 100%;
-    padding: 5px 5px;
+    padding: 5px 10px;
     display: inline-flex;
 }
 
-.player-button:hover {
-    border-color: var(--primary);
+.player-button:hover .material-icons {
     color: var(--primary);
     transition: 0.2s;
+    transform: scale(1.2);
+}
+
+.player-button:hover:disabled .material-icons {
+    transform: none;
+    color: gray;
 }
 
 .player-button:disabled {

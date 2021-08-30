@@ -70,10 +70,10 @@ const SongElem = (props: SongElemProps) => {
             <div className="cover-image-container">
                 {
                     (cover !== null) &&
-                    <img src={"storage/" + cover} alt="album or video cover"/>
+                    <img src={"storage/" + cover} alt="album or video cover" loading="lazy"/>
                 }
             </div>
-            <div style={{flex: "1", padding: "10px"}}>
+            <div style={{flex: "3", padding: "10px"}}>
                 <b>
                     {props.tags.get("title")?.text || "No Title"}
                 </b>

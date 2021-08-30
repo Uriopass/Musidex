@@ -89,12 +89,12 @@ const Player = (props: PlayerProps) => {
             </div>
             <div className="player-central-menu">
                 <div className="player-controls">
-                    <button className="player-button" onClick={props.onPrev} disabled={props.canPrev()}>
+                    <button className="player-button" onClick={props.onPrev} disabled={props.canPrev()} title="Previous Track">
                         <MaterialIcon size={20}
                                       name="skip_previous"/>
                     </button>
-                    <PlayButton musicID={trackplayer.current?.id} doNext={props.doNext}/>
-                    <button className=" player-button" onClick={clickNext}>
+                    <PlayButton musicID={trackplayer.current?.id} doNext={props.doNext} size={26}/>
+                    <button className=" player-button" onClick={clickNext} title="Next Track">
                         <MaterialIcon size={20}
                                       name=" skip_next"/>
                     </button>

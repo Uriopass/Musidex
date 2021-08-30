@@ -6,9 +6,10 @@ import {MetadataCtx} from "../domain/entity";
 export type PlayButtonProps = {
     musicID?: number;
     doNext: (id?: number) => void;
+    size?: number;
 }
 
-export const PlayButton = ({doNext, musicID}: PlayButtonProps) => {
+export const PlayButton = ({doNext, musicID, size}: PlayButtonProps) => {
     let [trackplayer] = useContext(TrackplayerCtx);
     let [metadata,] = useContext(MetadataCtx);
     let same_v = (trackplayer.current?.id || -1) === musicID;
@@ -19,25 +20,21 @@ export const PlayButton = ({doNext, musicID}: PlayButtonProps) => {
     }, [doNext, musicID]);
 
     let titlePrefix = "Play ";
-    let icon;
+    let icon = "play_circle_filled";
 
     if (same_v) {
         if (trackplayer.loading) {
             icon = "pending";
             titlePrefix = "Loading ";
-        } else if (trackplayer.paused) {
-            icon = "play_arrow";
-        } else {
+        } else if (!trackplayer.paused) {
             icon = "pause";
             titlePrefix = "Pause ";
         }
-    } else {
-        icon = "play_arrow";
     }
 
     return (
         <button className="player-button" onClick={onClick} title={titlePrefix + title}>
-            <MaterialIcon name={icon}/>
+            <MaterialIcon name={icon} size={size}/>
         </button>
     )
 }
