@@ -48,7 +48,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
             if (list.last_played.length > list.last_played_maxsize) {
                 list.last_played = list.last_played.slice(1);
             }
-            list = updateCache(list, metadata);
+            list = updateScoreCache(list, metadata);
             setList(list);
         }
 
@@ -56,7 +56,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
     }, [curlist, setList, metadata, dispatch])
 }
 
-export function updateCache(list: Tracklist, metadata: MusidexMetadata): Tracklist {
+export function updateScoreCache(list: Tracklist, metadata: MusidexMetadata): Tracklist {
     let i = list.last_played.length;
     while (i--) {
         // @ts-ignore
@@ -69,12 +69,26 @@ export function updateCache(list: Tracklist, metadata: MusidexMetadata): Trackli
     list.score_map = new Map();
 
     for (let music of metadata.musics) {
-        let score = getScore(list, lastplayedvec, music, metadata);
-        if (score === undefined) {
+        let tags = metadata.music_tags_idx.get(music);
+        if (tags === undefined || !canPlay(tags)) {
             continue;
+        }
+        let score = Math.random() * 0.0001;
+        let neural = neuralScore(list, lastplayedvec, music, metadata);
+        if (neural !== undefined) {
+            score += neural;
         }
         list.score_map.set(music, score);
     }
+
+    list.last_played.forEach((id, l_index) => {
+        let prev = list.score_map.get(id);
+        if (prev === undefined) {
+            return;
+        }
+        let d = list.last_played.length - l_index;
+        list.score_map.set(id, prev - 1 / d);
+    });
 
     list.best_tracks = metadata.musics.slice();
     list.best_tracks.sort((a, b) => {
@@ -88,22 +102,12 @@ export function getLastvec(list: Tracklist, metadata: MusidexMetadata): Vector |
     return metadata.embeddings.get(list.last_played[list.last_played.length - 1] || -1)
 }
 
-export function getScore(list: Tracklist, lastvec: Vector | undefined, id: number, metadata: MusidexMetadata): number | undefined {
-    let tags = metadata.music_tags_idx.get(id);
-    if (tags === undefined || !canPlay(tags)) {
+export function neuralScore(list: Tracklist, lastvec: Vector | undefined, id: number, metadata: MusidexMetadata): number | undefined {
+    let emb = metadata.embeddings.get(id);
+    if (emb === undefined || lastvec === undefined) {
         return undefined;
     }
-    let score = Math.random() * 0.0001;
-    let idx = list.last_played.lastIndexOf(id);
-    if (idx >= 0) {
-        let d = list.last_played.length - idx;
-        score -= 1 / d;
-    }
-    let emb = metadata.embeddings.get(id);
-    if (emb !== undefined && lastvec !== undefined) {
-        score += dot(lastvec, emb) / (lastvec.mag * emb.mag);
-    }
-    return score;
+    return dot(lastvec, emb) / (lastvec.mag * emb.mag);
 }
 
 export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata): PrevTrackCallback {
@@ -112,7 +116,7 @@ export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Trackli
             ...curlist,
         };
         list.last_played.pop();
-        updateCache(list, metadata);
+        updateScoreCache(list, metadata);
         setList(list);
         let last = list.last_played[list.last_played.length - 1];
         if (last === undefined) {

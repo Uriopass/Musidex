@@ -8,7 +8,7 @@ import PageNavigator, {PageEnum} from "./pages/navigator";
 import Tracklist, {
     emptyTracklist,
     TracklistCtx,
-    updateCache,
+    updateScoreCache,
     useCanPrev,
     useNextTrackCallback,
     usePrevTrackCallback
@@ -35,7 +35,7 @@ const App = () => {
         }
         setMetadata(meta);
         let l = {...list};
-        l = updateCache(l, meta);
+        l = updateScoreCache(l, meta);
         setList(l);
     }, [setMetadata, list, setList, trackplayer, doNext]);
 
