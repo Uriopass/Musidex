@@ -7,19 +7,22 @@ import API from "../domain/api";
 /* eslint-disable no-useless-escape */
 const Submit = (props: any) => {
     return (
-        <div className={"submit color-fg " + (props.hidden ? "hidden" : "")}>
-            <YTSubmit
-                description="Paste a valid Youtube URL to add the music to your library."
-                uploadAPI={API.youtubeUpload}
-                title="YT Music"
-                titleColor="#fb0e0f"
-                placeholder="Youtube URL"/>
-            <YTSubmit
-                description="Paste a valid Youtube Playlist URL to add all of its musics to your library."
-                uploadAPI={API.youtubeUploadPlaylist}
-                title="YT Playlist"
-                titleColor="#fb0e0f"
-                placeholder="Youtube Playlist URL"/>
+
+        <div className={"scrollable-element content"  + (props.hidden ? " hidden" : "")}>
+            <div className="submit color-fg ">
+                <YTSubmit
+                    description="Paste a valid Youtube URL to add the music to your library."
+                    uploadAPI={API.youtubeUpload}
+                    title="YT Music"
+                    titleColor="#fb0e0f"
+                    placeholder="Youtube URL"/>
+                <YTSubmit
+                    description="Paste a valid Youtube Playlist URL to add all of its musics to your library."
+                    uploadAPI={API.youtubeUploadPlaylist}
+                    title="YT Playlist"
+                    titleColor="#fb0e0f"
+                    placeholder="Youtube Playlist URL"/>
+            </div>
         </div>
     )
 }

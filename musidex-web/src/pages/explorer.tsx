@@ -1,6 +1,6 @@
 import './explorer.css'
 import API from "../domain/api";
-import {Fragment, useContext} from "react";
+import {Fragment, useContext, useMemo, useState} from "react";
 import {PlayButton} from "../components/playbutton";
 import {clamp, MaterialIcon} from "../components/utils";
 import {canPlay, MetadataCtx, Tag} from "../domain/entity";
@@ -15,58 +15,83 @@ export type ExplorerProps = {
 
 const Explorer = (props: ExplorerProps) => {
     const [metadata, syncMetadata] = useContext(MetadataCtx);
-    const [player] = useContext(TrackplayerCtx);
-    const list = useContext(TracklistCtx);
+    const [shown, setShown] = useState(40);
+    console.log(shown, metadata.musics.length);
 
-    let lastvec = getLastvec(list, metadata, player.current?.id);
+    const Row = ({id}: {id: number}) => {
+        const tags = metadata.music_tags_idx.get(id);
+        if (tags === undefined) {
+            return <Fragment key={id}/>;
+        }
+        return (
+            <SongElem key={id} musicID={id}
+                      tags={tags}
+                      onDelete={() => {
+                          API.deleteMusic(id).then((res) => {
+                              if (res.ok && res.status === 200) {
+                                  syncMetadata()
+                              }
+                          })
+                      }}
+                      doNext={props.doNext}
+            />
+        )
+    };
+
+    let onScroll = (e: any) => {
+        const elem: HTMLDivElement = e.target;
+        if (elem.scrollHeight - elem.scrollTop < elem.clientHeight + 500) {
+            if (metadata.musics.length > shown) {
+                setShown(shown + 20);
+            }
+        }
+    };
 
     return (
-        <div className={"explorer color-fg " + (props.hidden ? "hidden" : "")}>
-            <div className="explorer-title title">{props.title}</div>
-            {
-                metadata.musics.map((id) => {
-                    return (
-                        <SongElem key={id} musicID={id}
-                                  tags={metadata.music_tags_idx.get(id)}
-                                  onDelete={() => {
-                                      API.deleteMusic(id).then((res) => {
-                                          if (res.ok && res.status === 200) {
-                                              syncMetadata()
-                                          }
-                                      })
-                                  }}
-                                  doNext={props.doNext}
-                                  progress={getScore(list, lastvec, id, metadata)}
-                        />
+        <div className={"scrollable-element content"  + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
+            <div className="explorer color-fg">
+                <div className="explorer-title title">{props.title}</div>
+                {
+                    metadata.musics.slice(0, shown).map((id) => {
+                        return <Row id={id} key={id}/>;
+                    })
+                }
+                {
+                    (shown < metadata.musics.length) && (
+                        <button style={{marginTop: "10px"}} onClick={() => setShown(shown + 20)}>
+                            Show more
+                        </button>
                     )
-                })
-            }
+                }
+            </div>
         </div>
     )
 }
 
 type SongElemProps = {
     musicID: number;
-    tags: Map<string, Tag> | undefined;
+    tags: Map<string, Tag>;
     onDelete: () => void;
     doNext: NextTrackCallback;
-    progress?: number;
 }
 
 const SongElem = (props: SongElemProps) => {
-    if (props.tags === undefined) {
-        return <Fragment/>;
-    }
+    const [metadata] = useContext(MetadataCtx);
+    const [player] = useContext(TrackplayerCtx);
+    const list = useContext(TracklistCtx);
+    let lastvec = getLastvec(list, metadata, player.current?.id);
+    let score = useMemo(() => getScore(list, lastvec, props.musicID, metadata), [list, props.musicID, lastvec, metadata]);
+
     const cover = props.tags.get("thumbnail")?.text || null;
 
     const playable = canPlay(props.tags);
     const hasYT = props.tags.get("youtube_video_id")?.text;
     const goToYT = (id: string) => {
-        window.open("https://youtube.com/watch?v="+id, "_blank")?.focus();
+        window.open("https://youtube.com/watch?v=" + id, "_blank")?.focus();
     };
 
     const c = `#28222f`;
-    const p = clamp(100 * (props.progress || 0), 0, 100);
+    const p = clamp(100 * (score || 0), 0, 100);
     const grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
 
     return (
@@ -90,7 +115,7 @@ const SongElem = (props: SongElemProps) => {
                 {
                     hasYT &&
                     <button className="player-button" onClick={() => goToYT(hasYT)} style={{marginRight: "4px"}}>
-                        <img src="yt_icon.png" width={20} height={20}/>
+                        <img src="yt_icon.png" width={20} height={20} alt="Go to Youtube"/>
                     </button>
                 }
                 {

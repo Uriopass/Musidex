@@ -45,6 +45,7 @@ body {
     border-left: 3px var(--primary) solid;
     font-size: 2rem;
     padding-left: 1rem;
+    text-align: left;
 }
 
 .primary {
