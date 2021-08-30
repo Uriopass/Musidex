@@ -9,9 +9,10 @@
     text-align: left;
     min-height: 60px;
     display: flex;
-    border-radius: 5px;
+    border-radius: 0.4rem;
     margin-top: 5px;
     align-items: center;
+    overflow: hidden;
 }
 
 .cover-image-container {

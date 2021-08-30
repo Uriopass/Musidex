@@ -43,12 +43,16 @@ const Explorer = (props: ExplorerProps) => {
         const tags = metadata.music_tags_idx.get(cur);
         if (tags !== undefined) {
             curPlaying =
-                <SongElem musicID={cur}
-                          doNext={props.doNext}
-                          syncMetadata={syncMetadata}
-                          tags={tags}
-                          progress={1.0}
-                          progressColor={colorCur}/>;
+                <>
+                    <div style={{marginTop: 10}}/>
+                    <SongElem musicID={cur}
+                              doNext={props.doNext}
+                              syncMetadata={syncMetadata}
+                              tags={tags}
+                              progress={1.0}
+                              progressColor={colorCur}/>
+                    <div style={{marginTop: 10}}/>
+                </>;
         }
     }
 

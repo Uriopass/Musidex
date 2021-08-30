@@ -27,6 +27,12 @@ body {
     grid-template-rows: 50px 1fr 85px;
 }
 
+hr {
+    border-color: var(--color-bg);
+    background-color: var(--color-bg);
+    color: var(--color-bg);
+}
+
 .content {
     width: 100%;
     text-align: center;
@@ -100,6 +106,7 @@ body {
 .scrollable-element {
     scrollbar-width: thin;
     scrollbar-color: var(--thumb-bg) var(--scrollbar-bg);
+    overflow-y: scroll;
 }
 
 .scrollable-element::-webkit-scrollbar-track {
