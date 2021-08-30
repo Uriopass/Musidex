@@ -36,7 +36,7 @@ impl NeuralEmbedWorker {
             return Ok(());
         }
 
-        log::info!("some music need embedings");
+        log::info!("some musics need embeddings");
 
         tokio::task::spawn_blocking(move || {
             let args = vec!["musidex-neuralembed/neuralembed.py"];
@@ -65,7 +65,9 @@ impl NeuralEmbedWorker {
                 ))
             }
         })
-        .await?
+        .await??;
+        log::info!("done!");
+        Ok(())
     }
 }
 
