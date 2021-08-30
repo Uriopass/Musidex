@@ -8,16 +8,21 @@ or import them from your local files.
 Tags are automatically imported and searchable,
 sync it on your phone to enjoy free offline music, managed from your home server.
 
+Don't want to bother making playlists?  
+Let Musidex handle it for you, a neural network analysis your musics and checks for similarity
+to provide semantic autoplaying.  
+Choose a starting point and let it choose the next song for you!
+
 ### Features
 
 
 - [x] Music streaming
 - [x] Youtube import
 - [x] Web front
-- [ ] Text search
+- [x] Neural embedding based auto play
+- [x] Text search
 - [ ] Tag filtering
 - [ ] Playlists through tags/Tag editor
-- [ ] Neural embedding based auto play
 - [ ] MP3 import
 - [ ] Ogg import
 - [ ] FLAC import
