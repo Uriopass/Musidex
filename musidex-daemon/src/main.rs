@@ -13,7 +13,8 @@ mod tests;
 use crate::application::handlers;
 use crate::domain::config;
 use crate::domain::sync::SyncBroadcast;
-use crate::domain::youtube_dl_worker::YoutubeDLWorker;
+use crate::domain::worker_neural_embed::NeuralEmbedWorker;
+use crate::domain::worker_youtube_dl::YoutubeDLWorker;
 use crate::infrastructure::db::Db;
 use crate::infrastructure::migrate::migrate;
 use crate::infrastructure::router::{RedirectHTTPSService, Router};
@@ -40,6 +41,7 @@ async fn start() -> anyhow::Result<()> {
     config::init(&db).await?;
 
     let ytdl_worker = YoutubeDLWorker::new(db.clone());
+    let neuralembed_worker = NeuralEmbedWorker::new(db.clone());
     let (broadcast, sub) = SyncBroadcast::new()?;
 
     let mut router = Router::new();
@@ -68,6 +70,7 @@ async fn start() -> anyhow::Result<()> {
     let service = router.into_service();
 
     ytdl_worker.start();
+    neuralembed_worker.start();
     broadcast.start_workers();
 
     // Run

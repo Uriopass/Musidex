@@ -20,9 +20,12 @@ impl YoutubeDLWorker {
         let _ = tokio::spawn(async move {
             loop {
                 tokio::time::sleep(Duration::from_secs(5)).await;
-                let v = self.step().await;
+                let v = self
+                    .step()
+                    .await
+                    .context("error while running youtubedl worker");
                 if let Err(e) = v {
-                    log::error!("error while running youtubedl worker: {:?}", e);
+                    log::error!("{:?}", e);
                 }
             }
         });

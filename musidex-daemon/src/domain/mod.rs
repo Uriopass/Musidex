@@ -5,4 +5,5 @@ pub mod stream;
 pub mod sync;
 pub mod tags;
 pub mod upload;
-pub mod youtube_dl_worker;
+pub mod worker_neural_embed;
+pub mod worker_youtube_dl;

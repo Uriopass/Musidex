@@ -102,6 +102,7 @@ tag_key! {
     Artist => "artist",
     Thumbnail => "thumbnail",
     Duration => "duration",
+    Embedding => "embedding",
 }
 
 impl Display for TagKey {

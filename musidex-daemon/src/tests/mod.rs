@@ -8,6 +8,7 @@ use std::sync::Arc;
 mod config;
 mod music;
 mod tags;
+mod worker_neural_embed;
 
 async fn mk_db() -> anyhow::Result<Db> {
     let db = Db::connect_in_memory().await;
