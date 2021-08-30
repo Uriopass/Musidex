@@ -4,16 +4,18 @@ import {buildTrack, TrackPlayerAction} from "./trackplayer";
 import {canPlay, dot, MusidexMetadata, Vector} from "./entity";
 
 interface Tracklist {
-    last_played: number[],
-    last_played_maxsize: number,
-    cached_scores: { id: number, score: number | undefined }[]
+    last_played: number[];
+    last_played_maxsize: number;
+    best_tracks: number[];
+    score_map: Map<number, number>;
 }
 
 export function emptyTracklist(): Tracklist {
     return {
         last_played: [],
         last_played_maxsize: 100,
-        cached_scores: [],
+        best_tracks: [],
+        score_map: new Map(),
     }
 }
 
@@ -27,9 +29,10 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         };
 
         if (id === undefined) {
-            let s = list.cached_scores[0];
-            if (s !== undefined && s.score !== undefined) {
-                id = s?.id;
+            let best_id = list.best_tracks[0];
+            let score = list.score_map.get(best_id || -1);
+            if (score !== undefined) {
+                id = best_id;
             }
         }
         if (id === undefined) {
@@ -63,17 +66,20 @@ export function updateCache(list: Tracklist, metadata: MusidexMetadata): Trackli
     }
 
     const lastplayedvec = getLastvec(list, metadata);
-    let cache = [];
+    list.score_map = new Map();
 
     for (let music of metadata.musics) {
         let score = getScore(list, lastplayedvec, music, metadata);
-        cache.push({id: music, score: score});
+        if (score === undefined) {
+            continue;
+        }
+        list.score_map.set(music, score);
     }
 
-    cache.sort((a, b) => {
-        return (b.score || -100000) - (a.score || -100000);
+    list.best_tracks = metadata.musics.slice();
+    list.best_tracks.sort((a, b) => {
+        return (list.score_map.get(b) || -100000) - (list.score_map.get(a) || -100000);
     });
-    list.cached_scores = cache;
 
     return list;
 }

@@ -16,17 +16,25 @@ export type Vector = {
     mag: number,
 };
 
+export type IndexedMusic = {
+    id: number;
+    title: string;
+    artist: string;
+}
+
 export class MusidexMetadata {
     musics: number[];
     tags: Tag[];
     music_tags_idx: Map<number, Tags>;
     embeddings: Map<number, Vector>;
+    fuse_document: IndexedMusic[];
 
     constructor(musics: number[], tags: Tag[]) {
         this.musics = musics;
         this.tags = tags;
         this.music_tags_idx = new Map();
         this.embeddings = new Map();
+        this.fuse_document = [];
 
         this.musics.forEach((m) => {
             this.music_tags_idx.set(m, new Map());
@@ -43,6 +51,14 @@ export class MusidexMetadata {
                 this.embeddings.set(tag.music_id, {v: tag.vector, mag: mag});
             }
         })
+
+        for (let [id, tags] of this.music_tags_idx.entries()) {
+            this.fuse_document.push({
+                id: id,
+                title: tags.get("title")?.text || "",
+                artist: tags.get("artist")?.text || "",
+            })
+        }
     }
 }
 

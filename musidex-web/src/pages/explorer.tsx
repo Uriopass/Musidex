@@ -1,11 +1,12 @@
 import './explorer.css'
 import API from "../domain/api";
-import React, {Fragment, useContext, useState} from "react";
+import React, {Fragment, useContext, useMemo, useState} from "react";
 import {PlayButton} from "../components/playbutton";
 import {clamp, MaterialIcon} from "../components/utils";
 import {canPlay, MetadataCtx, Tag} from "../domain/entity";
 import {NextTrackCallback, TracklistCtx} from "../domain/tracklist";
 import TextInput from "../components/input";
+import Fuse from "fuse.js";
 
 export type ExplorerProps = {
     title: string;
@@ -13,12 +14,17 @@ export type ExplorerProps = {
     doNext: NextTrackCallback;
 }
 
+const fuseOptions = {
+    includeScore: true,
+    keys: ['title', 'artist'],
+    threshold: 0.4,
+}
+
 const Explorer = (props: ExplorerProps) => {
     const [metadata, syncMetadata] = useContext(MetadataCtx);
     const [shown, setShown] = useState(40);
     const list = useContext(TracklistCtx);
     const [searchQry, setSearchQry] = useState("");
-    console.log(searchQry);
 
     let cur: number | undefined = list.last_played[list.last_played.length - 1];
     let onScroll = (e: any) => {
@@ -46,6 +52,22 @@ const Explorer = (props: ExplorerProps) => {
         }
     }
 
+    let fuse = useMemo(() => {
+        return new Fuse(metadata.fuse_document, fuseOptions)
+    }, [metadata]);
+
+    let qryFilter = useMemo(() => {
+        if (searchQry === "") {
+            return [];
+        }
+        return fuse.search(searchQry)
+    }, [searchQry, fuse])
+
+    let toShow = list.best_tracks;
+    if (searchQry !== "") {
+        toShow = qryFilter.map((v) => v.item.id);
+    }
+
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
             <div className="explorer color-fg">
@@ -54,7 +76,7 @@ const Explorer = (props: ExplorerProps) => {
                 </div>
                 {curPlaying}
                 {
-                    list.cached_scores.slice(0, shown).map(({id, score}) => {
+                    toShow.slice(0, shown).map((id) => {
                         if (id === cur) {
                             return <Fragment key={id}/>;
                         }
@@ -62,6 +84,7 @@ const Explorer = (props: ExplorerProps) => {
                         if (tags === undefined) {
                             return <Fragment key={id}/>;
                         }
+                        let score = list.score_map.get(id);
                         return (
                             <SongElem key={id} musicID={id}
                                       tags={tags}
