@@ -52,6 +52,9 @@ export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallba
         }
     }
     document.body.onkeydown = (e) => {
+        if (e.target !== document.body) {
+            return;
+        }
         if (e.code === "Space" || e.code === "KeyK") {
             e.preventDefault();
             if (!trackplayer.current) {
