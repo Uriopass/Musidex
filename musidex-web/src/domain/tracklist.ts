@@ -66,6 +66,14 @@ export function updateCache(list: Tracklist, metadata: MusidexMetadata): Trackli
         return (b.score || -100000) - (a.score || -100000);
     });
     list.cached_scores = cache;
+
+    let i = list.last_played.length;
+    while (i--) {
+        if (!metadata.music_tags_idx.has(list.last_played[i])) {
+            list.last_played.splice(i, 1);
+        }
+    }
+
     return list;
 }
 
