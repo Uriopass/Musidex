@@ -11,14 +11,14 @@ interface NavbarProps {
 const Navbar = React.memo((props: NavbarProps) => {
     return (
         <ul className="navbar bg color-fg">
-            <NavbarElement size="1" style={{justifyContent: "flex-end", alignItems: "center"}}>
+            <div className="navbar-elems">
                 <button onClick={() => props.setCurPage("explorer")} title="Home">
                     <MaterialIcon name="home"/>
-                    Home
+                    &nbsp;Home
                 </button>
                 <button onClick={() => props.setCurPage("submit")} title="Add musics to the library">
                     <MaterialIcon name="file_upload" size={25}/>
-                    Upload
+                    &nbsp;Upload
                 </button>
                 {
                     props.syncProblem &&
@@ -26,17 +26,8 @@ const Navbar = React.memo((props: NavbarProps) => {
                         <MaterialIcon name="sync_problem" size={25} title="There is a problem connecting to the server"/>
                     </div>
                 }
-            </NavbarElement>
-            <NavbarElement size="3"/>
+            </div>
         </ul>
-    )
-})
-
-const NavbarElement = React.memo((props: any) => {
-    return (
-        <li className="navbar-elem " style={{...props.style, flexGrow: props.size}}>
-            {props.children}
-        </li>
     )
 })
 
