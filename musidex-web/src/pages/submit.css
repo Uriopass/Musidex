@@ -1,6 +1,6 @@
 .submit {
-    padding: 30px 0;
-    width: 100%;
+    padding: 30px 10px;
+    width: calc(100% - 20px);
     text-align: left;
-    max-width: 1000px;
+    max-width: 980px;
 }
