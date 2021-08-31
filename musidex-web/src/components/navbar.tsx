@@ -9,19 +9,16 @@ interface NavbarProps {
 }
 
 const Navbar = React.memo((props: NavbarProps) => {
-    let syncStyle;
-    if (props.syncProblem) {
-        syncStyle = {color: "var(--danger)"}
-    }
-
     return (
         <ul className="navbar bg color-fg">
             <NavbarElement size="1" style={{justifyContent: "flex-end", alignItems: "center"}}>
                 <button onClick={() => props.setCurPage("explorer")} title="Home">
                     <MaterialIcon name="home"/>
+                    Home
                 </button>
                 <button onClick={() => props.setCurPage("submit")} title="Add musics to the library">
                     <MaterialIcon name="file_upload" size={25}/>
+                    Upload
                 </button>
                 {
                     props.syncProblem &&

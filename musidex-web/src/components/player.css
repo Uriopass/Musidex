@@ -102,7 +102,7 @@
 
 .player-button img {
     user-select: none;
-    filter: hue-rotate(180deg) saturate(0%);
+    filter: saturate(50%);
 }
 
 .player-button:hover img {
