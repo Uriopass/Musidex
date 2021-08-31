@@ -59,8 +59,10 @@ export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallba
         if (thumb) {
             artwork.push({ src: "storage/"+thumb,   type: 'image/jpeg' });
         }
+        let title = curtags?.get("title")?.text || "No Title";
+        trackplayer.audio.title = title;
         navigator.mediaSession.metadata = new MediaMetadata({
-            title: curtags?.get("title")?.text || "No Title",
+            title: title,
             artist: curtags?.get("artist")?.text || "No Artist",
             artwork: artwork,
         });
