@@ -62,7 +62,7 @@ const App = () => {
 
     return (
         <>
-            <Navbar syncProblem={syncProblem} setCurPage={setCurPage} onSync={fetchMetadata}/>
+            <Navbar syncProblem={syncProblem} setCurPage={setCurPage}/>
             <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
                 <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
                     <TracklistCtx.Provider value={list}>

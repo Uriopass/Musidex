@@ -5,7 +5,6 @@ import {PageEnum} from "../pages/navigator";
 
 interface NavbarProps {
     setCurPage: Setter<PageEnum>;
-    onSync: () => void;
     syncProblem: boolean;
 }
 
@@ -17,19 +16,21 @@ const Navbar = React.memo((props: NavbarProps) => {
 
     return (
         <ul className="navbar bg color-fg">
-            <NavbarElement size="1" style={{justifyContent: "flex-end"}}>
+            <NavbarElement size="1" style={{justifyContent: "flex-end", alignItems: "center"}}>
                 <button onClick={() => props.setCurPage("explorer")} title="Home">
                     <MaterialIcon name="home"/>
                 </button>
                 <button onClick={() => props.setCurPage("submit")} title="Add musics to the library">
                     <MaterialIcon name="file_upload" size={25}/>
                 </button>
-                <button onClick={() => props.onSync()} style={syncStyle}
-                        title={props.syncProblem ? "There is a problem connecting to the server" : ""}>
-                    <MaterialIcon name={props.syncProblem ? "sync_problem" : "sync"} size={25}/>
-                </button>
+                {
+                    props.syncProblem &&
+                    <div style={{color: "var(--danger)", display: "flex", padding: "0 6px"}}>
+                        <MaterialIcon name="sync_problem" size={25} title="There is a problem connecting to the server"/>
+                    </div>
+                }
             </NavbarElement>
-            <NavbarElement size="3" />
+            <NavbarElement size="3"/>
         </ul>
     )
 })

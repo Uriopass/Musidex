@@ -8,7 +8,7 @@ export const MaterialIcon = React.memo((props: any) => {
                       ...props.style,
                       fontSize: size,
                       maxWidth: size,
-                  }}>
+                  }} title={props.title}>
         {props.name}
     </span>)
 })
