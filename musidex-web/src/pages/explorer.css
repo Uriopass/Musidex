@@ -33,8 +33,9 @@
 .explorer-search {
     display: flex;
     align-items: center;
+    width: calc(100% - 20px);
 }
 
-.explorer-search {
-    width: calc(100% - 20px);
+.explorer-search .field {
+    width: calc(100% - 5px);
 }
