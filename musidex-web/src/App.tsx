@@ -58,7 +58,7 @@ const App = () => {
     }, [ws]);
 
     trackplayer.audio.volume = volume;
-    useMemo(() => setupListeners(trackplayer, doNext, doPrev, dispatchPlayer, metadata), [trackplayer, doNext, doPrev, dispatchPlayer, metadata]);
+    useMemo(() => setupListeners(trackplayer, doNext, doPrev, dispatchPlayer), [trackplayer, doNext, doPrev, dispatchPlayer]);
 
     return (
         <>

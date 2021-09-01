@@ -40,7 +40,7 @@ export function newTrackPlayer(): TrackPlayer {
     }
 }
 
-export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallback, doPrev: PrevTrackCallback, dispatch: React.Dispatch<TrackPlayerAction>, metadata: MusidexMetadata) {
+export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallback, doPrev: PrevTrackCallback, dispatch: React.Dispatch<TrackPlayerAction>) {
     trackplayer.audio.onloadeddata = () => dispatch({action: "audioTick"});
     trackplayer.audio.onplaying = () => dispatch({action: "audioTick"});
     trackplayer.audio.onpause = () => dispatch({action: "audioTick"});
