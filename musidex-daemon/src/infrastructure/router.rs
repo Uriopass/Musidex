@@ -230,7 +230,10 @@ impl Handler for StaticHandle {
         log::info!("serving file: {}", url);
         let mut p = self.dir_location.clone();
         p.push(url);
-        let is_img = url.ends_with("jpg") || url.ends_with("png");
+        let should_cache = url.ends_with("jpg")
+            || url.ends_with("png")
+            || url.ends_with("js")
+            || url.ends_with("css");
         Box::pin((move || async move {
             let f = match tokio::fs::read(p).await {
                 Ok(x) => x,
@@ -243,7 +246,7 @@ impl Handler for StaticHandle {
             };
 
             let mut r = Response::builder();
-            if is_img {
+            if should_cache {
                 r = r.header(CACHE_CONTROL, "public, max-age=604800, immutable");
             }
             Ok(r.body(Body::from(f)).unwrap())
