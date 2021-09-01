@@ -16,16 +16,27 @@ export const MaterialIcon = React.memo((props: any) => {
 type ProgressBarProps = {
     onMouseMove?: React.MouseEventHandler<HTMLDivElement>;
     progress: number;
+    buffered?: [number, number][];
 }
 
-export const ProgressBar = React.memo(({onMouseMove, progress}: ProgressBarProps) => {
+export const ProgressBar = React.memo(({onMouseMove, progress, buffered}: ProgressBarProps) => {
     let off = 100 * progress + "%";
     return (
         <div className="progress-container" onMouseDown={onMouseMove} onMouseMove={onMouseMove}>
-            <div className="progress-indicator" style={{left: "calc(-6px + " + off + ")"}}/>
             <div className="progress-outer">
+                {
+                    buffered &&
+                    buffered.map(([start, end]) =>
+                        <div className="progress-bar progress-bar-buffered"
+                             style={{
+                                 left: (start * 100) + "%",
+                                 width: (end * 100) + "%"
+                             }}/>
+                    )
+                }
                 <div className="progress-bar" style={{width: off}}/>
             </div>
+            <div className="progress-indicator" style={{left: "calc(-6px + " + off + ")"}}/>
         </div>
     )
 })

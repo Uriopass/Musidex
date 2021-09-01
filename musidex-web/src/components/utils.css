@@ -11,6 +11,7 @@
     background-color: var(--color-bg);
     height: 3px;
     width: 100%;
+    position: relative;
 }
 
 .progress-container:hover .progress-outer {
@@ -20,6 +21,11 @@
 .progress-bar {
     background-color: var(--primary);
     height: 100%;
+    position: absolute;
+}
+
+.progress-bar-buffered {
+    background-color: #5f6168;
 }
 
 .progress-container:hover .progress-indicator {

@@ -70,6 +70,15 @@ const Player = (props: PlayerProps) => {
     let doNext = props.doNext;
     let clickNext = useCallback(() => doNext(), [doNext]);
 
+    let buffered: [number, number][] = [];
+    if (trackplayer.duration > 1) {
+        buffered = Array(trackplayer.buffered.length).fill(0).map((_, idx) => {
+            const s = trackplayer.buffered.start(idx);
+            const e = trackplayer.buffered.end(idx);
+            return [Math.max(0, s / trackplayer.duration), Math.min(1, e / trackplayer.duration)];
+        })
+    }
+
     return (
         <div className="player fg color-fg">
             <div className="player-current-track">
@@ -103,7 +112,7 @@ const Player = (props: PlayerProps) => {
                     <span className="player-track-info">
                         {timeFormat(curtime)}
                     </span>
-                    <ProgressBar onMouseMove={trackBarOnMove} progress={trackProgress}/>
+                    <ProgressBar onMouseMove={trackBarOnMove} progress={trackProgress} buffered={buffered}/>
                     <span className="player-track-info">
                         {timeFormat(duration)}
                     </span>
