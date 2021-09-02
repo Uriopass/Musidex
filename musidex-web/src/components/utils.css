@@ -8,7 +8,7 @@
 }
 
 .progress-outer {
-    background-color: var(--color-bg);
+    background-color: #2e3340;
     height: 3px;
     width: 100%;
     position: relative;
@@ -25,7 +25,7 @@
 }
 
 .progress-bar-buffered {
-    background-color: #5f6168;
+    background-color:  var(--color-bg);
 }
 
 .progress-container:hover .progress-indicator {
