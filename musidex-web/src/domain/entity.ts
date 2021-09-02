@@ -10,6 +10,11 @@ export interface Tag {
     vector?: number[];
 }
 
+export type User = {
+    id: number;
+    name: string;
+}
+
 export type Tags = Map<string, Tag>;
 export type Vector = {
     v: number[],
@@ -25,13 +30,15 @@ export type IndexedMusic = {
 export class MusidexMetadata {
     musics: number[];
     tags: Tag[];
+    users: User[];
     music_tags_idx: Map<number, Tags>;
     embeddings: Map<number, Vector>;
     fuse_document: IndexedMusic[];
 
-    constructor(musics: number[], tags: Tag[]) {
+    constructor(musics: number[], tags: Tag[], users: User[]) {
         this.musics = musics;
         this.tags = tags;
+        this.users = users;
         this.music_tags_idx = new Map();
         this.embeddings = new Map();
         this.fuse_document = [];
@@ -67,7 +74,7 @@ export const MetadataCtx = React.createContext<[MusidexMetadata, () => void]>([e
 }]);
 
 export function emptyMetadata(): MusidexMetadata {
-    return new MusidexMetadata([], []);
+    return new MusidexMetadata([], [], []);
 }
 
 export function canPlay(tags: Tags): boolean {

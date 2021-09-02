@@ -1,4 +1,4 @@
-import {MusidexMetadata, Tag} from "./entity";
+import {MusidexMetadata, Tag, User} from "./entity";
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 let apiURL = window.location.origin;
@@ -6,6 +6,7 @@ let apiURL = window.location.origin;
 type RawMusidexMetadata = {
     musics: number[];
     tags: Tag[];
+    users: User[];
 }
 
 export const API = {
@@ -23,13 +24,13 @@ export const API = {
         let vv = new Uint8Array(m.data);
         const s = pako.inflateRaw(vv, {to: 'string'});
         let v: RawMusidexMetadata = JSON.parse(s);
-        return new MusidexMetadata(v.musics, v.tags);
+        return new MusidexMetadata(v.musics, v.tags, v.users);
     },
 
     async getMetadata(): Promise<MusidexMetadata | null> {
         return fetchJson(apiURL + "/api/metadata").then((v: RawMusidexMetadata) => {
             if (v == null) return null;
-            return new MusidexMetadata(v.musics, v.tags);
+            return new MusidexMetadata(v.musics, v.tags, v.users);
         })
     },
 
