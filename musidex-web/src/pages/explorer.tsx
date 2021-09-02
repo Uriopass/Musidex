@@ -1,12 +1,11 @@
 import './explorer.css'
 import API from "../domain/api";
-import React, {Fragment, useContext, useMemo, useState} from "react";
+import React, {Fragment, useContext, useEffect, useMemo, useState} from "react";
 import {PlayButton} from "../components/playbutton";
 import {clamp, MaterialIcon, Setter} from "../components/utils";
 import {canPlay, MetadataCtx, Tag} from "../domain/entity";
 import {NextTrackCallback, TracklistCtx} from "../domain/tracklist";
 import TextInput from "../components/input";
-import Fuse from "fuse.js";
 
 export type ExplorerProps = {
     title: string;
@@ -66,21 +65,32 @@ const Explorer = (props: ExplorerProps) => {
                 </>;
         }
     }
+    let [Fuse, setFuse] = useState<any>(undefined);
+    useEffect(() => {
+        if (searchQry !== "" && Fuse === undefined) {
+            import("fuse.js").then(fuse => {
+                setFuse(fuse);
+            })
+        }
+    }, [searchQry, Fuse]);
 
     let fuse = useMemo(() => {
-        return new Fuse(metadata.fuse_document, fuseOptions)
-    }, [metadata]);
+        if (Fuse === undefined) {
+            return undefined;
+        }
+        return new Fuse.default(metadata.fuse_document, fuseOptions)
+    }, [metadata, Fuse]);
 
     let qryFilter = useMemo(() => {
-        if (searchQry === "") {
+        if (searchQry === "" || fuse === undefined) {
             return [];
         }
         return fuse.search(searchQry)
     }, [searchQry, fuse])
 
-    let toShow;
-    if (searchQry !== "") {
-        toShow = qryFilter.map((v) => v.item.id);
+    let toShow: number[];
+    if (searchQry !== "" && fuse !== undefined) {
+        toShow = qryFilter.map((v: any) => v.item.id);
     } else {
         switch (sortBy.kind.kind) {
             case "similarity":
