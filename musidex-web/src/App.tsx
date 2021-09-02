@@ -38,10 +38,16 @@ const App = () => {
             doNext();
         }
         setMetadata(meta);
+        if (!meta.users.some((u) => u.id === user)) {
+            const u = meta.users[0]?.id;
+            if (u !== undefined) {
+                setUser(u);
+            }
+        }
         let l = {...list};
         l = updateScoreCache(l, meta);
         setList(l);
-    }, [setMetadata, list, setList, trackplayer, doNext]);
+    }, [setMetadata, list, setList, trackplayer, doNext, user, setUser]);
 
     useEffect(() => {
         if (ws.current === undefined) {
