@@ -28,6 +28,7 @@ export const ProgressBar = React.memo(({onMouseMove, progress, buffered}: Progre
                     buffered &&
                     buffered.map(([start, end]) =>
                         <div className="progress-bar progress-bar-buffered"
+                             key={start+":"+end}
                              style={{
                                  left: (start * 100) + "%",
                                  width: (end * 100) + "%"
