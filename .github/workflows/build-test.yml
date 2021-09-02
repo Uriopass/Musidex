@@ -1,0 +1,30 @@
+name: rust-build
+
+on:
+  push:
+    branches:
+      - master
+    tags-ignore:
+      - v*  # don't run on tags since release does that
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Update things
+        run: sudo apt-get update
+      - name: install libs
+        run: sudo apt install ffmpeg npm libsqlite3-dev python3 python-is-python3
+      - name: install youtube-dl
+        run: sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl && sudo chmod a+rx /usr/local/bin/youtube-dl
+      - name: Install Rust
+        uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: 'stable'
+      - name: Test daemon
+        run: cargo test --verbose --manifest-file musidex-daemon/Cargo.toml
+      - name: Build web
+        working-directory: ./musidex-web
+        run: npm install && npm run build
