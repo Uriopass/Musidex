@@ -11,12 +11,11 @@ type TextInputProps = {
 }
 
 const TextInput = React.memo((props: TextInputProps) => {
-    let id = "form_id_" + props.name.toLowerCase();
-    const showl = props.withLabel === true;
-    return (
-        <div className={"form_group field " + (showl ? " form_show_label" : "")}
-             style={{minWidth: props.minWidth || 0}}>
-            <input type="input"
+        let id = "form_id_" + props.name.toLowerCase();
+        const showl = props.withLabel === true;
+        return <div className={"form_group field " + (showl ? " form_show_label" : "")}
+                    style={{minWidth: props.minWidth || 0}}>
+            <input type="search"
                    onChange={(ev) => props.onChange(ev.target.value)}
                    className="form_field"
                    placeholder={props.name}
@@ -25,10 +24,11 @@ const TextInput = React.memo((props: TextInputProps) => {
                    title={props.title}
                    pattern={props.pattern}
                    autoComplete="off"/>
-            {showl ? (
-                <label htmlFor={id} className="form_label">{props.name}</label>
-            ) : (<></>)}
-        </div>)
-});
+            {showl &&
+            <label htmlFor={id} className="form_label">{props.name}</label>
+            }
+        </div>;
+    }
+);
 
 export default TextInput;

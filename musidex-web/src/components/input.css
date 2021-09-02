@@ -33,6 +33,18 @@
     top: 0;
 }
 
+.clear-input {
+    position: absolute;
+    background-color: transparent;
+    border: 0;
+    margin: 0;
+    padding: 5px 10px;
+    font: inherit;
+    color: var(--color-fg);
+    right: 0;
+    top: 5px;
+}
+
 .form_label {
     position: absolute;
     top: -17px;
