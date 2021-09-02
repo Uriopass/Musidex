@@ -10,7 +10,7 @@ mod infrastructure;
 #[cfg(test)]
 mod tests;
 
-use crate::application::handlers;
+use crate::application::{handlers, user_handlers};
 use crate::domain::config;
 use crate::domain::sync::SyncBroadcast;
 use crate::domain::worker_neural_embed::NeuralEmbedWorker;
@@ -56,8 +56,10 @@ async fn start() -> anyhow::Result<()> {
             handlers::youtube_upload_playlist,
         )
         .get("/api/stream/:musicid", handlers::stream)
-        .get("/api/config", handlers::get_config)
         .delete("/api/music/:id", handlers::delete_music)
+        .get("/api/config", handlers::get_config)
+        .post("/api/user/create", user_handlers::create)
+        .delete("/api/user/:id", user_handlers::delete)
         .static_files("/storage/", "./storage/")
         .static_files("/", "./web/");
 

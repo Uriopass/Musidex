@@ -16,7 +16,7 @@ pub struct MusicID(pub i32);
 #[serde(transparent)]
 pub struct UserID(pub i32);
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct User {
     pub id: UserID,
     pub name: String,
@@ -49,6 +49,7 @@ pub struct Vector(Vec<f32>);
 pub struct MusidexMetadata {
     pub musics: Vec<MusicID>,
     pub tags: Vec<Tag>,
+    pub users: Vec<User>,
 }
 
 pub type CompressedMusidexMetadata = Vec<u8>;

@@ -6,6 +6,7 @@ use crate::utils::res_status;
 use crate::Db;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
+use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde_json::Value;
 use std::convert::TryInto;
@@ -73,18 +74,14 @@ pub async fn youtube_upload(req: Request<Body>) -> Result<Response<Body>> {
     Ok(res_status(upload::youtube_upload(&mut c, url, uid).await?))
 }
 
-pub async fn youtube_upload_playlist(req: Request<Body>) -> Result<Response<Body>> {
+pub async fn youtube_upload_playlist(mut req: Request<Body>) -> Result<Response<Body>> {
     let uid = User::from_req(&req);
-    let (parts, body) = req.into_parts();
-    let f = hyper::body::to_bytes(body)
-        .await
-        .context("could not decode body")?;
-    let b: UploadYoutube = serde_json::from_slice(&*f).context("could not parse body")?;
+    let b: UploadYoutube = parse_body(&mut req).await?;
     let url = b.url;
     if url.len() < 3 {
         return Ok(res_status(StatusCode::BAD_REQUEST));
     }
-    let db = parts.state::<Db>();
+    let db = req.state::<Db>();
     let mut c = db.get().await;
     Ok(res_status(
         upload::youtube_upload_playlist(&mut c, url, uid).await?,
@@ -137,4 +134,11 @@ pub async fn get_config(req: Request<Body>) -> Result<Response<Body>> {
         .collect();
 
     Ok(Response::new(Body::from(serde_json::to_string(&m)?)))
+}
+
+pub async fn parse_body<T: DeserializeOwned>(req: &mut Request<Body>) -> Result<T> {
+    let f = hyper::body::to_bytes(req.body_mut())
+        .await
+        .context("could not decode body")?;
+    serde_json::from_slice(&*f).context("could not parse body")
 }
