@@ -81,25 +81,26 @@ const Explorer = (props: ExplorerProps) => {
     let toShow;
     if (searchQry !== "") {
         toShow = qryFilter.map((v) => v.item.id);
-    }
-    switch (sortBy.kind.kind) {
-        case "similarity":
-            toShow = list.best_tracks.slice();
-            break;
-        case "creation_time":
-            toShow = metadata.musics.slice();
+    } else {
+        switch (sortBy.kind.kind) {
+            case "similarity":
+                toShow = list.best_tracks.slice();
+                break;
+            case "creation_time":
+                toShow = metadata.musics.slice();
+                toShow.reverse();
+                break;
+            case "tag":
+                let v = sortBy.kind.value;
+                toShow = metadata.musics.slice();
+                toShow.sort((a, b) => {
+                    return (metadata.music_tags_idx.get(a)?.get(v)?.text || "").localeCompare(metadata.music_tags_idx.get(b)?.get(v)?.text || "")
+                })
+                break;
+        }
+        if (!sortBy.descending) {
             toShow.reverse();
-            break;
-        case "tag":
-            let v = sortBy.kind.value;
-            toShow = metadata.musics.slice();
-            toShow.sort((a, b) => {
-                return (metadata.music_tags_idx.get(a)?.get(v)?.text || "").localeCompare(metadata.music_tags_idx.get(b)?.get(v)?.text || "")
-            })
-            break;
-    }
-    if (!sortBy.descending) {
-        toShow.reverse();
+        }
     }
 
     return (
