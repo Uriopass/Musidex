@@ -64,3 +64,57 @@ export const useDebouncedEffect = (effect: React.EffectCallback, deps: React.Dep
 }
 
 export type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
+
+const isBrowser = typeof window !== 'undefined';
+
+interface cookieOptions {
+    days?: number;
+    path?: string;
+}
+
+export const setCookie = (name: string, value: string, options?: cookieOptions) => {
+    if (!isBrowser) return;
+
+    const optionsWithDefaults = {
+        days: 7,
+        path: '/',
+        ...options,
+    };
+
+    const expires = new Date(
+        Date.now() + optionsWithDefaults.days * 864e5
+    ).toUTCString();
+
+    document.cookie =
+        name +
+        '=' +
+        encodeURIComponent(value) +
+        '; expires=' +
+        expires +
+        '; path=' +
+        optionsWithDefaults.path;
+};
+
+export const getCookie = (name: string, initialValue?: string) => {
+    return (
+        (isBrowser &&
+            document.cookie.split('; ').reduce((r, v) => {
+                const parts = v.split('=');
+                return parts[0] === name ? decodeURIComponent(parts[1] || "") : r;
+            }, '')) ||
+        initialValue
+    );
+};
+
+export const useCookie = (key: string, initialValue?: string): [string | undefined, (value: string, options?: cookieOptions) => void] => {
+    const [item, setItem] = useState(() => {
+        return getCookie(key, initialValue);
+    });
+
+    const updateItem = (value: string, options?: cookieOptions) => {
+        setItem(value);
+        setCookie(key, value, options);
+    };
+
+    return [item, updateItem];
+}

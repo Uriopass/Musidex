@@ -2,12 +2,12 @@ import './users.css'
 import {useContext, useState} from "react";
 import {MetadataCtx, User} from "../domain/entity";
 import {PageProps} from "./navigator";
-import {MaterialIcon, Setter} from "../components/utils";
+import {MaterialIcon} from "../components/utils";
 import TextInput from "../components/input";
 import API from "../domain/api";
 
 export interface UsersProps extends PageProps {
-    setUser: Setter<number>;
+    onSetUser: (id: number) => void;
     curUser: number;
 }
 
@@ -39,7 +39,7 @@ const Users = (props: UsersProps) => {
                         return <UserCard key={user.id}
                                          user={user}
                                          isCurrent={props.curUser === user.id}
-                                         onSelect={props.setUser}
+                                         onSelect={props.onSetUser}
                                          onDelete={onDelete}
                                          onRename={onRename}/>;
                     })
