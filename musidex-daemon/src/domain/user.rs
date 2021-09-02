@@ -1,9 +1,10 @@
 use hyper::{Body, Request};
 
+#[derive(Clone, Copy)]
 pub struct UserID(i32);
 
 impl UserID {
-    pub fn from_req(req: &Request<Body>) -> UserID {
+    pub fn from_req(_req: &Request<Body>) -> UserID {
         UserID(1)
     }
 }
