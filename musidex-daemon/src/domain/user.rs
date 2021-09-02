@@ -1,12 +1,21 @@
 use crate::domain::entity::{User, UserID};
+use crate::infrastructure::router::RequestExt;
 use crate::utils::collect_rows;
 use anyhow::{Context, Result};
 use hyper::{Body, Request};
 use rusqlite::Connection;
 
 impl User {
-    pub fn from_req(_req: &Request<Body>) -> UserID {
-        UserID(1)
+    pub fn from_req(req: &Request<Body>) -> Result<UserID> {
+        let id = req
+            .cookies()
+            .context("no cookies")?
+            .0
+            .get("cur_user")
+            .context("no user in cookie")?
+            .parse()
+            .context("user is not integer")?;
+        Ok(UserID(id))
     }
 
     pub fn list(c: &Connection) -> Result<Vec<User>> {

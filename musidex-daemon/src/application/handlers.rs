@@ -57,25 +57,22 @@ pub async fn delete_music(req: Request<Body>) -> Result<Response<Body>> {
     Ok(Response::new(Body::empty()))
 }
 
-pub async fn youtube_upload(req: Request<Body>) -> Result<Response<Body>> {
-    let uid = User::from_req(&req);
-    let (parts, body) = req.into_parts();
-    let f = hyper::body::to_bytes(body)
-        .await
-        .context("could not decode body")?;
-    let b: UploadYoutube = serde_json::from_slice(&*f).context("could not parse body")?;
-    let url = b.url;
-    if url.len() < 3 {
+pub async fn youtube_upload(mut req: Request<Body>) -> Result<Response<Body>> {
+    let uid = User::from_req(&req).context("no user id")?;
+    let b: UploadYoutube = parse_body(&mut req).await?;
+    if b.url.len() < 3 {
         return Ok(res_status(StatusCode::BAD_REQUEST));
     }
-    let db = parts.state::<Db>();
+    let db = req.state::<Db>();
     let mut c = db.get().await;
 
-    Ok(res_status(upload::youtube_upload(&mut c, url, uid).await?))
+    Ok(res_status(
+        upload::youtube_upload(&mut c, b.url, uid).await?,
+    ))
 }
 
 pub async fn youtube_upload_playlist(mut req: Request<Body>) -> Result<Response<Body>> {
-    let uid = User::from_req(&req);
+    let uid = User::from_req(&req).context("no user id")?;
     let b: UploadYoutube = parse_body(&mut req).await?;
     let url = b.url;
     if url.len() < 3 {

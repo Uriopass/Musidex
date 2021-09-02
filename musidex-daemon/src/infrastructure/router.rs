@@ -35,9 +35,9 @@ use futures::FutureExt;
 use hyper::body::Bytes;
 use hyper::header::{
     HeaderValue, ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS,
-    ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_ENCODING, HOST, LOCATION, USER_AGENT,
+    ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_ENCODING, COOKIE, HOST, LOCATION,
+    USER_AGENT,
 };
-use hyper::http::request::Parts;
 use hyper::http::Extensions;
 use hyper::service::Service;
 use hyper::{Body, Method, Request, Response, StatusCode};
@@ -162,7 +162,21 @@ impl Router {
                 Ok(matcher) => {
                     let handler = matcher.handler();
                     let params = matcher.params().clone();
+                    let cookies: Option<Cookies> = req
+                        .headers()
+                        .get(COOKIE)
+                        .and_then(|x| basic_cookies::Cookie::parse(x.to_str().ok()?).ok())
+                        .map(|x| {
+                            Cookies(
+                                x.into_iter()
+                                    .map(|x| (s!(x.get_name()), s!(x.get_value())))
+                                    .collect(),
+                            )
+                        });
                     req.extensions_mut().insert(Params(Some(Box::new(params))));
+                    if let Some(cookies) = cookies {
+                        req.extensions_mut().insert(cookies);
+                    }
                     req.extensions_mut().insert(self.state.clone());
                     let wants_compression = req
                         .headers()
@@ -216,6 +230,8 @@ impl Router {
         }
     }
 }
+
+pub struct Cookies(pub HashMap<String, String>);
 
 pub struct StaticHandle {
     dir_location: PathBuf,
@@ -435,6 +451,7 @@ impl Params {
 
 pub trait RequestExt {
     fn params(&self) -> &Params;
+    fn cookies(&self) -> Option<&Cookies>;
     fn state<T: Send + Sync + 'static>(&self) -> &T;
 }
 
@@ -443,22 +460,12 @@ impl RequestExt for Request<Body> {
         self.extensions().get::<Params>().unwrap()
     }
 
+    fn cookies(&self) -> Option<&Cookies> {
+        self.extensions().get::<Cookies>()
+    }
+
     fn state<T: Send + Sync + 'static>(&self) -> &T {
         self.extensions()
-            .get::<Arc<Extensions>>()
-            .unwrap()
-            .get::<T>()
-            .expect("state was not added to router")
-    }
-}
-
-impl RequestExt for Parts {
-    fn params(&self) -> &Params {
-        self.extensions.get::<Params>().unwrap()
-    }
-
-    fn state<T: Send + Sync + 'static>(&self) -> &T {
-        self.extensions
             .get::<Arc<Extensions>>()
             .unwrap()
             .get::<T>()

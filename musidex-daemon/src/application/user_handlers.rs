@@ -2,7 +2,6 @@ use crate::application::handlers::parse_body;
 use crate::domain::entity::{User, UserID};
 use crate::infrastructure::db::Db;
 use crate::infrastructure::router::RequestExt;
-use crate::utils::res_status;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
 use serde::Deserialize;

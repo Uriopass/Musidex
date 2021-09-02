@@ -29,3 +29,4 @@ lazy_static = "1.4.0"
 webp = { version = "0.1.3", features=["image"]}
 image = { version = "0.23.14", default-features = false, features=["jpeg"] }
 hyper-tungstenite = "0.4.0"
+basic-cookies = "0.1.4"
