@@ -1,15 +1,26 @@
-use chrono::{DateTime, Utc};
-use rusqlite::types::ToSqlOutput;
-use rusqlite::{Row, ToSql};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::TryFrom;
 use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::ops::Deref;
 
+use chrono::{DateTime, Utc};
+use rusqlite::types::ToSqlOutput;
+use rusqlite::{Row, ToSql};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 #[derive(Copy, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Debug)]
 #[serde(transparent)]
 pub struct MusicID(pub i32);
+
+#[derive(Copy, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Debug)]
+#[serde(transparent)]
+pub struct UserID(pub i32);
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct User {
+    pub id: UserID,
+    pub name: String,
+}
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Music {
@@ -158,6 +169,15 @@ impl<'a, 'b> From<&'a Row<'b>> for Music {
     fn from(row: &'a Row<'b>) -> Self {
         Music {
             id: MusicID(row.get_unwrap("id")),
+        }
+    }
+}
+
+impl<'a, 'b> From<&'a Row<'b>> for User {
+    fn from(row: &'a Row<'b>) -> Self {
+        User {
+            id: UserID(row.get_unwrap("id")),
+            name: row.get_unwrap("name"),
         }
     }
 }

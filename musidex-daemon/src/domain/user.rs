@@ -1,11 +1,38 @@
+use crate::domain::entity::{User, UserID};
+use crate::utils::collect_rows;
+use anyhow::{Context, Result};
 use hyper::{Body, Request};
+use rusqlite::Connection;
 
-#[derive(Clone, Copy)]
-pub struct UserID(i32);
-
-impl UserID {
+impl User {
     pub fn from_req(_req: &Request<Body>) -> UserID {
         UserID(1)
+    }
+
+    pub fn list(c: &Connection) -> Result<Vec<User>> {
+        let mut v = c.prepare_cached("SELECT * FROM users;")?;
+        let res = v.query_map([], |row| Ok(User::from(row)))?;
+        collect_rows(res)
+    }
+
+    pub fn create(c: &Connection, name: String) -> Result<UserID> {
+        let stmt = c
+            .prepare_cached("INSERT INTO users (name) VALUES ($1);")
+            .context("error preparing mk music")?
+            .execute([&name])?;
+        if stmt == 0 {
+            bail!("could not create music");
+        }
+
+        let mut stmt = c.prepare_cached("SELECT id FROM users WHERE rowid=last_insert_rowid()")?;
+        let id = stmt.query_row([], |v| v.get("id"))?;
+        Ok(UserID(id))
+    }
+
+    pub fn delete(c: &Connection, id: UserID) -> Result<()> {
+        let mut v = c.prepare_cached("DELETE FROM users WHERE id=$1;")?;
+        v.execute([&id.0])?;
+        Ok(())
     }
 }
 

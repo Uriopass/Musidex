@@ -1,6 +1,5 @@
-use crate::domain::entity::{Music, MusicID};
+use crate::domain::entity::{Music, MusicID, User};
 use crate::domain::sync::{serve_sync_websocket, SyncBroadcastSubscriber};
-use crate::domain::user::UserID;
 use crate::domain::{config, stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
 use crate::utils::res_status;
@@ -58,7 +57,7 @@ pub async fn delete_music(req: Request<Body>) -> Result<Response<Body>> {
 }
 
 pub async fn youtube_upload(req: Request<Body>) -> Result<Response<Body>> {
-    let uid = UserID::from_req(&req);
+    let uid = User::from_req(&req);
     let (parts, body) = req.into_parts();
     let f = hyper::body::to_bytes(body)
         .await
@@ -75,7 +74,7 @@ pub async fn youtube_upload(req: Request<Body>) -> Result<Response<Body>> {
 }
 
 pub async fn youtube_upload_playlist(req: Request<Body>) -> Result<Response<Body>> {
-    let uid = UserID::from_req(&req);
+    let uid = User::from_req(&req);
     let (parts, body) = req.into_parts();
     let f = hyper::body::to_bytes(body)
         .await
