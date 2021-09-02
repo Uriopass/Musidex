@@ -20,6 +20,10 @@ const Navbar = React.memo((props: NavbarProps) => {
                     <MaterialIcon name="file_upload" size={25}/>
                     &nbsp;Upload
                 </button>
+                <button onClick={() => props.setCurPage("users")} title="Manage users">
+                    <MaterialIcon name="manage_accounts" size={25}/>
+                    &nbsp;Users
+                </button>
                 {
                     props.syncProblem &&
                     <div style={{color: "var(--danger)", display: "flex", padding: "0 6px"}}>

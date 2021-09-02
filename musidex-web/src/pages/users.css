@@ -1,0 +1,54 @@
+.users {
+    display: flex;
+    max-width: 1000px;
+    padding: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.user-card {
+    --card-size: 100px;
+    width: var(--card-size);
+    height: var(--card-size);
+    padding: 20px;
+    background-color: var(--fg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 10px;
+    position: relative;
+}
+
+.user-card:hover {
+    box-shadow: 0 0 1px 1px #523e5f;
+}
+
+.user-add {
+    color: var(--color-bg);
+    border: 1px solid var(--fg);
+    padding: 20px;
+}
+
+.user-card-current {
+    box-shadow: 0 0 1px 1px var(--primary);
+}
+.user-card-current:hover {
+    box-shadow: 0 0 1px 1px var(--primary);
+}
+
+.user-add-submit {
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.user-add-submit:hover {
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.user-card-delete {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+}

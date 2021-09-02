@@ -6,10 +6,10 @@ import {clamp, MaterialIcon, Setter} from "../components/utils";
 import {canPlay, MetadataCtx, Tag} from "../domain/entity";
 import {NextTrackCallback, TracklistCtx} from "../domain/tracklist";
 import TextInput from "../components/input";
+import {PageProps} from "./navigator";
 
-export type ExplorerProps = {
+export interface ExplorerProps extends PageProps {
     title: string;
-    hidden: boolean;
     doNext: NextTrackCallback;
 }
 

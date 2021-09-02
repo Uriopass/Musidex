@@ -16,7 +16,7 @@ export const API = {
             prefix = "wss";
         }
 
-        return new ReconnectingWebSocket(prefix+"://"+ window.location.host + "/api/metadata/ws");
+        return new ReconnectingWebSocket(prefix + "://" + window.location.host + "/api/metadata/ws");
     },
 
     async metadataFromWSMsg(m: MessageEvent): Promise<MusidexMetadata> {
@@ -38,21 +38,35 @@ export const API = {
         return fetch(apiURL + "/api/youtube_upload", {
             method: "post",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({url: url,})
+            body: JSON.stringify({url: url})
         });
     },
 
     async youtubeUploadPlaylist(url: string): Promise<Response> {
         return fetch(apiURL + "/api/youtube_upload/playlist", {
             method: "post",
-            headers: {"Content-Type": "application/json",},
-            body: JSON.stringify({url: url,})
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({url: url})
         });
     },
 
     async deleteMusic(id: number): Promise<Response> {
         return fetch(apiURL + "/api/music/" + id, {
             method: "delete"
+        });
+    },
+
+    async deleteUser(id: number): Promise<Response> {
+        return fetch(apiURL + "/api/user/" + id, {
+            method: "delete"
+        });
+    },
+
+    async createUser(name: string): Promise<Response> {
+        return fetch(apiURL + "/api/user/create", {
+            method: "post",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({name: name})
         });
     },
 

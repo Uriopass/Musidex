@@ -23,6 +23,7 @@ const App = () => {
     let [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     let [list, setList] = useState<Tracklist>(emptyTracklist())
     let [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
+    let [user, setUser] = useLocalStorage("cur_user", metadata.users[0]?.id || 1);
     let doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata);
     let doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     let canPrev = useCanPrev(list);
@@ -67,7 +68,7 @@ const App = () => {
             <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
                 <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
                     <TracklistCtx.Provider value={list}>
-                        <PageNavigator page={curPage} doNext={doNext}/>
+                        <PageNavigator page={curPage} doNext={doNext} setUser={setUser} curUser={user}/>
                         <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev} canPrev={canPrev}/>
                     </TracklistCtx.Provider>
                 </TrackplayerCtx.Provider>
