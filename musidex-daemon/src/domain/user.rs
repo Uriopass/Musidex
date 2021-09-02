@@ -15,6 +15,12 @@ impl User {
         collect_rows(res)
     }
 
+    pub fn n_users(c: &Connection) -> Result<i32> {
+        let mut v = c.prepare_cached("SELECT count(1) FROM users;")?;
+        let res: i32 = v.query_row([], |row| row.get(0))?;
+        Ok(res)
+    }
+
     pub fn create(c: &Connection, name: String) -> Result<UserID> {
         let stmt = c
             .prepare_cached("INSERT INTO users (name) VALUES ($1);")

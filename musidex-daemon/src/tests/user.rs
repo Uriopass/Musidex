@@ -14,6 +14,7 @@ pub async fn test_crd_user() -> Result<()> {
     let user = users.get(0).context("no user")?;
     assert_eq!(user.name, s!("toto"));
     assert_eq!(user.id, u);
+    assert_eq!(User::n_users(&c)?, 1);
     User::delete(&c, user.id)?;
 
     let users = User::list(&c)?;
