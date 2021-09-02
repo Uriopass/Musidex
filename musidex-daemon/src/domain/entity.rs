@@ -40,6 +40,8 @@ pub struct MusidexMetadata {
     pub tags: Vec<Tag>,
 }
 
+pub type CompressedMusidexMetadata = Vec<u8>;
+
 impl Eq for Vector {}
 impl Hash for Vector {
     fn hash<H: Hasher>(&self, state: &mut H) {

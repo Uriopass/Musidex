@@ -18,8 +18,11 @@ export const API = {
         return new ReconnectingWebSocket(prefix+"://"+ window.location.host + "/api/metadata/ws");
     },
 
-    metadataFromWSMsg(m: MessageEvent): MusidexMetadata {
-        let v: RawMusidexMetadata = JSON.parse(m.data);
+    async metadataFromWSMsg(m: MessageEvent): Promise<MusidexMetadata> {
+        let pako = await import("pako");
+        let vv = new Uint8Array(m.data);
+        const s = pako.inflateRaw(vv, {to: 'string'});
+        let v: RawMusidexMetadata = JSON.parse(s);
         return new MusidexMetadata(v.musics, v.tags);
     },
 

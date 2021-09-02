@@ -28,8 +28,8 @@ const App = () => {
     let canPrev = useCanPrev(list);
     let ws = useRef<undefined | ReconnectingWebSocket>();
 
-    let onMessage = useCallback((ev) => {
-        let meta = API.metadataFromWSMsg(ev);
+    let onMessage = useCallback(async (ev) => {
+        let meta = await API.metadataFromWSMsg(ev);
         if (!meta.music_tags_idx.has(trackplayer.current?.id || -1)) {
             doNext();
         }
@@ -42,6 +42,7 @@ const App = () => {
     useEffect(() => {
         if (ws.current === undefined) {
             ws.current = API.metadataWSInit();
+            ws.current.binaryType = "arraybuffer"
         }
 
         ws.current.onmessage = onMessage;

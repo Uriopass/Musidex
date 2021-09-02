@@ -11,26 +11,31 @@ use tokio::sync::mpsc;
 use tokio::sync::watch;
 use tungstenite::Message;
 
-use crate::domain::entity::{Music, MusidexMetadata};
+use crate::domain::entity::{CompressedMusidexMetadata, Music, MusidexMetadata};
 use crate::infrastructure::db::Db;
 use crate::utils::collect_rows;
 
 #[derive(Clone)]
 pub struct SyncBroadcastSubscriber {
-    rx: watch::Receiver<Arc<MusidexMetadata>>,
+    rx: watch::Receiver<Arc<CompressedMusidexMetadata>>,
     refresh_tx: mpsc::Sender<()>,
 }
 
 pub struct SyncBroadcast {
     c: Connection,
-    tx: watch::Sender<Arc<MusidexMetadata>>,
+    tx: watch::Sender<Arc<CompressedMusidexMetadata>>,
     refresh_tx: mpsc::Sender<()>,
     refresh_rx: mpsc::Receiver<()>,
 }
 
+fn compress(x: MusidexMetadata) -> CompressedMusidexMetadata {
+    let json = serde_json::to_string(&x).unwrap_or_else(|_| s!("{}"));
+    miniz_oxide::deflate::compress_to_vec(json.as_bytes(), 5)
+}
+
 impl SyncBroadcast {
     pub fn new() -> Result<(Self, SyncBroadcastSubscriber)> {
-        let (tx, rx) = watch::channel(Arc::new(MusidexMetadata::default()));
+        let (tx, rx) = watch::channel(Arc::new(compress(MusidexMetadata::default())));
         let (refresh_tx, refresh_rx) = mpsc::channel(16);
         Ok((
             Self {
@@ -73,7 +78,7 @@ impl SyncBroadcast {
                     continue;
                 }
                 last_hash = hash;
-                let _ = tx.send(Arc::new(m));
+                let _ = tx.send(Arc::new(compress(m)));
             }
         });
     }
@@ -85,9 +90,8 @@ pub async fn serve_sync_websocket(
 ) -> Result<()> {
     let mut websocket = websocket.await?;
 
-    let meta = b.rx.borrow_and_update().clone();
-    let encoded = serde_json::to_string(&*meta).expect("could not encode metadata");
-    websocket.send(Message::Text(encoded)).await?;
+    let encoded = b.rx.borrow_and_update().clone();
+    websocket.send(Message::Binary((&*encoded).clone())).await?;
 
     loop {
         tokio::select! {
@@ -110,9 +114,8 @@ pub async fn serve_sync_websocket(
                 }
             }
             Ok(_) = b.rx.changed() => {
-                let meta = b.rx.borrow_and_update().clone();
-                let encoded = serde_json::to_string(&*meta).expect("could not encode metadata");
-                websocket.send(Message::Text(encoded)).await?;
+                let encoded = b.rx.borrow_and_update().clone();
+                websocket.send(Message::Binary((&*encoded).clone())).await?;
             }
         }
     }
