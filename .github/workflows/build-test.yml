@@ -24,7 +24,8 @@ jobs:
         with:
           rust-version: 'stable'
       - name: Test daemon
-        run: cargo test --verbose --manifest-path musidex-daemon/Cargo.toml
+        working-directory: ./musidex-daemon
+        run: cargo test --verbose
       - name: Build web
         working-directory: ./musidex-web
         run: npm install && npm run build
