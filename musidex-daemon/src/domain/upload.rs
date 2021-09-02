@@ -1,10 +1,11 @@
 use crate::domain::entity::{Music, Tag, TagKey};
+use crate::domain::user::UserID;
 use crate::infrastructure::youtube_dl::{ytdl_run_with_args, SingleVideo, YoutubeDlOutput};
 use anyhow::{Context, Result};
 use hyper::StatusCode;
 use rusqlite::Connection;
 
-pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCode> {
+pub async fn youtube_upload(c: &mut Connection, url: String, uid: UserID) -> Result<StatusCode> {
     if Tag::by_text(&c, &url)?.len() > 0 {
         return Ok(StatusCode::CONFLICT);
     }
@@ -21,7 +22,7 @@ pub async fn youtube_upload(c: &mut Connection, url: String) -> Result<StatusCod
     }
     let wp = v.webpage_url.take().context("no webpage url")?;
     let tx = c.transaction()?;
-    push_for_treatment(&tx, v, wp).context("error pushing for treatment")?;
+    push_for_treatment(&tx, v, wp, uid).context("error pushing for treatment")?;
     tx.commit()?;
     Ok(StatusCode::OK)
 }
@@ -33,7 +34,7 @@ fn id_exists(c: &Connection, id: &str) -> Result<bool> {
         .any(|t| t.key == TagKey::YoutubeDLVideoID && t.text.as_deref() == Some(id)))
 }
 
-fn push_for_treatment(c: &Connection, v: SingleVideo, url: String) -> Result<()> {
+fn push_for_treatment(c: &Connection, v: SingleVideo, url: String, uid: UserID) -> Result<()> {
     let id = Music::mk(&c)?;
 
     let mk_tag = |key, v| Tag::insert(&c, Tag::new_text(id, key, v));
@@ -50,6 +51,7 @@ fn push_for_treatment(c: &Connection, v: SingleVideo, url: String) -> Result<()>
         mk_tag(TagKey::Artist, artist)?;
     }
     mk_tag(TagKey::YoutubeDLOriginalTitle, v.title)?;
+    Tag::insert(&c, Tag::new_key(id, TagKey::UserLibrary(s!(uid))))?;
     Ok(())
 }
 
@@ -92,7 +94,11 @@ fn guess_title(title: &str) -> (String, Option<String>) {
     (s!(title), None)
 }
 
-pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<StatusCode> {
+pub async fn youtube_upload_playlist(
+    c: &mut Connection,
+    url: String,
+    uid: UserID,
+) -> Result<StatusCode> {
     let metadata = ytdl_run_with_args(vec!["--flat-playlist", "--yes-playlist", "-J", "--", &url])
         .await
         .context("failed reading playlist metadata")?;
@@ -114,7 +120,7 @@ pub async fn youtube_upload_playlist(c: &mut Connection, url: String) -> Result<
                 entry.playlist_title = p.title.clone();
                 let url = entry.url.take().context("no url?")?;
 
-                push_for_treatment(&tx, entry, url)?;
+                push_for_treatment(&tx, entry, url, uid)?;
                 tx.commit()?;
             }
         }

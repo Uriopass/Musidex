@@ -49,13 +49,20 @@ impl Hash for Vector {
     }
 }
 
+fn parse_split(x: &str) -> Option<(&str, &str)> {
+    let v = x.find(':')?;
+    Some((&x[..v], &x.get(v + 1..)?))
+}
+
 macro_rules! tag_key {
     {
-     $($key:ident => $name:literal,)+
+     $($key:ident => $name:literal,)+;
+     $(nested $nest_key:ident => $nest_name:literal,)*
     } => {
         #[derive(Clone, Debug, Hash, PartialEq, Eq)]
         pub enum TagKey {
             $($key,)+
+            $($nest_key(String),)+
             Other(String)
         }
 
@@ -63,7 +70,16 @@ macro_rules! tag_key {
             fn from(v: &'a str) -> TagKey {
                 match v {
                     $($name => TagKey::$key,)+
-                    s => TagKey::Other(s.to_string()),
+                    s => {
+                        if let Some((prefix, val)) = parse_split(s) {
+                            match prefix {
+                                $($nest_name => return TagKey::$nest_key(val.to_string()),)+
+                                _ => TagKey::Other(s.to_string())
+                            }
+                        } else {
+                            TagKey::Other(s.to_string())
+                        }
+                    },
                 }
             }
         }
@@ -72,6 +88,7 @@ macro_rules! tag_key {
             fn into(self) -> String {
                 match self {
                     $(TagKey::$key => ($name).to_string(),)+
+                    $(TagKey::$nest_key(s) => format!(concat!($nest_name, ":{}"), s),)+
                     TagKey::Other(s) => s.clone(),
                 }
             }
@@ -81,6 +98,7 @@ macro_rules! tag_key {
             fn to_sql(&self) -> rusqlite::Result<ToSqlOutput<'_>> {
                 match self {
                     $(TagKey::$key => ($name).to_sql(),)+
+                    $(TagKey::$nest_key(s) => Ok(ToSqlOutput::Owned(rusqlite::types::Value::Text(format!(concat!($nest_name, ":{}"), s)))),)+
                     TagKey::Other(s) => s.to_sql(),
                 }
             }
@@ -103,6 +121,8 @@ tag_key! {
     Thumbnail => "thumbnail",
     Duration => "duration",
     Embedding => "embedding",
+    ;
+    nested UserLibrary => "user_library",
 }
 
 impl Display for TagKey {

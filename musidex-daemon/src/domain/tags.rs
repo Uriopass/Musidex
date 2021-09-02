@@ -5,6 +5,17 @@ use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use rusqlite::Connection;
 
 impl Tag {
+    pub fn new_key(id: MusicID, key: TagKey) -> Tag {
+        Tag {
+            music_id: id,
+            key,
+            text: None,
+            integer: None,
+            date: None,
+            vector: None,
+        }
+    }
+
     pub fn new_text(id: MusicID, key: TagKey, value: String) -> Tag {
         Tag {
             music_id: id,
