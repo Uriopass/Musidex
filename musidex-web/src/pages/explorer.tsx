@@ -2,7 +2,7 @@ import './explorer.css'
 import API from "../domain/api";
 import React, {Fragment, useContext, useMemo, useState} from "react";
 import {PlayButton} from "../components/playbutton";
-import {clamp, MaterialIcon} from "../components/utils";
+import {clamp, MaterialIcon, Setter} from "../components/utils";
 import {canPlay, MetadataCtx, Tag} from "../domain/entity";
 import {NextTrackCallback, TracklistCtx} from "../domain/tracklist";
 import TextInput from "../components/input";
@@ -20,11 +20,22 @@ const fuseOptions = {
     threshold: 0.4,
 }
 
+type SortByKind = { kind: "similarity" } | { kind: "creation_time" } | { kind: "tag", value: string }
+type SortBy = { kind: SortByKind, descending: boolean }
+
+function sortby_kind_eq(a: SortByKind, b: SortByKind) {
+    if (a.kind === "tag" && b.kind === "tag") {
+        return a.value === b.value
+    }
+    return a.kind === b.kind
+}
+
 const Explorer = (props: ExplorerProps) => {
     const [metadata, syncMetadata] = useContext(MetadataCtx);
     const [shown, setShown] = useState(40);
     const list = useContext(TracklistCtx);
     const [searchQry, setSearchQry] = useState("");
+    const [sortBy, setSortBy] = useState({kind: {kind: "similarity"}, descending: true} as SortBy)
 
     let cur: number | undefined = list.last_played[list.last_played.length - 1];
     let onScroll = (e: any) => {
@@ -67,9 +78,28 @@ const Explorer = (props: ExplorerProps) => {
         return fuse.search(searchQry)
     }, [searchQry, fuse])
 
-    let toShow = list.best_tracks;
+    let toShow;
     if (searchQry !== "") {
         toShow = qryFilter.map((v) => v.item.id);
+    }
+    switch (sortBy.kind.kind) {
+        case "similarity":
+            toShow = list.best_tracks.slice();
+            break;
+        case "creation_time":
+            toShow = metadata.musics.slice();
+            toShow.reverse();
+            break;
+        case "tag":
+            let v = sortBy.kind.value;
+            toShow = metadata.musics.slice();
+            toShow.sort((a, b) => {
+                return (metadata.music_tags_idx.get(a)?.get(v)?.text || "").localeCompare(metadata.music_tags_idx.get(b)?.get(v)?.text || "")
+            })
+            break;
+    }
+    if (!sortBy.descending) {
+        toShow.reverse();
     }
 
     return (
@@ -79,6 +109,8 @@ const Explorer = (props: ExplorerProps) => {
                     <TextInput onChange={setSearchQry} name="Search"/>
                 </div>
                 {curPlaying}
+                <SortBySelect forced={(searchQry !== "") ? "Query match score" : undefined} sortBy={sortBy}
+                              setSortBy={setSortBy}/>
                 {
                     toShow.slice(0, shown).map((id) => {
                         if (id === cur) {
@@ -111,6 +143,54 @@ const Explorer = (props: ExplorerProps) => {
         </div>
     )
 }
+
+type SortBySelectProps = {
+    forced?: string;
+    sortBy: SortBy,
+    setSortBy: Setter<SortBy>,
+}
+
+const SortBySelect = React.memo((props: SortBySelectProps) => {
+    let SortByElem = (props2: { sort: SortByKind, name: string }) => {
+        let is_same = sortby_kind_eq(props.sortBy.kind, props2.sort)
+        let on_click = () => {
+            let new_desc = true;
+            if (is_same) {
+                new_desc = !props.sortBy.descending;
+            }
+            props.setSortBy({kind: props2.sort, descending: new_desc});
+        }
+        return <button className={"sort-by-elem " + (is_same ? " sort-by-selected" : "")}
+                       onClick={on_click}>
+            {props2.name}
+            {
+                (is_same) &&
+                (
+                    props.sortBy.descending ?
+                        <MaterialIcon name="south" size={11}/>
+                        :
+                        <MaterialIcon name="north" size={11}/>
+                )
+            }
+        </button>
+    }
+
+    if (props.forced !== undefined) {
+        return <div className="sort-by-select">
+            Sort By:
+            <span className="sort-by-forced">
+                {props.forced}
+            </span>
+        </div>;
+    }
+
+    return <div className="sort-by-select">
+        Sort By:
+        <SortByElem sort={{kind: "similarity"}} name="Similarity"/>
+        <SortByElem sort={{kind: "tag", value: "title"}} name="Title"/>
+        <SortByElem sort={{kind: "creation_time"}} name="Last added"/>
+    </div>;
+})
 
 type SongElemProps = {
     musicID: number;

@@ -30,6 +30,40 @@
     height: 100%;
 }
 
+.sort-by-select {
+    width: calc(100% - 20px);
+    padding: 10px 0;
+    text-align: left;
+    font-size: 0.95rem;
+    color: var(--color-bg);
+}
+
+.sort-by-elem {
+    user-select: none;
+    padding: 0 10px;
+    background-color: transparent;
+    border: 0;
+    color: inherit;
+    margin: 0;
+    font: inherit;
+}
+
+.sort-by-elem:hover {
+    cursor: pointer;
+    color: var(--primary);
+    text-shadow:0 0 1px var(--primary);
+}
+
+.sort-by-selected {
+    color: var(--primary);
+}
+
+.sort-by-forced {
+    user-select: none;
+    padding: 0 10px;
+    color: var(--secondary);
+}
+
 .explorer-search {
     display: flex;
     align-items: center;
