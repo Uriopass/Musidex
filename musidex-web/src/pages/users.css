@@ -52,3 +52,20 @@
     right: 5px;
     cursor: pointer;
 }
+
+.user-card-delete:hover {
+    color: var(--danger);
+}
+
+.user-card-rename, .user-card-rename-ok {
+    cursor: pointer;
+    padding: 5px 5px;
+}
+
+.user-card-rename:hover {
+    color: var(--primary);
+}
+
+.user-card-rename-ok:hover {
+    color: var(--success);
+}
