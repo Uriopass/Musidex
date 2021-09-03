@@ -70,6 +70,14 @@ export const API = {
         });
     },
 
+    async renameUser(id: number, name: string): Promise<Response> {
+        return fetch(apiURL + "/api/user/update/" + id, {
+            method: "post",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({name: name})
+        });
+    },
+
     getStreamSrc(id: number): string {
         return apiURL + "/api/stream/" + id
     }

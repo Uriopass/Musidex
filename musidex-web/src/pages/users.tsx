@@ -20,7 +20,7 @@ const Users = (props: UsersProps) => {
     };
 
     const onRename = (id: number, newName: string) => {
-        console.log(id, newName);
+        API.renameUser(id, newName).then(() => metaSync());
     };
 
     const onNewSubmit = () => {
