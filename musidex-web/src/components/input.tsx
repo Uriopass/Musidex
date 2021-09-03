@@ -1,5 +1,5 @@
 import './input.css'
-import React, {ForwardedRef, Ref} from "react";
+import React from "react";
 
 type TextInputProps = {
     name: string;
