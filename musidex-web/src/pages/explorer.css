@@ -19,6 +19,13 @@
     width: calc(100% - 20px);
 }
 
+.song-elem-buttons {
+    flex: 2;
+    max-width: 120px;
+    display: flex;
+    justify-content: space-evenly;
+}
+
 .cover-image-container {
     width: 60px;
     height: 60px;
@@ -51,7 +58,7 @@
 .sort-by-elem:hover {
     cursor: pointer;
     color: var(--primary);
-    text-shadow:0 0 1px var(--primary);
+    text-shadow: 0 0 1px var(--primary);
 }
 
 .sort-by-selected {

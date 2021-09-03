@@ -250,7 +250,7 @@ const SongElem = (props: SongElemProps) => {
                     {props.tags.get("artist")?.text || ""}
                 </span>
             </div>
-            <div style={{flex: "2", padding: "0 10px", textAlign: "right"}}>
+            <div className="song-elem-buttons">
                 {
                     hasYT &&
                     <button className="player-button" onClick={() => goToYT(hasYT)}>

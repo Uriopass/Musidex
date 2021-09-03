@@ -52,6 +52,10 @@
     justify-content: center;
 }
 
+.player-controls .player-button {
+    padding: 0 10px;
+}
+
 .player-current-track {
     flex: 1;
     display: flex;
@@ -85,7 +89,6 @@
     background-color: transparent;
     border: transparent;
     color: var(--color-fg);
-    padding: 0 10px;
     display: inline-flex;
 }
 
