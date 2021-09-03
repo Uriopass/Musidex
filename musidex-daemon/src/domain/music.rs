@@ -18,7 +18,7 @@ impl Music {
     }
 
     pub fn delete(c: &Connection, id: MusicID) -> Result<bool> {
-        c.prepare_cached("DELETE FROM musics WHERE id=$1;")
+        c.prepare_cached("DELETE FROM musics WHERE id=?1;")
             .context("error preparing delete music")?
             .execute([&id.0])
             .context("error executing delete music")

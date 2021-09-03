@@ -21,9 +21,9 @@ pub async fn init(db: &Db) -> Result<()> {
 pub fn upsert_key(c: &Connection, key: &str, value: &str) -> Result<()> {
     c.prepare_cached(
         "INSERT INTO config (key, value)
-                    VALUES ($1, $2)
+                    VALUES (?1, ?2)
                     ON CONFLICT (key)
-                    DO UPDATE SET value=$2;",
+                    DO UPDATE SET value=?2;",
     )
     .context("upsert key error")?
     .execute([&key, &value])?;
@@ -33,7 +33,7 @@ pub fn upsert_key(c: &Connection, key: &str, value: &str) -> Result<()> {
 fn insert_if_not_exist(c: &Connection, key: &str, value: &str) -> Result<()> {
     c.prepare_cached(
         "INSERT INTO config (key, value)
-                    VALUES ($1, $2)
+                    VALUES (?1, ?2)
                     ON CONFLICT (key) DO NOTHING",
     )
     .context("insert if not exist error")?
@@ -50,7 +50,7 @@ pub fn get_all(c: &Connection) -> Result<Vec<(String, String)>> {
 #[allow(dead_code)]
 pub fn get(c: &Connection, key: &str) -> Result<Option<String>> {
     let v = c
-        .prepare_cached("SELECT value FROM config WHERE key= $1")?
+        .prepare_cached("SELECT value FROM config WHERE key= ?1")?
         .query_row([&key], |v| v.get("value"));
     match v {
         Ok(x) => Ok(x),

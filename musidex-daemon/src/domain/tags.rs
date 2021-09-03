@@ -59,9 +59,9 @@ impl Tag {
         let mut stmt = c.prepare_cached(
             "
             INSERT INTO tags (music_id, key, text, integer, date)
-            VALUES ($1, $2, $3, $4, $5)
+            VALUES (?1, ?2, ?3, ?4, ?5)
             ON CONFLICT (music_id, key)
-            DO UPDATE SET text=$3, integer=$4, date=$5;",
+            DO UPDATE SET text=?3, integer=?4, date=?5;",
         )?;
         let v = stmt
             .execute(rusqlite::params![
@@ -82,7 +82,7 @@ impl Tag {
         let mut stmt = c.prepare_cached(
             "
             SELECT * FROM tags
-            WHERE text=$1;",
+            WHERE text=?1;",
         )?;
         let v = stmt.query_map([&text], |row| Ok(Tag::from(row)))?;
         collect_rows(v)
@@ -92,7 +92,7 @@ impl Tag {
         let mut stmt = c.prepare_cached(
             "
             SELECT * FROM tags
-            WHERE music_id=$1;",
+            WHERE music_id=?1;",
         )?;
         let v = stmt.query_map([&id.0], |row| Ok(Tag::from(row)))?;
         collect_rows(v)
@@ -102,7 +102,7 @@ impl Tag {
         let mut stmt = c.prepare_cached(
             "
             SELECT * FROM tags
-            WHERE key=$1;",
+            WHERE key=?1;",
         )?;
         let v = stmt.query_map([&key], |row| Ok(Tag::from(row)))?;
         collect_rows(v)
@@ -112,7 +112,7 @@ impl Tag {
         let mut stmt = c.prepare_cached(
             "
             SELECT * FROM tags
-            WHERE music_id=$1 AND key=$2;",
+            WHERE music_id=?1 AND key=?2;",
         )?;
         match stmt.query_row(rusqlite::params![&id.0, key], |row| Ok(Tag::from(row))) {
             Ok(x) => Ok(Some(x)),
@@ -124,7 +124,7 @@ impl Tag {
     #[allow(dead_code)]
     pub fn has(c: &Connection, id: MusicID, key: TagKey) -> Result<bool> {
         let mut stmt =
-            c.prepare_cached("SELECT count(1) FROM tags WHERE music_id=$1 AND key=$2;")?;
+            c.prepare_cached("SELECT count(1) FROM tags WHERE music_id=?1 AND key=?2;")?;
         let v: i32 = stmt.query_row(rusqlite::params![id.0, key], |row| row.get(0))?;
         Ok(v == 1)
     }
