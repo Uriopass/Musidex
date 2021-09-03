@@ -165,14 +165,8 @@ impl Router {
                     let cookies: Option<Cookies> = req
                         .headers()
                         .get(COOKIE)
-                        .and_then(|x| basic_cookies::Cookie::parse(x.to_str().ok()?).ok())
-                        .map(|x| {
-                            Cookies(
-                                x.into_iter()
-                                    .map(|x| (s!(x.get_name()), s!(x.get_value())))
-                                    .collect(),
-                            )
-                        });
+                        .and_then(|x| Some(parse_cookies(x.to_str().ok()?)))
+                        .map(|x| Cookies(x.map(|(name, value)| (s!(name), s!(value))).collect()));
                     req.extensions_mut().insert(Params(Some(Box::new(params))));
                     if let Some(cookies) = cookies {
                         req.extensions_mut().insert(cookies);
@@ -231,6 +225,14 @@ impl Router {
     }
 }
 
+fn parse_cookies(x: &str) -> impl Iterator<Item = (&str, &str)> {
+    x.split("; ").into_iter().filter_map(|x| {
+        let v = x.find("=")?;
+        Some((&x[..v], x.get(v + 1..)?))
+    })
+}
+
+#[derive(Debug)]
 pub struct Cookies(pub HashMap<String, String>);
 
 pub struct StaticHandle {
