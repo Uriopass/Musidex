@@ -22,6 +22,19 @@ pub async fn create(mut req: Request<Body>) -> Result<Response<Body>> {
     Ok(Response::new(Body::empty()))
 }
 
+pub async fn update(mut req: Request<Body>) -> Result<Response<Body>> {
+    let data: UserCreatePOST = parse_body(&mut req).await.context("can't decode body")?;
+    let id = req.params().get("id").context("no id in url")?;
+    let id: i32 = id.parse().context("invalid id")?;
+
+    let db = req.state::<Db>();
+    let c = db.get().await;
+
+    User::rename(&c, UserID(id), data.name)?;
+
+    Ok(Response::new(Body::empty()))
+}
+
 pub async fn delete(req: Request<Body>) -> Result<Response<Body>> {
     let id = req.params().get("id").context("no id in url")?;
     let id: i32 = id.parse().context("invalid id")?;

@@ -59,6 +59,7 @@ async fn start() -> anyhow::Result<()> {
         .delete("/api/music/:id", handlers::delete_music)
         .get("/api/config", handlers::get_config)
         .post("/api/user/create", user_handlers::create)
+        .post("/api/user/update/:id", user_handlers::update)
         .delete("/api/user/:id", user_handlers::delete)
         .static_files("/storage/", "./storage/")
         .static_files("/", "./web/");
