@@ -6,8 +6,8 @@ type TextInputProps = {
     minWidth?: string;
     onChange: (value: string) => void;
     withLabel?: boolean;
-    pattern?: string,
-    title?: string,
+    pattern?: string;
+    title?: string;
 }
 
 const TextInput = React.memo((props: TextInputProps) => {

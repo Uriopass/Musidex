@@ -2,7 +2,7 @@ import './users.css'
 import {useContext, useState} from "react";
 import {MetadataCtx, User} from "../domain/entity";
 import {PageProps} from "./navigator";
-import {MaterialIcon} from "../components/utils";
+import {EditableText, MaterialIcon} from "../components/utils";
 import TextInput from "../components/input";
 import API from "../domain/api";
 
@@ -63,52 +63,14 @@ type UserCardProps = {
 }
 
 const UserCard = (props: UserCardProps) => {
-    const [renaming, setRenaming] = useState(false);
-    const [newName, setNewName] = useState("");
-
-    let style = {};
-    if (renaming) {
-        style = {display: "flex", flexDirection: "column"};
-    }
-
     return <div className={"user-card " + (props.isCurrent ? " user-card-current" : "")}
                 onClick={() => props.onSelect(props.user.id)}
-                style={style}
     >
         <div className="user-card-delete" onClick={() => props.onDelete(props.user.id)}>
             <MaterialIcon name="delete" size={20}/>
         </div>
-        {(!renaming &&
-            <>
-                {props.user.name}
-                <div className="user-card-rename" onClick={() => {
-                    setRenaming(true);
-                }}>
-                    <MaterialIcon name="edit" size={20}/>
-                </div>
-            </>)
-        }
-
-        <div style={{display: (!renaming ? "none" : "flex"), flexDirection: "column", alignItems: "center"}}>
-            <TextInput withLabel={true} name="Name" title="Name" onChange={setNewName}/>
-            <div style={{display: "flex"}}>
-                <div className="user-card-rename" onClick={() => {
-                    setRenaming(false);
-                    setNewName("");
-                }}>
-                    <MaterialIcon name="cancel" size={20}/>
-                </div>
-                <div className="user-card-rename-ok" onClick={() => {
-                    props.onRename(props.user.id, newName);
-                    setRenaming(false);
-                    setNewName("");
-                }
-                }>
-                    <MaterialIcon name="check" size={20}/>
-                </div>
-            </div>
-        </div>
-    </div>
+        <EditableText text={props.user.name} onRename={(v) => props.onRename(props.user.id, v)}/>
+    </div>;
 }
 
 export default Users;

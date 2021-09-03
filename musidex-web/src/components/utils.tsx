@@ -1,5 +1,5 @@
 import './utils.css'
-import React, {useCallback, useEffect, useState} from "react";
+import React, {FormEvent, useCallback, useEffect, useState} from "react";
 
 export const MaterialIcon = React.memo((props: any) => {
     let size = props.size || 20;
@@ -28,7 +28,7 @@ export const ProgressBar = React.memo(({onMouseMove, progress, buffered}: Progre
                     buffered &&
                     buffered.map(([start, end]) =>
                         <div className="progress-bar progress-bar-buffered"
-                             key={start+":"+end}
+                             key={start + ":" + end}
                              style={{
                                  left: (start * 100) + "%",
                                  width: (end * 100) + "%"
@@ -41,6 +41,23 @@ export const ProgressBar = React.memo(({onMouseMove, progress, buffered}: Progre
         </div>
     )
 })
+
+export type EditableTextProps = {
+    onRename: (newName: string) => void;
+    text: string;
+}
+
+export const EditableText = (props: EditableTextProps) => {
+    return <span contentEditable={true}
+                 onBlur={(v: FormEvent<HTMLSpanElement>) => {
+                     props.onRename(v.currentTarget.innerText)
+                 }}
+                 suppressContentEditableWarning={true}
+                className="editable-text"
+    >
+                {props.text}
+            </span>;
+}
 
 export function clamp(v: number, lower: number, upper: number) {
     if (v < lower) return lower;
