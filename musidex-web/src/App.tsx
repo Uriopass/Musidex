@@ -34,7 +34,7 @@ const App = () => {
 
     let onMessage = useCallback(async (ev) => {
         let meta = await API.metadataFromWSMsg(ev);
-        if (!meta.music_tags_idx.has(trackplayer.current?.id || -1)) {
+        if (trackplayer.current && !meta.music_tags_idx.has(trackplayer.current.id)) {
             doNext();
         }
         setMetadata(meta);
