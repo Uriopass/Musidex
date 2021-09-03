@@ -95,6 +95,10 @@ const Explorer = (props: ExplorerProps) => {
         switch (sortBy.kind.kind) {
             case "similarity":
                 toShow = list.best_tracks.slice();
+                if (cur === undefined) {
+                    toShow = metadata.musics.slice();
+                    toShow.reverse();
+                }
                 break;
             case "creation_time":
                 toShow = metadata.musics.slice();
@@ -121,7 +125,8 @@ const Explorer = (props: ExplorerProps) => {
                 </div>
                 {curPlaying}
                 <SortBySelect forced={(searchQry !== "") ? "Query match score" : undefined} sortBy={sortBy}
-                              setSortBy={setSortBy}/>
+                              setSortBy={setSortBy}
+                hasSimilarity={cur !== undefined}/>
                 {
                     toShow.slice(0, shown).map((id) => {
                         if (id === cur) {
@@ -159,6 +164,7 @@ type SortBySelectProps = {
     forced?: string;
     sortBy: SortBy,
     setSortBy: Setter<SortBy>,
+    hasSimilarity: boolean,
 }
 
 const SortBySelect = React.memo((props: SortBySelectProps) => {
@@ -197,7 +203,9 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
 
     return <div className="sort-by-select">
         Sort By:
+        {props.hasSimilarity &&
         <SortByElem sort={{kind: "similarity"}} name="Similarity"/>
+        }
         <SortByElem sort={{kind: "tag", value: "title"}} name="Title"/>
         <SortByElem sort={{kind: "creation_time"}} name="Last added"/>
     </div>;
