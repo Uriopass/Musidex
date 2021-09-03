@@ -21,13 +21,14 @@ Choose a starting point and let it choose the next song for you!
 - [x] Web front
 - [x] Neural embedding based auto play
 - [x] Text search
-- [ ] CI/CD
+- [x] CI
+- [x] Multiple accounts
 - [ ] Basic authentication
-- [ ] Multiple accounts
 - [ ] Android App
 - [ ] Tag filtering
 - [ ] Playlists through tags/Tag editor
 - [ ] Chrome extension to add YT videos to library
+- [ ] CD
 - [ ] MP3 import
 - [ ] Ogg import
 - [ ] FLAC import
