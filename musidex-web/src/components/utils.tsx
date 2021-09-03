@@ -50,10 +50,13 @@ export type EditableTextProps = {
 export const EditableText = (props: EditableTextProps) => {
     return <span contentEditable={true}
                  onBlur={(v: FormEvent<HTMLSpanElement>) => {
-                     props.onRename(v.currentTarget.innerText)
+                     if (v.currentTarget.innerText !== props.text) {
+                         props.onRename(v.currentTarget.innerText)
+                     }
                  }}
                  suppressContentEditableWarning={true}
-                className="editable-text"
+                 spellCheck={false}
+                 className="editable-text"
     >
                 {props.text}
             </span>;

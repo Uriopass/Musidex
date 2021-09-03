@@ -50,6 +50,14 @@ export const API = {
         });
     },
 
+    async insertTag(tag: Tag): Promise<Response> {
+        return fetch(apiURL + "/api/tag/create", {
+            method: "post",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(tag)
+        });
+    },
+
     async deleteMusic(id: number): Promise<Response> {
         return fetch(apiURL + "/api/music/" + id, {
             method: "delete"

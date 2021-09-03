@@ -2,7 +2,7 @@ import './explorer.css'
 import API from "../domain/api";
 import React, {Fragment, useContext, useEffect, useMemo, useState} from "react";
 import {PlayButton} from "../components/playbutton";
-import {clamp, MaterialIcon, Setter} from "../components/utils";
+import {clamp, EditableText, MaterialIcon, Setter} from "../components/utils";
 import {canPlay, MetadataCtx, Tag} from "../domain/entity";
 import {NextTrackCallback, TracklistCtx} from "../domain/tracklist";
 import TextInput from "../components/input";
@@ -233,6 +233,9 @@ const SongElem = (props: SongElemProps) => {
         })
     };
 
+    let title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
+    let artist = props.tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
+
     return (
         <div className="song-elem" style={{background: grad}}>
             <div className="cover-image-container">
@@ -243,11 +246,13 @@ const SongElem = (props: SongElemProps) => {
             </div>
             <div style={{flex: "3", padding: "10px"}}>
                 <b>
-                    {props.tags.get("title")?.text || "No Title"}
+                    <EditableText text={title.text || ""}
+                                  onRename={(v) => API.insertTag({...title, text: v})}/>
                 </b>
                 <br/>
                 <span className="small gray-fg">
-                    {props.tags.get("artist")?.text || ""}
+                    <EditableText text={artist.text || ""}
+                                  onRename={(v) => API.insertTag({...artist, text: v})}/>
                 </span>
             </div>
             <div className="song-elem-buttons">
