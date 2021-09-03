@@ -32,8 +32,8 @@ impl User {
 
     pub fn create(c: &Connection, name: String) -> Result<UserID> {
         let stmt = c
-            .prepare_cached("INSERT INTO users (name) VALUES ($1);")
-            .context("error preparing mk music")?
+            .prepare_cached("INSERT INTO users (name) VALUES (?1);")
+            .context("error preparing create user")?
             .execute([&name])?;
         if stmt == 0 {
             bail!("could not create music");
@@ -44,8 +44,19 @@ impl User {
         Ok(UserID(id))
     }
 
+    pub fn rename(c: &Connection, id: UserID, name: String) -> Result<()> {
+        let stmt = c
+            .prepare_cached("UPDATE users SET name=?2 WHERE id=?1;")
+            .context("error preparing rename")?
+            .execute(rusqlite::params![id.0, name])?;
+        if stmt == 0 {
+            bail!("rename was not executed, user not found");
+        }
+        Ok(())
+    }
+
     pub fn delete(c: &Connection, id: UserID) -> Result<()> {
-        let mut v = c.prepare_cached("DELETE FROM users WHERE id=$1;")?;
+        let mut v = c.prepare_cached("DELETE FROM users WHERE id=?1;")?;
         v.execute([&id.0])?;
         Ok(())
     }
