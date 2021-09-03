@@ -1,4 +1,4 @@
-use crate::domain::entity::{Music, MusicID, User};
+use crate::domain::entity::{Music, MusicID, Tag, User};
 use crate::domain::sync::{serve_sync_websocket, SyncBroadcastSubscriber};
 use crate::domain::{config, stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
@@ -34,6 +34,17 @@ pub async fn subscribe_sync(request: Request<Body>) -> Result<Response<Body>> {
     });
 
     Ok(response)
+}
+
+pub async fn create_tag(mut req: Request<Body>) -> Result<Response<Body>> {
+    let tag: Tag = parse_body(&mut req).await?;
+
+    let db = req.state::<Db>();
+    let c = db.get().await;
+
+    Tag::insert(&c, tag)?;
+
+    Ok(Response::new(Body::empty()))
 }
 
 #[derive(Deserialize)]

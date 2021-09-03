@@ -21,6 +21,25 @@ pub async fn test_insert_tag() -> Result<()> {
 }
 
 #[test_env_log::test(tokio::test)]
+pub async fn test_update_tag() -> Result<()> {
+    let db = mk_db().await?;
+    let c = db.get().await;
+
+    let music = Music::mk(&c)?;
+    let tag = Tag::new_text(music, TagKey::Duration, s!("123"));
+    Tag::insert(&c, tag)?;
+
+    let tag2 = Tag::new_text(music, TagKey::Duration, s!("456"));
+    Tag::insert(&c, tag2.clone())?;
+
+    let metadata = fetch_metadata(&c)?;
+    assert_eq!(metadata.musics[0], music);
+    assert_eq!(metadata.tags[0], tag2);
+
+    Ok(())
+}
+
+#[test_env_log::test(tokio::test)]
 pub async fn test_nested_tagkey_roundtrip() -> Result<()> {
     let db = mk_db().await?;
     let c = db.get().await;
