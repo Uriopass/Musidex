@@ -31,7 +31,9 @@ export class MusidexMetadata {
     musics: number[];
     tags: Tag[];
     users: User[];
+    settings_l: [string, string][];
     music_tags_idx: Map<number, Tags>;
+    settings: Map<string, string>;
     embeddings: Map<number, Vector>;
     fuse_document: IndexedMusic[];
 
@@ -42,10 +44,12 @@ export class MusidexMetadata {
         return this.music_tags_idx.get(id);
     }
 
-    constructor(musics: number[], tags: Tag[], users: User[]) {
+    constructor(musics: number[], tags: Tag[], users: User[], settings: [string, string][]) {
         this.musics = musics;
         this.tags = tags;
         this.users = users;
+        this.settings_l = settings;
+        this.settings = new Map(settings);
         this.music_tags_idx = new Map();
         this.embeddings = new Map();
         this.fuse_document = [];
@@ -81,7 +85,7 @@ export const MetadataCtx = React.createContext<[MusidexMetadata, () => void]>([e
 }]);
 
 export function emptyMetadata(): MusidexMetadata {
-    return new MusidexMetadata([], [], []);
+    return new MusidexMetadata([], [], [], []);
 }
 
 export function canPlay(tags: Tags): boolean {

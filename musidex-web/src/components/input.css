@@ -7,7 +7,6 @@
 }
 
 .form_field {
-    font-family: inherit;
     width: 100%;
     border: 0;
     border-bottom: 2px solid var(--fg);
@@ -38,7 +37,6 @@
     border: 0;
     margin: 0;
     padding: 5px 10px;
-    font: inherit;
     color: var(--color-fg);
     right: 0;
     top: 5px;

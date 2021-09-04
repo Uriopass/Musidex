@@ -31,10 +31,13 @@ const Navbar = React.memo((props: NavbarProps) => {
                         </div>
                     }
                 </div>
-                <div>
+                <div style={{display: "flex"}}>
                     <button onClick={() => props.setCurPage("users")} title="Manage users">
                         {props.curUser?.name || ""}&nbsp;
                         <MaterialIcon name="person" size={25}/>
+                    </button>
+                    <button onClick={() => props.setCurPage("settings")} title="Settings">
+                        <MaterialIcon name="settings" size={20}/>
                     </button>
                 </div>
             </div>

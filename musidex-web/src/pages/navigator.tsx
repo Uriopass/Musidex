@@ -2,8 +2,9 @@ import Explorer from "./explorer";
 import Submit from "./submit";
 import Users from "./users";
 import {NextTrackCallback} from "../domain/tracklist";
+import SettingsPage from "./settings";
 
-export type PageEnum = "explorer" | "submit" | "users";
+export type PageEnum = "explorer" | "submit" | "users" | "settings";
 
 interface NavigatorProps {
     page: PageEnum;
@@ -22,6 +23,7 @@ const PageNavigator = (props: NavigatorProps) => {
             <Explorer title="Musics" hidden={props.page !== "explorer"} doNext={props.doNext}/>
             <Submit hidden={props.page !== "submit"}/>
             <Users hidden={props.page !== "users"} onSetUser={props.onSetUser} curUser={props.curUser}/>
+            <SettingsPage hidden={props.page !== "settings"}/>
         </>
     )
 }

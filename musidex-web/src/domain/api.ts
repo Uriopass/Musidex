@@ -7,6 +7,7 @@ type RawMusidexMetadata = {
     musics: number[];
     tags: Tag[];
     users: User[];
+    settings: [string, string][];
 }
 
 export const API = {
@@ -24,13 +25,13 @@ export const API = {
         let vv = new Uint8Array(m.data);
         const s = pako.inflateRaw(vv, {to: 'string'});
         let v: RawMusidexMetadata = JSON.parse(s);
-        return new MusidexMetadata(v.musics, v.tags, v.users);
+        return new MusidexMetadata(v.musics, v.tags, v.users, v.settings);
     },
 
     async getMetadata(): Promise<MusidexMetadata | null> {
         return fetchJson(apiURL + "/api/metadata").then((v: RawMusidexMetadata) => {
             if (v == null) return null;
-            return new MusidexMetadata(v.musics, v.tags, v.users);
+            return new MusidexMetadata(v.musics, v.tags, v.users, v.settings);
         })
     },
 

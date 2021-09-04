@@ -5,10 +5,8 @@ import {MaterialIcon} from "../components/utils";
 import API from "../domain/api";
 import {PageProps} from "./navigator";
 
-/* eslint-disable no-useless-escape */
 const Submit = (props: PageProps) => {
     return (
-
         <div className={"scrollable-element content"  + (props.hidden ? " hidden" : "")}>
             <div className="submit color-fg ">
                 <YTSubmit
