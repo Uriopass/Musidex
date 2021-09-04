@@ -34,7 +34,7 @@ const App = () => {
 
     let onMessage = useCallback(async (ev) => {
         let meta = await API.metadataFromWSMsg(ev);
-        if (trackplayer.current && !meta.music_tags_idx.has(trackplayer.current.id)) {
+        if (trackplayer.current && !meta.music_tags_idx.has(trackplayer.current)) {
             doNext();
         }
         setMetadata(meta);
@@ -69,7 +69,7 @@ const App = () => {
     }, [ws]);
 
     trackplayer.audio.volume = volume;
-    useMemo(() => setupListeners(trackplayer, doNext, doPrev, dispatchPlayer), [trackplayer, doNext, doPrev, dispatchPlayer]);
+    useMemo(() => setupListeners(trackplayer, metadata, doNext, doPrev, dispatchPlayer), [trackplayer, metadata, doNext, doPrev, dispatchPlayer]);
 
     return (
         <>

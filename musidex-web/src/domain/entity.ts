@@ -35,6 +35,13 @@ export class MusidexMetadata {
     embeddings: Map<number, Vector>;
     fuse_document: IndexedMusic[];
 
+    getTags(id: number | undefined): Tags | undefined {
+        if (id === undefined) {
+            return undefined;
+        }
+        return this.music_tags_idx.get(id);
+    }
+
     constructor(musics: number[], tags: Tag[], users: User[]) {
         this.musics = musics;
         this.tags = tags;

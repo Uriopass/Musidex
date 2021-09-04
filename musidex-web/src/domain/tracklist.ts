@@ -1,6 +1,6 @@
 import {Setter} from "../components/utils";
 import React, {Dispatch, useCallback} from "react";
-import {buildTrack, TrackPlayerAction} from "./trackplayer";
+import {TrackPlayerAction} from "./trackplayer";
 import {canPlay, dot, MusidexMetadata, Vector} from "./entity";
 
 interface Tracklist {
@@ -38,10 +38,6 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         if (id === undefined) {
             return;
         }
-        const track = buildTrack(id, metadata);
-        if (track === undefined) {
-            return;
-        }
 
         if (id !== list.last_played[list.last_played.length - 1]) {
             list.last_played.push(id);
@@ -52,7 +48,9 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
             setList(list);
         }
 
-        dispatch({action: "play", track: track})
+        let duration = metadata.getTags(id)?.get("duration")?.integer;
+
+        dispatch({action: "play", id: id, duration: duration})
     }, [curlist, setList, metadata, dispatch])
 }
 
@@ -69,7 +67,7 @@ export function updateScoreCache(list: Tracklist, metadata: MusidexMetadata): Tr
     list.score_map = new Map();
 
     for (let music of metadata.musics) {
-        let tags = metadata.music_tags_idx.get(music);
+        let tags = metadata.getTags(music);
         if (tags === undefined || !canPlay(tags)) {
             continue;
         }
@@ -122,8 +120,8 @@ export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         if (last === undefined) {
             return;
         }
-        let tags = metadata.music_tags_idx.get(last) || new Map();
-        dispatch({action: "play", track: {id: last, tags: tags}})
+        let duration = metadata.getTags(last)?.get("duration")?.integer;
+        dispatch({action: "play", id: last, duration: duration})
     }, [curlist, setList, metadata, dispatch])
 }
 

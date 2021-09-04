@@ -4,6 +4,7 @@ import {TrackplayerCtx} from "../domain/trackplayer";
 import React, {useCallback, useContext, useEffect} from "react";
 import {PlayButton} from "./playbutton";
 import {NextTrackCallback} from "../domain/tracklist";
+import {MetadataCtx} from "../domain/entity";
 
 function timeFormat(total: number): string {
     let minutes = Math.floor(total / 60);
@@ -20,6 +21,7 @@ interface PlayerProps {
 
 const Player = (props: PlayerProps) => {
     let [trackplayer, dispatch] = useContext(TrackplayerCtx);
+    let [metadata,] = useContext(MetadataCtx);
     let [, forceUpdate] = useUpdate();
 
     useEffect(() => {
@@ -27,12 +29,14 @@ const Player = (props: PlayerProps) => {
         return () => trackplayer.audio.removeEventListener("timeupdate", forceUpdate);
     }, [forceUpdate, trackplayer.audio])
 
+
+    let tags = metadata.getTags(trackplayer.current);
     let curtime = trackplayer.audio.currentTime || 0;
-    let duration = trackplayer.duration || (trackplayer.current?.tags.get("duration")?.integer || 0);
+    let duration = trackplayer.duration || (tags?.get("duration")?.integer || 0);
     let trackProgress = duration > 0 ? curtime / duration : 0;
-    let title = (trackplayer.current !== undefined) ? (trackplayer.current.tags.get("title")?.text || "No Title") : "";
-    let artist = trackplayer.current?.tags.get("artist")?.text || "";
-    let thumbnail = trackplayer.current?.tags.get("thumbnail")?.text || "";
+    let title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";
+    let artist = tags?.get("artist")?.text || "";
+    let thumbnail = tags?.get("thumbnail")?.text || "";
 
     let trackBarOnMove = (ev: React.MouseEvent<HTMLDivElement>) => {
         if (ev.buttons !== 1) return;
@@ -102,7 +106,7 @@ const Player = (props: PlayerProps) => {
                         <MaterialIcon size={20}
                                       name="skip_previous"/>
                     </button>
-                    <PlayButton musicID={trackplayer.current?.id} doNext={props.doNext} size={26}/>
+                    <PlayButton musicID={trackplayer.current} doNext={props.doNext} size={26}/>
                     <button className=" player-button" onClick={clickNext} title="Next Track">
                         <MaterialIcon size={20}
                                       name=" skip_next"/>

@@ -1,24 +1,10 @@
 import React from "react";
 import API from "./api";
 import {NextTrackCallback, PrevTrackCallback} from "./tracklist";
-import {MusidexMetadata, Tag} from "./entity";
-
-export type Track = {
-    id: number;
-    tags: Map<string, Tag>;
-}
-
-export function buildTrack(id: number, metadata: MusidexMetadata): Track | undefined {
-    let tags = metadata.music_tags_idx.get(id);
-    if (tags === undefined) return;
-    return {
-        id: id,
-        tags: tags,
-    }
-}
+import {MusidexMetadata} from "./entity";
 
 type TrackPlayer = {
-    current: Track | undefined;
+    current: number | undefined;
     duration: number;
     paused: boolean;
     loading: boolean;
@@ -27,7 +13,7 @@ type TrackPlayer = {
 }
 
 export type TrackPlayerAction =
-    { action: "play", track: Track }
+    { action: "play", id: number, duration?: number }
     | { action: "audioTick" }
     | { action: "setTime", time: number }
 
@@ -42,7 +28,7 @@ export function newTrackPlayer(): TrackPlayer {
     }
 }
 
-export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallback, doPrev: PrevTrackCallback, dispatch: React.Dispatch<TrackPlayerAction>) {
+export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetadata, doNext: NextTrackCallback, doPrev: PrevTrackCallback, dispatch: React.Dispatch<TrackPlayerAction>) {
     trackplayer.audio.onloadeddata = () => dispatch({action: "audioTick"});
     trackplayer.audio.onplaying = () => dispatch({action: "audioTick"});
     trackplayer.audio.onpause = () => dispatch({action: "audioTick"});
@@ -55,7 +41,7 @@ export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallba
     }
 
     if ('mediaSession' in navigator) {
-        let curtags = trackplayer.current?.tags;
+        let curtags = metadata.getTags(trackplayer.current);
         let artwork = [];
         let thumb = curtags?.get("thumbnail")?.text;
         if (thumb) {
@@ -69,8 +55,8 @@ export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallba
             artwork: artwork,
         });
 
-        navigator.mediaSession.setActionHandler('play', () => doNext(trackplayer.current?.id));
-        navigator.mediaSession.setActionHandler('pause', () => doNext(trackplayer.current?.id));
+        navigator.mediaSession.setActionHandler('play', () => doNext(trackplayer.current));
+        navigator.mediaSession.setActionHandler('pause', () => doNext(trackplayer.current));
         navigator.mediaSession.setActionHandler('seekto', (e) => {
             if (e.seekTime) {
                 dispatch(({action: "setTime", time: e.seekTime}))
@@ -90,7 +76,7 @@ export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallba
                 doNext();
                 return;
             }
-            dispatch({action: "play", track: trackplayer.current});
+            dispatch({action: "play", id: trackplayer.current});
         }
     };
 }
@@ -98,8 +84,8 @@ export function setupListeners(trackplayer: TrackPlayer, doNext: NextTrackCallba
 export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAction): TrackPlayer {
     switch (action.action) {
         case "play":
-            if (action.track.id < 0) return trackplayer;
-            if (trackplayer.current?.id === action.track.id) {
+            if (action.id < 0) return trackplayer;
+            if (trackplayer.current === action.id) {
                 if (trackplayer.paused) {
                     trackplayer.audio.play().catch((e) => console.log(e));
                 } else {
@@ -111,12 +97,12 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
                     paused: !trackplayer.paused,
                 }
             }
-            trackplayer.audio.src = API.getStreamSrc(action.track.id);
+            trackplayer.audio.src = API.getStreamSrc(action.id);
             trackplayer.audio.load();
             return {
                 ...trackplayer,
-                current: action.track,
-                duration: action.track.tags.get("duration")?.integer || 0,
+                current: action.id,
+                duration: action.duration || 0,
                 loading: true,
                 paused: false,
             }

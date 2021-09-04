@@ -50,7 +50,7 @@ const Explorer = (props: ExplorerProps) => {
     const colorSongs = "#28222f";
     let curPlaying = <></>;
     if (cur) {
-        const tags = metadata.music_tags_idx.get(cur);
+        const tags = metadata.getTags(cur);
         if (tags !== undefined) {
             curPlaying =
                 <>
@@ -108,7 +108,7 @@ const Explorer = (props: ExplorerProps) => {
                 let v = sortBy.kind.value;
                 toShow = metadata.musics.slice();
                 toShow.sort((a, b) => {
-                    return (metadata.music_tags_idx.get(a)?.get(v)?.text || "").localeCompare(metadata.music_tags_idx.get(b)?.get(v)?.text || "")
+                    return (metadata.getTags(a)?.get(v)?.text || "").localeCompare(metadata.getTags(b)?.get(v)?.text || "")
                 })
                 break;
         }
@@ -132,7 +132,7 @@ const Explorer = (props: ExplorerProps) => {
                         if (id === cur) {
                             return <Fragment key={id}/>;
                         }
-                        const tags = metadata.music_tags_idx.get(id);
+                        const tags = metadata.getTags(id);
                         if (tags === undefined) {
                             return <Fragment key={id}/>;
                         }
