@@ -116,7 +116,7 @@ async fn start() -> anyhow::Result<()> {
 }
 
 fn main() -> anyhow::Result<()> {
-    tokio::runtime::Builder::new_current_thread()
+    tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
         .unwrap()
