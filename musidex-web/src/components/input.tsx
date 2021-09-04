@@ -4,7 +4,8 @@ import React, {useState} from "react";
 type TextInputProps = {
     name: string;
     minWidth?: string;
-    onChange: (value: string) => void;
+    onChange?: (value: string) => void;
+    onBlur?: (value: string) => void;
     withLabel?: boolean;
     pattern?: string;
     title?: string;
@@ -19,8 +20,15 @@ const TextInput = React.memo((props: TextInputProps) => {
                     style={{minWidth: props.minWidth || 0}}>
             <input type="search"
                    onChange={(ev) => {
+                       if (props.onChange) {
+                           props.onChange(ev.target.value);
+                       }
                        setV(ev.target.value);
-                       props.onChange(ev.target.value);
+                   }}
+                   onBlur={(ev) => {
+                       if (props.onBlur) {
+                           props.onBlur(ev.target.value);
+                       }
                    }}
                    className="form_field"
                    placeholder={props.name}

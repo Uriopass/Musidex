@@ -59,6 +59,17 @@ export const API = {
         });
     },
 
+    async updateSettings(key: string, value: string): Promise<Response> {
+        return fetch(apiURL + "/api/config/update", {
+            method: "post",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                key: key,
+                value: value,
+            })
+        });
+    },
+
     async deleteMusic(id: number): Promise<Response> {
         return fetch(apiURL + "/api/music/" + id, {
             method: "delete"
