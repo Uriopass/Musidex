@@ -23,11 +23,11 @@ Choose a starting point and let it choose the next song for you!
 - [x] Text search
 - [x] CI
 - [x] Multiple accounts
-- [ ] Basic authentication
 - [ ] Android App
 - [ ] Tag filtering
 - [ ] Playlists through tags/Tag editor
 - [ ] Chrome extension to add YT videos to library
+- [ ] Basic authentication
 - [ ] CD
 - [ ] MP3 import
 - [ ] Ogg import
