@@ -11,6 +11,7 @@ use tokio::sync::mpsc;
 use tokio::sync::watch;
 use tungstenite::Message;
 
+use crate::domain::config;
 use crate::domain::entity::{CompressedMusidexMetadata, Music, MusidexMetadata, User};
 use crate::infrastructure::db::Db;
 use crate::utils::collect_rows;
@@ -132,10 +133,12 @@ pub fn fetch_metadata(c: &Connection) -> Result<MusidexMetadata> {
     let tags = collect_rows(tags)?;
 
     let users = User::list(c)?;
+    let config = config::get_all(c)?;
 
     Ok(MusidexMetadata {
         musics,
         tags,
         users,
+        settings: config,
     })
 }

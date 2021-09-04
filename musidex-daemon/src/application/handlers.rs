@@ -1,15 +1,13 @@
 use std::convert::TryInto;
-use std::iter::FromIterator;
 
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
-use serde_json::Value;
 
 use crate::domain::entity::{Music, MusicID, Tag, User};
 use crate::domain::sync::{serve_sync_websocket, SyncBroadcastSubscriber};
-use crate::domain::{config, stream, sync, upload};
+use crate::domain::{stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
 use crate::utils::res_status;
 use crate::Db;
@@ -131,15 +129,6 @@ pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {
     }
 
     Ok(r)
-}
-
-pub async fn get_config(req: Request<Body>) -> Result<Response<Body>> {
-    let db = req.state::<Db>();
-    let c = db.get().await;
-
-    let keyvals = config::get_all(&c).context("failed fetching metadata")?;
-
-    Ok(Response::new(Body::from(serde_json::to_string(&keyvals)?)))
 }
 
 pub async fn parse_body<T: DeserializeOwned>(req: &mut Request<Body>) -> Result<T> {

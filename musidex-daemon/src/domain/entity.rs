@@ -50,6 +50,7 @@ pub struct MusidexMetadata {
     pub musics: Vec<MusicID>,
     pub tags: Vec<Tag>,
     pub users: Vec<User>,
+    pub settings: Vec<(String, String)>,
 }
 
 pub type CompressedMusidexMetadata = Vec<u8>;
