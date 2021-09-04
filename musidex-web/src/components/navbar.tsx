@@ -34,7 +34,7 @@ const Navbar = React.memo((props: NavbarProps) => {
                 <div>
                     <button onClick={() => props.setCurPage("users")} title="Manage users">
                         {props.curUser?.name || ""}&nbsp;
-                        <MaterialIcon name="manage_accounts" size={25}/>
+                        <MaterialIcon name="person" size={25}/>
                     </button>
                 </div>
             </div>
