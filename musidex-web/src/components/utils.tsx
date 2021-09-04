@@ -54,6 +54,12 @@ export const EditableText = (props: EditableTextProps) => {
                          props.onRename(v.currentTarget.innerText)
                      }
                  }}
+                 onKeyDown={(ev) => {
+                     if (ev.code === "Enter") {
+                         ev.preventDefault();
+                         ev.currentTarget.blur();
+                     }
+                 }}
                  suppressContentEditableWarning={true}
                  spellCheck={false}
                  className="editable-text"
