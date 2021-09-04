@@ -1,7 +1,8 @@
-use crate::utils::collect_rows;
-use crate::Db;
 use anyhow::{Context, Result};
 use rusqlite::Connection;
+
+use crate::utils::collect_rows;
+use crate::Db;
 
 #[rustfmt::skip]
 const DEFAULT_CONFIG: &[(&str, &str)] = &[
@@ -17,15 +18,13 @@ pub async fn init(db: &Db) -> Result<()> {
     Ok(())
 }
 
-#[allow(dead_code)]
-pub fn upsert_key(c: &Connection, key: &str, value: &str) -> Result<()> {
+pub fn update(c: &Connection, key: &str, value: &str) -> Result<()> {
     c.prepare_cached(
-        "INSERT INTO config (key, value)
-                    VALUES (?1, ?2)
-                    ON CONFLICT (key)
-                    DO UPDATE SET value=?2;",
+        "UPDATE config
+                    SET value=?2
+                    WHERE key=?1;",
     )
-    .context("upsert key error")?
+    .context("update key error")?
     .execute([&key, &value])?;
     Ok(())
 }

@@ -97,6 +97,24 @@ pub async fn youtube_upload_playlist(mut req: Request<Body>) -> Result<Response<
     ))
 }
 
+#[derive(Deserialize)]
+pub struct ConfigUpdate {
+    pub key: String,
+    pub value: String,
+}
+
+pub async fn update_config(mut req: Request<Body>) -> Result<Response<Body>> {
+    let uid = User::from_req(&req).context("no user id")?;
+    let b: ConfigUpdate = parse_body(&mut req).await?;
+    log::info!("{:?} requested config change: {}={}", uid, &b.key, &b.value);
+    let db = req.state::<Db>();
+    let c = db.get().await;
+
+    crate::domain::config::update(&c, &b.key, &b.value)?;
+
+    Ok(Response::new(Body::empty()))
+}
+
 pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {
     let music_id = req.params().get("musicid").context("invalid music id")?;
     let id = MusicID(
