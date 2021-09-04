@@ -5,7 +5,6 @@ use hyper::http::Extensions;
 use hyper::{Body, Request};
 use std::sync::Arc;
 
-mod config;
 mod music;
 mod tags;
 mod user;
@@ -17,6 +16,7 @@ async fn mk_db() -> anyhow::Result<Db> {
     Ok(db)
 }
 
+#[allow(dead_code)]
 fn mk_db_extension(req: &mut Request<Body>, db: Db) {
     let mut e = Extensions::new();
     e.insert(db);
