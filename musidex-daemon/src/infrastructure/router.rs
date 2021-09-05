@@ -40,10 +40,10 @@ use hyper::header::{
 };
 use hyper::http::Extensions;
 use hyper::service::Service;
-use hyper::{Body, Method, Request, Response, StatusCode};
+use hyper::{Body, Method, Request, Response, StatusCode, Uri};
 use route_recognizer::Router as InnerRouter;
 use std::io::ErrorKind;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::pin::Pin;
 
 #[derive(Default)]
@@ -149,13 +149,7 @@ impl Router {
         mut req: Request<Body>,
     ) -> Pin<Box<dyn Future<Output = Result<Response<Body>>> + Send>> {
         if req.uri().path() == "/" {
-            return Box::pin(async {
-                Ok(Response::builder()
-                    .status(301)
-                    .header("Location", "index.html")
-                    .body(Body::empty())
-                    .unwrap())
-            });
+            return Box::pin(async { serve_file("./web/index.html".as_ref()).await });
         }
         match self.inner.get(req.method()) {
             Some(inner_router) => match inner_router.recognize(req.uri().path()) {
@@ -253,23 +247,30 @@ impl Handler for StaticHandle {
             || url.ends_with("js")
             || url.ends_with("css");
         Box::pin((move || async move {
-            let f = match tokio::fs::read(p).await {
-                Ok(x) => x,
-                Err(e) => {
-                    if e.kind() == ErrorKind::NotFound {
-                        return Ok(res_status(StatusCode::NOT_FOUND));
-                    }
-                    return Err(e).context("failed reading file");
-                }
-            };
-
-            let mut r = Response::builder();
+            let mut r = serve_file(&p).await?;
             if should_cache {
-                r = r.header(CACHE_CONTROL, "public, max-age=604800, immutable");
+                r.headers_mut().insert(
+                    CACHE_CONTROL,
+                    "public, max-age=604800, immutable".parse().unwrap(),
+                );
             }
-            Ok(r.body(Body::from(f)).unwrap())
+            Ok(r)
         })())
     }
+}
+
+async fn serve_file(p: &Path) -> Result<Response<Body>> {
+    let f = match tokio::fs::read(p).await {
+        Ok(x) => x,
+        Err(e) => {
+            if e.kind() == ErrorKind::NotFound {
+                return Ok(res_status(StatusCode::NOT_FOUND));
+            }
+            return Err(e).context("failed reading file");
+        }
+    };
+
+    return Ok(Response::new(Body::from(f)));
 }
 
 pub(crate) trait Handler: Send + Sync + 'static {
