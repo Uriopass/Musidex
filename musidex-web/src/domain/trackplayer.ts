@@ -8,7 +8,6 @@ type TrackPlayer = {
     duration: number;
     paused: boolean;
     loading: boolean;
-    buffered: TimeRanges;
     audio: HTMLAudioElement;
 }
 
@@ -24,7 +23,6 @@ export function newTrackPlayer(): TrackPlayer {
         duration: 0,
         paused: true,
         loading: false,
-        buffered: {length: 0, end: () => 0, start: () => 0},
     }
 }
 
@@ -138,7 +136,6 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
             if (trackplayer.audio.duration) {
                 trackplayer.duration = trackplayer.audio.duration;
             }
-            trackplayer.buffered = trackplayer.audio.buffered;
             navigator.mediaSession.setPositionState({
                 duration: trackplayer.duration,
                 position: trackplayer.audio.currentTime,

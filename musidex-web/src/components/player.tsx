@@ -76,9 +76,9 @@ const Player = (props: PlayerProps) => {
 
     let buffered: [number, number][] = [];
     if (trackplayer.duration > 1) {
-        buffered = Array(trackplayer.buffered.length).fill(0).map((_, idx) => {
-            const s = trackplayer.buffered.start(idx);
-            const e = trackplayer.buffered.end(idx);
+        buffered = Array(trackplayer.audio.buffered.length).fill(0).map((_, idx) => {
+            const s = trackplayer.audio.buffered.start(idx);
+            const e = trackplayer.audio.buffered.end(idx);
             return [Math.max(0, s / trackplayer.duration), Math.min(1, e / trackplayer.duration)];
         })
     }
