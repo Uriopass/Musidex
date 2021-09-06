@@ -70,6 +70,7 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
         if (e.target !== document.body) {
             return;
         }
+        console.log(e.code);
         if (e.code === "Space" || e.code === "KeyK") {
             e.preventDefault();
             if (!trackplayer.current) {
@@ -77,6 +78,22 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
                 return;
             }
             dispatch({action: "play", id: trackplayer.current});
+        }
+        if (e.code === "ArrowRight") {
+            e.preventDefault();
+            if (trackplayer.audio.currentTime + 5 >= trackplayer.duration) {
+                doNext();
+                return;
+            }
+            dispatch({action: "setTime", time: trackplayer.audio.currentTime + 5});
+        }
+        if (e.code === "ArrowLeft") {
+            e.preventDefault();
+            if (trackplayer.audio.currentTime - 5 <= 0) {
+                doPrev();
+                return;
+            }
+            dispatch({action: "setTime", time: trackplayer.audio.currentTime - 5});
         }
     };
 }
