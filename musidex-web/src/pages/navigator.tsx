@@ -10,7 +10,7 @@ interface NavigatorProps {
     page: PageEnum;
     doNext: NextTrackCallback;
     onSetUser: (id: number) => void;
-    curUser: number;
+    curUser?: number;
 }
 
 export interface PageProps {

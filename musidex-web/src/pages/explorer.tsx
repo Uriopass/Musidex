@@ -12,7 +12,7 @@ import Filters, {applyFilters, FiltersCtx} from "../domain/filters";
 export interface ExplorerProps extends PageProps {
     title?: string;
     doNext: NextTrackCallback;
-    curUser: number;
+    curUser?: number;
 }
 
 const fuseOptions = {
@@ -134,8 +134,7 @@ const Explorer = (props: ExplorerProps) => {
                               setSortBy={setSortBy}
                               hasSimilarity={curTrack !== undefined}/>
                 <FilterBySelect filters={filters}
-                                setFilters={setFilters}
-                                user={props.curUser}/>
+                                setFilters={setFilters}/>
                 {
                     toShow.slice(0, shown).map((id) => {
                         if (id === curTrack) {
@@ -173,7 +172,6 @@ const Explorer = (props: ExplorerProps) => {
 type FilterBySelectProps = {
     filters: Filters,
     setFilters: Setter<Filters>,
-    user: number;
 }
 
 const FilterBySelect = React.memo((props: FilterBySelectProps) => {

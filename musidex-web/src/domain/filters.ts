@@ -13,17 +13,19 @@ export function newFilters(): Filters {
 }
 
 // in place
-export function applyFilters(filters: Filters, list: number[], metadata: MusidexMetadata, curUser: number) {
+export function applyFilters(filters: Filters, list: number[], metadata: MusidexMetadata, curUser?: number) {
+    let k = "user_library:" + curUser;
     if (filters.user_only) {
         retain(list, (id) => {
-            return metadata.getTags(id)?.has("user_library:" + curUser) || false;
+            return metadata.getTags(id)?.has(k) || false;
         })
     }
 }
 
-export function findFirst(filters: Filters, list: number[], metadata: MusidexMetadata, curUser: number): number | undefined {
+export function findFirst(filters: Filters, list: number[], metadata: MusidexMetadata, curUser: number | undefined): number | undefined {
+    let k = "user_library:" + curUser;
     for (let id of list) {
-        if (filters.user_only && !metadata.getTags(id)?.has("user_library:" + curUser)) {
+        if (filters.user_only && !metadata.getTags(id)?.has(k)) {
             continue;
         }
         return id;

@@ -23,7 +23,7 @@ export function emptyTracklist(): Tracklist {
 export type NextTrackCallback = (id?: number) => void;
 export type PrevTrackCallback = () => void;
 
-export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, filters: Filters, curUser: number): NextTrackCallback {
+export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, filters: Filters, curUser: number | undefined): NextTrackCallback {
     return useCallback((id) => {
         let list = {
             ...curlist,

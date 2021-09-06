@@ -8,7 +8,7 @@ import API from "../domain/api";
 
 export interface UsersProps extends PageProps {
     onSetUser: (id: number) => void;
-    curUser: number;
+    curUser?: number;
 }
 
 const Users = (props: UsersProps) => {

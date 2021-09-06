@@ -44,8 +44,8 @@ export class MusidexMetadata {
         return this.music_tags_idx.get(id);
     }
 
-    firstUser(): number {
-        return this.users[0]?.id || 1;
+    firstUser(): number | undefined {
+        return this.users[0]?.id;
     }
 
     constructor(musics: number[], tags: Tag[], users: User[], settings: [string, string][]) {
