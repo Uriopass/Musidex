@@ -39,8 +39,8 @@ const Explorer = (props: ExplorerProps) => {
     const [searchQry, setSearchQry] = useState("");
     const [sortBy, setSortBy] = useState<SortBy>({kind: {kind: "similarity"}, descending: true})
 
-    let curTrack: number | undefined = list.last_played[list.last_played.length - 1];
-    let onScroll = (e: any) => {
+    const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
+    const onScroll = (e: any) => {
         const elem: HTMLDivElement = e.target;
         if (elem.scrollHeight - elem.scrollTop < elem.clientHeight + 500) {
             if (metadata.musics.length > shown) {
@@ -62,13 +62,14 @@ const Explorer = (props: ExplorerProps) => {
                               doNext={props.doNext}
                               syncMetadata={syncMetadata}
                               tags={tags}
+                              curUser={props.curUser}
                               progress={1.0}
                               progressColor={colorCur}/>
                     <div style={{marginTop: 10}}/>
                 </>;
         }
     }
-    let [Fuse, setFuse] = useState<any>(undefined);
+    const [Fuse, setFuse] = useState<any>(undefined);
     useEffect(() => {
         if (searchQry !== "" && Fuse === undefined) {
             import("fuse.js").then(fuse => {
@@ -77,14 +78,14 @@ const Explorer = (props: ExplorerProps) => {
         }
     }, [searchQry, Fuse]);
 
-    let fuse = useMemo(() => {
+    const fuse = useMemo(() => {
         if (Fuse === undefined) {
             return undefined;
         }
         return new Fuse.default(metadata.fuse_document, fuseOptions)
     }, [metadata, Fuse]);
 
-    let qryFilter = useMemo(() => {
+    const qryFilter = useMemo(() => {
         if (searchQry === "" || fuse === undefined) {
             return [];
         }
@@ -148,6 +149,7 @@ const Explorer = (props: ExplorerProps) => {
                         return (
                             <SongElem key={id} musicID={id}
                                       tags={tags}
+                                      curUser={props.curUser}
                                       syncMetadata={syncMetadata}
                                       doNext={props.doNext}
                                       progress={score}
@@ -258,6 +260,7 @@ type SongElemProps = {
     syncMetadata: () => void;
     progress?: number,
     progressColor?: string;
+    curUser?: number;
 }
 
 const SongElem = (props: SongElemProps) => {
@@ -265,15 +268,15 @@ const SongElem = (props: SongElemProps) => {
 
     const playable = canPlay(props.tags);
     const hasYT = props.tags.get("youtube_video_id")?.text;
-    const goToYT = (id: string) => {
-        window.open("https://youtube.com/watch?v=" + id, "_blank")?.focus();
+    const goToYT = () => {
+        window.open("https://youtube.com/watch?v=" + hasYT, "_blank")?.focus();
     };
 
     const c = props.progressColor;
     const p = clamp(100 * (props.progress || 0), 0, 100);
     const grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
 
-    let onDelete = () => {
+    const onDelete = () => {
         API.deleteMusic(props.musicID).then((res) => {
             if (res.ok && res.status === 200) {
                 props.syncMetadata()
@@ -281,8 +284,16 @@ const SongElem = (props: SongElemProps) => {
         })
     };
 
-    let title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
-    let artist = props.tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
+    const onAddToLibrary = () => {
+        if(!props.curUser) {
+            return;
+        }
+        API.insertTag({music_id: props.musicID, key: "user_library:"+props.curUser}).then(() => props.syncMetadata());
+    }
+    const showAddToLibrary = props.curUser !== undefined && !props.tags.has("user_library:"+props.curUser);
+
+    const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
+    const artist = props.tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
 
     return (
         <div className="song-elem" style={{background: grad}}>
@@ -306,8 +317,14 @@ const SongElem = (props: SongElemProps) => {
             <div className="song-elem-buttons">
                 {
                     hasYT &&
-                    <button className="player-button" onClick={() => goToYT(hasYT)}>
+                    <button className="player-button" onClick={goToYT}>
                         <img src="yt_icon.png" width={20} height={20} alt="Go to Youtube"/>
+                    </button>
+                }
+                {
+                    showAddToLibrary &&
+                    <button className="player-button" onClick={onAddToLibrary} title="Add to library">
+                        <MaterialIcon name="add"/>
                     </button>
                 }
                 {
