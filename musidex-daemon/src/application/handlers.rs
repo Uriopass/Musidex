@@ -2,8 +2,6 @@ use std::convert::TryInto;
 
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
-use serde::de::DeserializeOwned;
-use serde::Deserialize;
 
 use crate::domain::entity::{Music, MusicID, Tag, User};
 use crate::domain::sync::{serve_sync_websocket, SyncBroadcastSubscriber};
@@ -11,6 +9,7 @@ use crate::domain::{stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
 use crate::utils::res_status;
 use crate::Db;
+use nanoserde::{DeJson, SerJson};
 
 pub async fn metadata(req: Request<Body>) -> Result<Response<Body>> {
     let db = req.state::<Db>();
@@ -18,7 +17,7 @@ pub async fn metadata(req: Request<Body>) -> Result<Response<Body>> {
 
     let metadata = sync::fetch_metadata(&c).context("failed fetching metadata")?;
 
-    Ok(Response::new(Body::from(serde_json::to_string(&metadata)?)))
+    Ok(Response::new(Body::from(metadata.serialize_json())))
 }
 
 pub async fn subscribe_sync(request: Request<Body>) -> Result<Response<Body>> {
@@ -48,7 +47,7 @@ pub async fn create_tag(mut req: Request<Body>) -> Result<Response<Body>> {
     Ok(Response::new(Body::empty()))
 }
 
-#[derive(Deserialize)]
+#[derive(DeJson)]
 pub struct UploadYoutube {
     pub url: String,
 }
@@ -97,7 +96,7 @@ pub async fn youtube_upload_playlist(mut req: Request<Body>) -> Result<Response<
     ))
 }
 
-#[derive(Deserialize)]
+#[derive(DeJson)]
 pub struct ConfigUpdate {
     pub key: String,
     pub value: String,
@@ -149,9 +148,10 @@ pub async fn stream(req: Request<Body>) -> Result<Response<Body>> {
     Ok(r)
 }
 
-pub async fn parse_body<T: DeserializeOwned>(req: &mut Request<Body>) -> Result<T> {
+pub async fn parse_body<T: DeJson>(req: &mut Request<Body>) -> Result<T> {
     let f = hyper::body::to_bytes(req.body_mut())
         .await
         .context("could not decode body")?;
-    serde_json::from_slice(&*f).context("could not parse body")
+    nanoserde::DeJson::deserialize_json(&*String::from_utf8_lossy(f.as_ref()))
+        .context("could not parse body")
 }

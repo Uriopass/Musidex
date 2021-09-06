@@ -3,49 +3,49 @@ use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::ops::Deref;
 
-use chrono::{DateTime, Utc};
+use nanoserde::{DeJson, DeJsonErr, DeJsonState, SerJson, SerJsonState};
 use rusqlite::types::ToSqlOutput;
 use rusqlite::{Row, ToSql};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::str::Chars;
 
-#[derive(Copy, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Debug)]
-#[serde(transparent)]
+#[derive(Copy, Clone, Hash, PartialEq, Eq, SerJson, DeJson, Debug)]
+#[nserde(transparent)]
 pub struct MusicID(pub i32);
 
-#[derive(Copy, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Debug)]
-#[serde(transparent)]
+#[derive(Copy, Clone, Hash, PartialEq, Eq, SerJson, DeJson, Debug)]
+#[nserde(transparent)]
 pub struct UserID(pub i32);
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, SerJson, DeJson)]
 pub struct User {
     pub id: UserID,
     pub name: String,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, SerJson, DeJson)]
 pub struct Music {
     pub id: MusicID,
 }
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, SerJson, DeJson)]
 pub struct Tag {
     pub music_id: MusicID,
     pub key: TagKey,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub integer: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub date: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    pub date: Option<String>,
     pub vector: Option<Vector>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(SerJson, DeJson)]
+#[nserde(transparent)]
+pub struct DateSerde(Option<String>);
+
+#[derive(Clone, Debug, PartialEq, SerJson, DeJson)]
 pub struct Vector(Vec<f32>);
 
-#[derive(Serialize, Hash, Default)]
+#[derive(SerJson, Hash, Default)]
 pub struct MusidexMetadata {
     pub musics: Vec<MusicID>,
     pub tags: Vec<Tag>,
@@ -147,26 +147,6 @@ impl Display for TagKey {
     }
 }
 
-impl<'de> Deserialize<'de> for TagKey {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let v = <&str>::deserialize(deserializer)?;
-        Ok(v.into())
-    }
-}
-
-impl Serialize for TagKey {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let s: String = self.into();
-        s.serialize(serializer)
-    }
-}
-
 impl<'a, 'b> From<&'a Row<'b>> for Music {
     fn from(row: &'a Row<'b>) -> Self {
         Music {
@@ -191,13 +171,25 @@ impl<'a, 'b> From<&'a Row<'b>> for Tag {
             key: row.get_unwrap::<_, String>("key").deref().into(),
             text: row.get_unwrap("text"),
             integer: row.get_unwrap("integer"),
-            date: row
-                .get_unwrap::<_, Option<String>>("date")
-                .and_then(|v| DateTime::parse_from_rfc3339(&v).ok().map(Into::into)),
+            date: row.get_unwrap("date"),
             vector: row
                 .get_unwrap::<_, Option<Vec<u8>>>("vector")
                 .and_then(reconstruct),
         }
+    }
+}
+
+impl SerJson for TagKey {
+    fn ser_json(&self, d: usize, st: &mut SerJsonState) {
+        let s: String = self.into();
+        s.ser_json(d, st);
+    }
+}
+
+impl DeJson for TagKey {
+    fn de_json(state: &mut DeJsonState, input: &mut Chars) -> Result<Self, DeJsonErr> {
+        let v: String = DeJson::de_json(state, input)?;
+        Ok((&*v).into())
     }
 }
 
@@ -212,4 +204,45 @@ pub fn reconstruct(x: Vec<u8>) -> Option<Vector> {
         res.push(lol);
     }
     Some(Vector(res))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn assert_roundtrip<T: SerJson + DeJson + PartialEq + Eq + Debug>(before: T) {
+        let v = nanoserde::SerJson::serialize_json(&before);
+        let after: T = nanoserde::DeJson::deserialize_json(&*v).unwrap();
+        assert_eq!(after, before, "json was: {}", &*v);
+    }
+
+    #[test]
+    fn test_roundtrip() {
+        assert_roundtrip(Tag {
+            music_id: MusicID(3),
+            key: TagKey::LocalMP3,
+            text: Some(s!("salut")),
+            integer: Some(-12),
+            date: Some(s!("aaaa")),
+            vector: Some(Vector(vec![1.0, 0.121, 0.333, -12.0])),
+        });
+
+        assert_roundtrip(Tag {
+            music_id: MusicID(33333),
+            key: TagKey::UserLibrary(s!(":aa11--")),
+            text: Some(s!("")),
+            integer: Some(i32::MIN),
+            date: Some(s!("")),
+            vector: Some(Vector(vec![0.0, 0.0, 1.0, 0.0, 0.0])),
+        });
+
+        assert_roundtrip(Tag {
+            music_id: MusicID(33333),
+            key: TagKey::UserLibrary(s!("")),
+            text: None,
+            integer: None,
+            date: None,
+            vector: None,
+        });
+    }
 }

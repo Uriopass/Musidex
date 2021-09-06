@@ -6,6 +6,7 @@ use std::time::Duration;
 use anyhow::Result;
 use futures::{sink::SinkExt, stream::StreamExt};
 use hyper_tungstenite::{tungstenite, HyperWebsocket};
+use nanoserde::SerJson;
 use rusqlite::Connection;
 use tokio::sync::mpsc;
 use tokio::sync::watch;
@@ -30,7 +31,7 @@ pub struct SyncBroadcast {
 }
 
 fn compress(x: MusidexMetadata) -> CompressedMusidexMetadata {
-    let json = serde_json::to_string(&x).unwrap_or_else(|_| s!("{}"));
+    let json = x.serialize_json();
     miniz_oxide::deflate::compress_to_vec(json.as_bytes(), 5)
 }
 

@@ -4,9 +4,9 @@ use crate::infrastructure::db::Db;
 use crate::infrastructure::router::RequestExt;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
-use serde::Deserialize;
+use nanoserde::DeJson;
 
-#[derive(Deserialize)]
+#[derive(DeJson)]
 pub struct UserCreatePOST {
     pub name: String,
 }

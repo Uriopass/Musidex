@@ -68,7 +68,7 @@ impl YoutubeDLWorker {
         add_tag_opt(TagKey::Title, metadata.track)?;
         add_tag(TagKey::YoutubeDLWorkerTreated, s!("true"))?;
 
-        if let Some(v) = metadata.duration.and_then(|x| x.as_i64()) {
+        if let Some(v) = metadata.duration {
             Tag::insert(
                 txb,
                 Tag {

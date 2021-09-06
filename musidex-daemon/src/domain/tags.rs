@@ -44,7 +44,7 @@ impl Tag {
             key,
             text: Some(value),
             integer,
-            date,
+            date: date.map(|x| x.to_rfc3339()),
             vector: None,
         }
     }
@@ -69,7 +69,7 @@ impl Tag {
                 tag.key,
                 tag.text,
                 tag.integer,
-                tag.date.map(|x| x.to_rfc3339()),
+                tag.date,
             ])
             .context("error inserting tag")?;
         if v == 0 {
