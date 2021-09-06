@@ -74,6 +74,20 @@ export function clamp(v: number, lower: number, upper: number) {
     return v;
 }
 
+export function retain<T>(a: T[], condition: (x: T) => boolean): T[] {
+    let i = a.length;
+
+    while (i--) {
+        const val = a[i];
+        // @ts-ignore
+        if (!condition(val)) {
+            a.splice(i, 1);
+        }
+    }
+
+    return a;
+}
+
 export function useUpdate(): [number, () => void] {
     let [v, setV] = useState(0);
     let update = useCallback(() => setV((v) => v + 1), [setV]);

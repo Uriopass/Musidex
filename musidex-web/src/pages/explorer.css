@@ -37,7 +37,9 @@
     height: 100%;
 }
 
-.sort-by-select {
+.sortfilter-select {
+    display: flex;
+    align-items: center;
     width: calc(100% - 20px);
     padding: 10px 0;
     text-align: left;
@@ -69,6 +71,16 @@
     user-select: none;
     padding: 0 10px;
     color: var(--secondary);
+}
+
+.filter-elem {
+    display: flex;
+    padding: 0 10px;
+    align-items: center;
+}
+
+.filter-elem input {
+    margin: 0 5px;
 }
 
 .explorer-search {

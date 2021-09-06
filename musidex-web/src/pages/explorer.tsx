@@ -7,10 +7,12 @@ import {canPlay, MetadataCtx, Tag} from "../domain/entity";
 import {NextTrackCallback, TracklistCtx} from "../domain/tracklist";
 import TextInput from "../components/input";
 import {PageProps} from "./navigator";
+import Filters, {applyFilters, FiltersCtx} from "../domain/filters";
 
 export interface ExplorerProps extends PageProps {
-    title: string;
+    title?: string;
     doNext: NextTrackCallback;
+    curUser?: number;
 }
 
 const fuseOptions = {
@@ -31,12 +33,13 @@ function sortby_kind_eq(a: SortByKind, b: SortByKind) {
 
 const Explorer = (props: ExplorerProps) => {
     const [metadata, syncMetadata] = useContext(MetadataCtx);
-    const [shown, setShown] = useState(40);
+    const [filters, setFilters] = useContext(FiltersCtx);
     const list = useContext(TracklistCtx);
+    const [shown, setShown] = useState(40);
     const [searchQry, setSearchQry] = useState("");
-    const [sortBy, setSortBy] = useState({kind: {kind: "similarity"}, descending: true} as SortBy)
+    const [sortBy, setSortBy] = useState<SortBy>({kind: {kind: "similarity"}, descending: true})
 
-    let cur: number | undefined = list.last_played[list.last_played.length - 1];
+    let curTrack: number | undefined = list.last_played[list.last_played.length - 1];
     let onScroll = (e: any) => {
         const elem: HTMLDivElement = e.target;
         if (elem.scrollHeight - elem.scrollTop < elem.clientHeight + 500) {
@@ -49,13 +52,13 @@ const Explorer = (props: ExplorerProps) => {
     const colorCur = "#1d2f23";
     const colorSongs = "#28222f";
     let curPlaying = <></>;
-    if (cur) {
-        const tags = metadata.getTags(cur);
+    if (curTrack) {
+        const tags = metadata.getTags(curTrack);
         if (tags !== undefined) {
             curPlaying =
                 <>
                     <div style={{marginTop: 10}}/>
-                    <SongElem musicID={cur}
+                    <SongElem musicID={curTrack}
                               doNext={props.doNext}
                               syncMetadata={syncMetadata}
                               tags={tags}
@@ -95,7 +98,7 @@ const Explorer = (props: ExplorerProps) => {
         switch (sortBy.kind.kind) {
             case "similarity":
                 toShow = list.best_tracks.slice();
-                if (cur === undefined) {
+                if (curTrack === undefined) {
                     toShow = metadata.musics.slice();
                     toShow.reverse();
                 }
@@ -117,6 +120,8 @@ const Explorer = (props: ExplorerProps) => {
         }
     }
 
+    applyFilters(filters, toShow, metadata);
+
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
             <div className="explorer color-fg">
@@ -126,10 +131,13 @@ const Explorer = (props: ExplorerProps) => {
                 {curPlaying}
                 <SortBySelect forced={(searchQry !== "") ? "Query match score" : undefined} sortBy={sortBy}
                               setSortBy={setSortBy}
-                hasSimilarity={cur !== undefined}/>
+                              hasSimilarity={curTrack !== undefined}/>
+                <FilterBySelect filters={filters}
+                                setFilters={setFilters}
+                                user={props.curUser}/>
                 {
                     toShow.slice(0, shown).map((id) => {
-                        if (id === cur) {
+                        if (id === curTrack) {
                             return <Fragment key={id}/>;
                         }
                         const tags = metadata.getTags(id);
@@ -159,6 +167,38 @@ const Explorer = (props: ExplorerProps) => {
         </div>
     )
 }
+
+type FilterBySelectProps = {
+    filters: Filters,
+    setFilters: Setter<Filters>,
+    user?: number;
+}
+
+const FilterBySelect = React.memo((props: FilterBySelectProps) => {
+    let onMySongsChange = (x: any) => {
+        if (x.target.checked) {
+            props.setFilters({
+                ...props.filters,
+                user: props.user,
+            });
+        } else {
+            props.setFilters({
+                ...props.filters,
+                user: undefined,
+            });
+        }
+    };
+
+    return <div className="sortfilter-select">
+        Filter by:
+        <div className="filter-elem">
+            <input id="filterBy"
+                   type={"checkbox"}
+                   onChange={onMySongsChange}/>
+            <label htmlFor="filterBy">My Songs</label>
+        </div>
+    </div>
+})
 
 type SortBySelectProps = {
     forced?: string;
@@ -193,7 +233,7 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
     }
 
     if (props.forced !== undefined) {
-        return <div className="sort-by-select">
+        return <div className="sortfilter-select">
             Sort By:
             <span className="sort-by-forced">
                 {props.forced}
@@ -201,7 +241,7 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
         </div>;
     }
 
-    return <div className="sort-by-select">
+    return <div className="sortfilter-select">
         Sort By:
         {props.hasSimilarity &&
         <SortByElem sort={{kind: "similarity"}} name="Similarity"/>

@@ -2,6 +2,7 @@ import {Setter} from "../components/utils";
 import React, {Dispatch, useCallback} from "react";
 import {TrackPlayerAction} from "./trackplayer";
 import {canPlay, dot, MusidexMetadata, Vector} from "./entity";
+import Filters from "./filters";
 
 interface Tracklist {
     last_played: number[];
@@ -22,7 +23,7 @@ export function emptyTracklist(): Tracklist {
 export type NextTrackCallback = (id?: number) => void;
 export type PrevTrackCallback = () => void;
 
-export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata): NextTrackCallback {
+export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, filters: Filters): NextTrackCallback {
     return useCallback((id) => {
         let list = {
             ...curlist,

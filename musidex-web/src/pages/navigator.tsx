@@ -20,7 +20,7 @@ export interface PageProps {
 const PageNavigator = (props: NavigatorProps) => {
     return (
         <>
-            <Explorer title="Musics" hidden={props.page !== "explorer"} doNext={props.doNext}/>
+            <Explorer hidden={props.page !== "explorer"} curUser={props.curUser} doNext={props.doNext}/>
             <Submit hidden={props.page !== "submit"}/>
             <Users hidden={props.page !== "users"} onSetUser={props.onSetUser} curUser={props.curUser}/>
             <SettingsPage hidden={props.page !== "settings"}/>

@@ -16,21 +16,23 @@ import Tracklist, {
 import {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/entity";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import {useCookie} from "./components/utils";
+import Filters, {newFilters, FiltersCtx} from "./domain/filters";
 
 const App = () => {
-    let [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
-    let [syncProblem, setSyncProblem] = useState(false);
-    let [volume, setVolume] = useLocalStorage("volume", 1);
-    let [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
-    let [list, setList] = useState<Tracklist>(emptyTracklist())
-    let [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
-    let [userStr, setUserStr] = useCookie("cur_user", metadata.users[0]?.id.toString());
-    let user = parseInt(userStr || "1") || 1;
-    let setUser = useCallback((v: number) => setUserStr(v.toString()), [setUserStr]);
-    let doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata);
-    let doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
-    let canPrev = useCanPrev(list);
-    let ws = useRef<undefined | ReconnectingWebSocket>();
+    const [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
+    const [filters, setFilters] = useState<Filters>(newFilters());
+    const [syncProblem, setSyncProblem] = useState(false);
+    const [volume, setVolume] = useLocalStorage("volume", 1);
+    const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
+    const [list, setList] = useState<Tracklist>(emptyTracklist())
+    const [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
+    const [userStr, setUserStr] = useCookie("cur_user", metadata.users[0]?.id.toString());
+    const user = parseInt(userStr || "1") || 1;
+    const setUser = useCallback((v: number) => setUserStr(v.toString()), [setUserStr]);
+    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters);
+    const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
+    const canPrev = useCanPrev(list);
+    const ws = useRef<undefined | ReconnectingWebSocket>();
 
     let onMessage = useCallback(async (ev) => {
         let meta = await API.metadataFromWSMsg(ev);
@@ -73,12 +75,15 @@ const App = () => {
 
     return (
         <>
-            <Navbar syncProblem={syncProblem} setCurPage={setCurPage} curUser={metadata.users.find((x) => x.id === user)}/>
+            <Navbar syncProblem={syncProblem} setCurPage={setCurPage}
+                    curUser={metadata.users.find((x) => x.id === user)}/>
             <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
                 <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
                     <TracklistCtx.Provider value={list}>
-                        <PageNavigator page={curPage} doNext={doNext} onSetUser={setUser} curUser={user}/>
-                        <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev} canPrev={canPrev}/>
+                        <FiltersCtx.Provider value={[filters, setFilters]}>
+                            <PageNavigator page={curPage} doNext={doNext} onSetUser={setUser} curUser={user}/>
+                            <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev} canPrev={canPrev}/>
+                        </FiltersCtx.Provider>
                     </TracklistCtx.Provider>
                 </TrackplayerCtx.Provider>
             </MetadataCtx.Provider>
