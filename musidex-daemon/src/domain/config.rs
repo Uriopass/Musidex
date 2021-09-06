@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use rusqlite::Connection;
 
-use crate::utils::collect_rows;
+use crate::utils::{collect_rows, row_missing_opt};
 use crate::Db;
 
 #[rustfmt::skip]
@@ -51,9 +51,5 @@ pub fn get(c: &Connection, key: &str) -> Result<Option<String>> {
     let v = c
         .prepare_cached("SELECT value FROM config WHERE key= ?1")?
         .query_row([&key], |v| v.get("value"));
-    match v {
-        Ok(x) => Ok(x),
-        Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
-        Err(e) => Err(e).with_context(|| format!("error getting config key: {}", key)),
-    }
+    row_missing_opt(v).with_context(|| format!("error getting config key: {}", key))
 }

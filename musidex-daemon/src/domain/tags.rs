@@ -1,5 +1,5 @@
 use crate::domain::entity::{MusicID, Tag, TagKey};
-use crate::utils::collect_rows;
+use crate::utils::{collect_rows, row_missing_opt};
 use anyhow::{Context, Result};
 use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use rusqlite::Connection;
@@ -114,11 +114,10 @@ impl Tag {
             SELECT * FROM tags
             WHERE music_id=?1 AND key=?2;",
         )?;
-        match stmt.query_row(rusqlite::params![&id.0, key], |row| Ok(Tag::from(row))) {
-            Ok(x) => Ok(Some(x)),
-            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
-            Err(e) => Err(e).context("error getting tag by id key"),
-        }
+        row_missing_opt(stmt.query_row(rusqlite::params![&id.0, key], |row| {
+            Ok(Some(Tag::from(row)))
+        }))
+        .context("error getting tag by id key")
     }
 
     pub fn has(c: &Connection, id: MusicID, key: TagKey) -> Result<bool> {

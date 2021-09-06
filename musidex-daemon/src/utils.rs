@@ -52,6 +52,16 @@ where
     Ok(vec)
 }
 
+pub fn row_missing_opt<T>(
+    x: std::result::Result<Option<T>, rusqlite::Error>,
+) -> std::result::Result<Option<T>, rusqlite::Error> {
+    match x {
+        Ok(x) => Ok(x),
+        Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+        Err(e) => Err(e),
+    }
+}
+
 pub fn res_status(status: StatusCode) -> Response<Body> {
     let mut r = Response::new(Body::empty());
     *r.status_mut() = status;

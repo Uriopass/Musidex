@@ -134,6 +134,7 @@ tag_key! {
     YoutubeDLPlaylist => "youtube_playlist",
     Title => "title",
     Artist => "artist",
+    CompressedThumbnail => "compressed_thumbnail",
     Thumbnail => "thumbnail",
     Duration => "duration",
     Embedding => "embedding",
