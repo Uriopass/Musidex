@@ -72,7 +72,7 @@ impl SmallThumbnailWorker {
 }
 
 pub fn find_candidate(c: &Connection) -> Result<Option<MusicID>> {
-    let mut stmt = c.prepare_cached("SELECT music_id as id2 FROM tags WHERE key=?1 AND 0 = (SELECT COUNT(1) FROM tags WHERE key=?2 AND music_id=id2);")?;
+    let mut stmt = c.prepare_cached("SELECT music_id as id2 FROM tags WHERE key=?1 AND 0 = (SELECT COUNT(1) FROM tags WHERE key=?2 AND music_id=id2) LIMIT 1;")?;
     let v = stmt.query_row([TagKey::Thumbnail, TagKey::CompressedThumbnail], |x| {
         x.get("id2").map(MusicID).map(Some)
     });
