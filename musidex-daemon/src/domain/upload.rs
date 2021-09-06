@@ -33,7 +33,7 @@ fn id_exists(c: &Connection, id: &str) -> Result<bool> {
         .any(|t| t.key == TagKey::YoutubeDLVideoID && t.text.as_deref() == Some(id)))
 }
 
-fn push_for_treatment(c: &Connection, v: SingleVideo, url: String, uid: UserID) -> Result<()> {
+fn push_for_treatment(c: &Connection, v: Box<SingleVideo>, url: String, uid: UserID) -> Result<()> {
     let id = Music::mk(&c)?;
 
     let mk_tag = |key, v| Tag::insert(&c, Tag::new_text(id, key, v));

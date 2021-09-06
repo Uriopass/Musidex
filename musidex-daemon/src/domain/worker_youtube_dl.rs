@@ -103,7 +103,7 @@ impl YoutubeDLWorker {
     }
 }
 
-pub async fn download(vid_url: &str) -> Result<SingleVideo> {
+pub async fn download(vid_url: &str) -> Result<Box<SingleVideo>> {
     let metadata = ytdl_run_with_args(vec![
         "-o",
         "storage/%(id)s.%(ext)s",

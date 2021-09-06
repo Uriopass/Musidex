@@ -40,7 +40,7 @@ use hyper::header::{
 };
 use hyper::http::Extensions;
 use hyper::service::Service;
-use hyper::{Body, Method, Request, Response, StatusCode, Uri};
+use hyper::{Body, Method, Request, Response, StatusCode};
 use route_recognizer::Router as InnerRouter;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};

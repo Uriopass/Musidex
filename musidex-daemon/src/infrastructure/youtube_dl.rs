@@ -5,8 +5,8 @@ use std::collections::BTreeMap;
 
 #[derive(Debug)]
 pub enum YoutubeDlOutput {
-    Playlist(Playlist),
-    SingleVideo(SingleVideo),
+    Playlist(Box<Playlist>),
+    SingleVideo(Box<SingleVideo>),
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
@@ -160,7 +160,7 @@ pub struct JsonOutput {
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub struct Playlist {
-    pub entries: Option<Vec<SingleVideo>>,
+    pub entries: Option<Vec<Box<SingleVideo>>>,
     pub extractor: Option<String>,
     pub extractor_key: Option<String>,
     pub id: Option<String>,
@@ -352,12 +352,12 @@ pub async fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
 
             let is_playlist = value["_type"] == serde_json::json!("playlist");
             if is_playlist {
-                let playlist: Playlist =
-                    serde_json::from_value(value).context("error decoding playlist")?;
+                let playlist: Box<Playlist> =
+                    Box::new(serde_json::from_value(value).context("error decoding playlist")?);
                 Ok(YoutubeDlOutput::Playlist(playlist))
             } else {
-                let video: SingleVideo =
-                    serde_json::from_value(value).context("error decoding singlevideo")?;
+                let video: Box<SingleVideo> =
+                    Box::new(serde_json::from_value(value).context("error decoding singlevideo")?);
                 Ok(YoutubeDlOutput::SingleVideo(video))
             }
         } else {
