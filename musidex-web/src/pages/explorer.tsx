@@ -12,7 +12,7 @@ import Filters, {applyFilters, FiltersCtx} from "../domain/filters";
 export interface ExplorerProps extends PageProps {
     title?: string;
     doNext: NextTrackCallback;
-    curUser?: number;
+    curUser: number;
 }
 
 const fuseOptions = {
@@ -121,7 +121,7 @@ const Explorer = (props: ExplorerProps) => {
         }
     }
 
-    applyFilters(filters, toShow, metadata);
+    applyFilters(filters, toShow, metadata, props.curUser);
 
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
@@ -173,29 +173,22 @@ const Explorer = (props: ExplorerProps) => {
 type FilterBySelectProps = {
     filters: Filters,
     setFilters: Setter<Filters>,
-    user?: number;
+    user: number;
 }
 
 const FilterBySelect = React.memo((props: FilterBySelectProps) => {
     let onMySongsChange = (x: any) => {
-        if (x.target.checked) {
-            props.setFilters({
-                ...props.filters,
-                user: props.user,
-            });
-        } else {
-            props.setFilters({
-                ...props.filters,
-                user: undefined,
-            });
-        }
+        props.setFilters({
+            ...props.filters,
+            user_only: x.target.checked,
+        });
     };
 
     return <div className="sortfilter-select">
         Filter by:
         <div className="filter-elem">
             <input id="filterBy"
-                   checked={props.filters.user !== undefined}
+                   checked={props.filters.user_only}
                    type={"checkbox"}
                    onChange={onMySongsChange}/>
             <label htmlFor="filterBy">My Songs</label>
@@ -286,12 +279,12 @@ const SongElem = (props: SongElemProps) => {
     };
 
     const onAddToLibrary = () => {
-        if(!props.curUser) {
+        if (!props.curUser) {
             return;
         }
-        API.insertTag({music_id: props.musicID, key: "user_library:"+props.curUser}).then(() => props.syncMetadata());
+        API.insertTag({music_id: props.musicID, key: "user_library:" + props.curUser}).then(() => props.syncMetadata());
     }
-    const showAddToLibrary = props.curUser !== undefined && !props.tags.has("user_library:"+props.curUser);
+    const showAddToLibrary = props.curUser !== undefined && !props.tags.has("user_library:" + props.curUser);
 
     const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = props.tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};

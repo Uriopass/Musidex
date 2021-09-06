@@ -23,14 +23,14 @@ export function emptyTracklist(): Tracklist {
 export type NextTrackCallback = (id?: number) => void;
 export type PrevTrackCallback = () => void;
 
-export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, filters: Filters): NextTrackCallback {
+export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, filters: Filters, curUser: number): NextTrackCallback {
     return useCallback((id) => {
         let list = {
             ...curlist,
         };
 
         if (id === undefined) {
-            let best_id = findFirst(filters, list.best_tracks, metadata);
+            let best_id = findFirst(filters, list.best_tracks, metadata, curUser);
             let score = list.score_map.get(best_id || -1);
             if (score !== undefined) {
                 id = best_id;
@@ -52,7 +52,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         let duration = metadata.getTags(id)?.get("duration")?.integer;
 
         dispatch({action: "play", id: id, duration: duration})
-    }, [curlist, setList, metadata, dispatch, filters])
+    }, [curlist, setList, metadata, dispatch, filters, curUser])
 }
 
 export function updateScoreCache(list: Tracklist, metadata: MusidexMetadata): Tracklist {

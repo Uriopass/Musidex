@@ -3,27 +3,27 @@ import {MusidexMetadata} from "./entity";
 import {retain, Setter} from "../components/utils";
 
 type Filters = {
-    user?: number;
+    user_only: boolean;
 }
 
-export function newFilters(user?: number): Filters {
+export function newFilters(): Filters {
     return {
-        user: user,
+        user_only: true,
     }
 }
 
 // in place
-export function applyFilters(filters: Filters, list: number[], metadata: MusidexMetadata) {
-    if (filters.user) {
+export function applyFilters(filters: Filters, list: number[], metadata: MusidexMetadata, curUser: number) {
+    if (filters.user_only) {
         retain(list, (id) => {
-            return metadata.getTags(id)?.has("user_library:" + filters.user) || false;
+            return metadata.getTags(id)?.has("user_library:" + curUser) || false;
         })
     }
 }
 
-export function findFirst(filters: Filters, list: number[], metadata: MusidexMetadata): number | undefined {
+export function findFirst(filters: Filters, list: number[], metadata: MusidexMetadata, curUser: number): number | undefined {
     for (let id of list) {
-        if (filters.user && !metadata.getTags(id)?.has("user_library:" + filters.user)) {
+        if (filters.user_only && !metadata.getTags(id)?.has("user_library:" + curUser)) {
             continue;
         }
         return id;
