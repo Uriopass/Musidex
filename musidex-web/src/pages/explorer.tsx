@@ -157,7 +157,7 @@ const Explorer = (props: ExplorerProps) => {
                     })
                 }
                 {
-                    (shown < metadata.musics.length) && (
+                    (shown < toShow.length) && (
                         <button style={{marginTop: "10px"}} onClick={() => setShown(shown + 20)}>
                             Show more
                         </button>
