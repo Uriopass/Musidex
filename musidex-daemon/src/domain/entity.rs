@@ -43,6 +43,7 @@ pub struct Tag {
 pub struct DateSerde(Option<String>);
 
 #[derive(Clone, Debug, PartialEq, SerJson, DeJson)]
+#[nserde(transparent)]
 pub struct Vector(Vec<f32>);
 
 #[derive(SerJson, Hash, Default)]
