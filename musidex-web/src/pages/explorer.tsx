@@ -256,7 +256,7 @@ type SongElemProps = {
 }
 
 const SongElem = (props: SongElemProps) => {
-    const cover = props.tags.get("thumbnail")?.text || null;
+    let cover = props.tags?.get("compressed_thumbnail")?.text || (props.tags?.get("thumbnail")?.text || "");
 
     const playable = canPlay(props.tags);
     const hasYT = props.tags.get("youtube_video_id")?.text;
