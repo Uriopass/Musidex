@@ -1,4 +1,4 @@
-use crate::domain::entity::{User, UserID};
+use crate::domain::entity::{TagKey, User, UserID};
 use crate::infrastructure::router::RequestExt;
 use crate::utils::collect_rows;
 use anyhow::{Context, Result};
@@ -58,6 +58,9 @@ impl User {
     pub fn delete(c: &Connection, id: UserID) -> Result<()> {
         let mut v = c.prepare_cached("DELETE FROM users WHERE id=?1;")?;
         v.execute([&id.0])?;
+
+        let mut v = c.prepare_cached("DELETE FROM tags WHERE key=?1;")?;
+        v.execute([TagKey::UserLibrary(s!(id))])?;
         Ok(())
     }
 }
