@@ -121,7 +121,6 @@ impl Tag {
         }
     }
 
-    #[allow(dead_code)]
     pub fn has(c: &Connection, id: MusicID, key: TagKey) -> Result<bool> {
         let mut stmt =
             c.prepare_cached("SELECT count(1) FROM tags WHERE music_id=?1 AND key=?2;")?;

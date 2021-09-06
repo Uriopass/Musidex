@@ -1,4 +1,4 @@
-use crate::domain::entity::{Music, Tag, TagKey, UserID};
+use crate::domain::entity::{Music, MusicID, Tag, TagKey, UserID};
 use crate::infrastructure::youtube_dl::{ytdl_run_with_args, SingleVideo, YoutubeDlOutput};
 use anyhow::{Context, Result};
 use hyper::StatusCode;
@@ -16,8 +16,13 @@ pub async fn youtube_upload(c: &mut Connection, url: String, uid: UserID) -> Res
         YoutubeDlOutput::Playlist(_) => return Ok(StatusCode::BAD_REQUEST),
         YoutubeDlOutput::SingleVideo(v) => v,
     };
-    if id_exists(c, &v.id)? {
-        return Ok(StatusCode::CONFLICT);
+    if let Some(mid) = id_exists(c, &v.id)? {
+        let k = TagKey::UserLibrary(s!(uid));
+        if Tag::has(&c, mid, k.clone())? {
+            return Ok(StatusCode::CONFLICT);
+        }
+        Tag::insert(&c, Tag::new_key(mid, k.clone()))?;
+        return Ok(StatusCode::OK);
     }
     let wp = v.webpage_url.take().context("no webpage url")?;
     let tx = c.transaction()?;
@@ -26,11 +31,16 @@ pub async fn youtube_upload(c: &mut Connection, url: String, uid: UserID) -> Res
     Ok(StatusCode::OK)
 }
 
-fn id_exists(c: &Connection, id: &str) -> Result<bool> {
+fn id_exists(c: &Connection, id: &str) -> Result<Option<MusicID>> {
     Ok(Tag::by_text(c, id)
         .context("error getting ids")?
         .into_iter()
-        .any(|t| t.key == TagKey::YoutubeDLVideoID && t.text.as_deref() == Some(id)))
+        .find_map(|t| {
+            if t.key == TagKey::YoutubeDLVideoID && t.text.as_deref() == Some(id) {
+                return Some(t.music_id);
+            }
+            None
+        }))
 }
 
 fn push_for_treatment(c: &Connection, v: Box<SingleVideo>, url: String, uid: UserID) -> Result<()> {
@@ -111,8 +121,13 @@ pub async fn youtube_upload_playlist(
                 if entry.ie_key.as_deref() != Some("Youtube") {
                     bail!("only yt playlist are supported at the moment");
                 }
-                if id_exists(c, &entry.id)? {
-                    log::info!("music from playlist was already in library: {}", &entry.id);
+                if let Some(mid) = id_exists(c, &entry.id)? {
+                    let k = TagKey::UserLibrary(s!(uid));
+                    if Tag::has(&c, mid, k.clone())? {
+                        log::info!("music from playlist was already in library: {}", &entry.id);
+                        continue;
+                    }
+                    Tag::insert(&c, Tag::new_key(mid, k.clone()))?;
                     continue;
                 }
                 let tx = c.transaction()?;
