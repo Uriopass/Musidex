@@ -9,6 +9,7 @@ mod music;
 mod tags;
 mod user;
 mod worker_neural_embed;
+mod worker_thumbnail_resize;
 
 async fn mk_db() -> anyhow::Result<Db> {
     let db = Db::connect_in_memory().await;

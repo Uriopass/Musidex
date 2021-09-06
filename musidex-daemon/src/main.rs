@@ -14,6 +14,7 @@ use crate::application::{handlers, user_handlers};
 use crate::domain::config;
 use crate::domain::sync::SyncBroadcast;
 use crate::domain::worker_neural_embed::NeuralEmbedWorker;
+use crate::domain::worker_thumbnail_resize::SmallThumbnailWorker;
 use crate::domain::worker_youtube_dl::YoutubeDLWorker;
 use crate::infrastructure::db::Db;
 use crate::infrastructure::migrate::migrate;
@@ -42,6 +43,7 @@ async fn start() -> anyhow::Result<()> {
 
     let ytdl_worker = YoutubeDLWorker::new(db.clone());
     let neuralembed_worker = NeuralEmbedWorker::new(db.clone());
+    let small_thumbnail_worker = SmallThumbnailWorker::new(db.clone());
     let (broadcast, sub) = SyncBroadcast::new()?;
 
     let mut router = Router::new();
@@ -75,6 +77,7 @@ async fn start() -> anyhow::Result<()> {
 
     ytdl_worker.start();
     neuralembed_worker.start();
+    small_thumbnail_worker.start();
     broadcast.start_workers();
 
     // Run
