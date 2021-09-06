@@ -52,7 +52,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         let duration = metadata.getTags(id)?.get("duration")?.integer;
 
         dispatch({action: "play", id: id, duration: duration})
-    }, [curlist, setList, metadata, dispatch])
+    }, [curlist, setList, metadata, dispatch, filters])
 }
 
 export function updateScoreCache(list: Tracklist, metadata: MusidexMetadata): Tracklist {

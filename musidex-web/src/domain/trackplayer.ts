@@ -70,7 +70,6 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
         if (e.target !== document.body) {
             return;
         }
-        console.log(e.code);
         if (e.code === "Space" || e.code === "KeyK") {
             e.preventDefault();
             if (!trackplayer.current) {
