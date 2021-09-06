@@ -20,14 +20,14 @@ import Filters, {newFilters, FiltersCtx} from "./domain/filters";
 
 const App = () => {
     const [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
-    const [filters, setFilters] = useState<Filters>(newFilters());
+    const [userStr, setUserStr] = useCookie("cur_user", metadata.users[0]?.id.toString());
+    const user = parseInt(userStr || "1") || 1;
+    const [filters, setFilters] = useLocalStorage<Filters>("filters", newFilters(user));
     const [syncProblem, setSyncProblem] = useState(false);
     const [volume, setVolume] = useLocalStorage("volume", 1);
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const [list, setList] = useState<Tracklist>(emptyTracklist())
     const [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
-    const [userStr, setUserStr] = useCookie("cur_user", metadata.users[0]?.id.toString());
-    const user = parseInt(userStr || "1") || 1;
     const setUser = useCallback((v: number) => setUserStr(v.toString()), [setUserStr]);
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);

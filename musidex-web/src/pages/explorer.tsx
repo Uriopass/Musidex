@@ -195,6 +195,7 @@ const FilterBySelect = React.memo((props: FilterBySelectProps) => {
         Filter by:
         <div className="filter-elem">
             <input id="filterBy"
+                   checked={props.filters.user !== undefined}
                    type={"checkbox"}
                    onChange={onMySongsChange}/>
             <label htmlFor="filterBy">My Songs</label>
