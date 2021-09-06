@@ -2,7 +2,7 @@ import {Setter} from "../components/utils";
 import React, {Dispatch, useCallback} from "react";
 import {TrackPlayerAction} from "./trackplayer";
 import {canPlay, dot, MusidexMetadata, Vector} from "./entity";
-import Filters from "./filters";
+import Filters, {findFirst} from "./filters";
 
 interface Tracklist {
     last_played: number[];
@@ -30,7 +30,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         };
 
         if (id === undefined) {
-            let best_id = list.best_tracks[0];
+            let best_id = findFirst(filters, list.best_tracks, metadata);
             let score = list.score_map.get(best_id || -1);
             if (score !== undefined) {
                 id = best_id;
