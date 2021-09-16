@@ -136,10 +136,12 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
             if (trackplayer.audio.duration) {
                 trackplayer.duration = trackplayer.audio.duration;
             }
-            navigator.mediaSession.setPositionState({
-                duration: trackplayer.duration,
-                position: trackplayer.audio.currentTime,
-            });
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.setPositionState({
+                    duration: trackplayer.duration,
+                    position: trackplayer.audio.currentTime,
+                });
+            }
             return {
                 ...trackplayer,
             }
