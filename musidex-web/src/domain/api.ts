@@ -3,11 +3,14 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 
 let apiURL = window.location.origin;
 
+type patch = {kind: 'add' | 'update', tag: Tag} | {kind: 'remove', id: number, key: string}
+
 export type RawMusidexMetadata = {
     musics: number[];
-    tags: Tag[];
+    tags?: Tag[];
     users: User[];
     settings: [string, string][];
+    patches?: patch[];
 }
 
 export const API = {
@@ -20,18 +23,18 @@ export const API = {
         return new ReconnectingWebSocket(prefix + "://" + window.location.host + "/api/metadata/ws");
     },
 
-    async metadataFromWSMsg(m: MessageEvent): Promise<[MusidexMetadata, string]> {
+    async metadataFromWSMsg(m: MessageEvent, oldMeta: MusidexMetadata): Promise<[MusidexMetadata, string]> {
         let pako = await import("pako");
         let vv = new Uint8Array(m.data);
         const s = pako.inflateRaw(vv, {to: 'string'});
         let v: RawMusidexMetadata = JSON.parse(s);
-        return [new MusidexMetadata(v.musics, v.tags, v.users, v.settings), s];
+        return [new MusidexMetadata(v, oldMeta), s];
     },
 
     async getMetadata(): Promise<MusidexMetadata | null> {
         return fetchJson(apiURL + "/api/metadata").then((v: RawMusidexMetadata) => {
             if (v == null) return null;
-            return new MusidexMetadata(v.musics, v.tags, v.users, v.settings);
+            return new MusidexMetadata(v);
         })
     },
 

@@ -35,7 +35,7 @@ const App = () => {
     const ws = useRef<undefined | ReconnectingWebSocket>();
 
     let onMessage = useCallback(async (ev) => {
-        let [meta, metaStr] = await API.metadataFromWSMsg(ev);
+        let [meta, metaStr] = await API.metadataFromWSMsg(ev, metadata);
         if (trackplayer.current && !meta.music_tags_idx.has(trackplayer.current)) {
             doNext();
         }
@@ -49,7 +49,7 @@ const App = () => {
         let l = {...list};
         l = updateScoreCache(l, meta);
         setList(l);
-    }, [setMetadata, list, setList, trackplayer, doNext, user, setUser]);
+    }, [metadata, setMetadata, list, setList, trackplayer, doNext, user, setUser]);
 
     useEffect(() => {
         if (ws.current === undefined) {

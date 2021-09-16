@@ -1,6 +1,7 @@
 import React, {useCallback, useState} from "react";
 import useLocalStorage from "use-local-storage";
 import {RawMusidexMetadata} from "./api";
+import {retain} from "../components/utils";
 
 export interface Tag {
     music_id: number;
@@ -50,15 +51,39 @@ export class MusidexMetadata {
         return this.users[0]?.id;
     }
 
-    constructor(musics: number[], tags: Tag[], users: User[], settings: [string, string][]) {
-        this.musics = musics;
-        this.tags = tags;
-        this.users = users;
-        this.settings_l = settings;
-        this.settings = new Map(settings);
+    constructor(raw: RawMusidexMetadata, previous?: MusidexMetadata) {
+        this.musics = raw.musics;
+        this.users = raw.users;
+        this.settings_l = raw.settings;
+        this.settings = new Map(raw.settings);
         this.music_tags_idx = new Map();
         this.embeddings = new Map();
         this.fuse_document = [];
+        this.tags = raw.tags || previous?.tags || [];
+
+        if (raw.patches) {
+            for (let patch of raw.patches) {
+                switch (patch.kind) {
+                    case "add":
+                        this.tags.push(patch.tag);
+                        break
+                    case "remove":
+                        let id = patch.id;
+                        let k = patch.key;
+                        retain(this.tags, (t) => t.music_id !== id && t.key !== k)
+                        break
+                    case "update":
+                        for (let i = 0; i < this.tags.length; i++) {
+                            let v = this.tags[i];
+                            // @ts-ignore
+                            if (v.music_id === patch.tag.music_id && v.key === patch.tag.key) {
+                                this.tags[i] = patch.tag;
+                            }
+                        }
+                        break
+                }
+            }
+        }
 
         this.musics.forEach((m) => {
             this.music_tags_idx.set(m, new Map());
@@ -91,7 +116,7 @@ export const MetadataCtx = React.createContext<[MusidexMetadata, () => void]>([e
 }]);
 
 export function emptyMetadata(): MusidexMetadata {
-    return new MusidexMetadata([], [], [], []);
+    return new MusidexMetadata({musics: [], users: [], tags: [], settings: []});
 }
 
 export function useMetadata(): [MusidexMetadata, (meta: MusidexMetadata, metastr: string) => void] {
@@ -102,7 +127,7 @@ export function useMetadata(): [MusidexMetadata, (meta: MusidexMetadata, metastr
             return emptyMetadata();
         }
         let v: RawMusidexMetadata = JSON.parse(metaStored);
-        return new MusidexMetadata(v.musics, v.tags, v.users, v.settings);
+        return new MusidexMetadata(v);
     });
 
     let f = useCallback((meta: MusidexMetadata, metaStr: string) => {
