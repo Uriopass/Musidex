@@ -244,6 +244,7 @@ impl Handler for StaticHandle {
         p.push(url);
         let should_cache = url.ends_with("jpg")
             || url.ends_with("png")
+            || url.ends_with("woff2")
             || url.ends_with("js")
             || url.ends_with("css");
         Box::pin((move || async move {
