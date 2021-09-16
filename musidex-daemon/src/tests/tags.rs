@@ -15,7 +15,7 @@ pub async fn test_insert_tag() -> Result<()> {
 
     let metadata = fetch_metadata(&c)?;
     assert_eq!(metadata.musics[0], music);
-    assert_eq!(metadata.tags[0], tag);
+    assert_eq!(metadata.tags.unwrap()[0], tag);
 
     Ok(())
 }
@@ -34,7 +34,7 @@ pub async fn test_update_tag() -> Result<()> {
 
     let metadata = fetch_metadata(&c)?;
     assert_eq!(metadata.musics[0], music);
-    assert_eq!(metadata.tags[0], tag2);
+    assert_eq!(metadata.tags.unwrap()[0], tag2);
 
     Ok(())
 }
@@ -53,7 +53,7 @@ pub async fn test_nested_tagkey_roundtrip() -> Result<()> {
 
     let metadata = fetch_metadata(&c)?;
     assert_eq!(metadata.musics[0], music);
-    assert_eq!(metadata.tags[0], tag);
+    assert_eq!(metadata.tags.unwrap()[0], tag);
 
     Ok(())
 }

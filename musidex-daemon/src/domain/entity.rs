@@ -46,15 +46,20 @@ pub struct DateSerde(Option<String>);
 #[nserde(transparent)]
 pub struct Vector(Vec<f32>);
 
+#[derive(Clone, Debug, Hash, PartialEq, SerJson, DeJson)]
+pub struct Patch {
+    pub kind: String,
+    pub tag: Tag,
+}
+
 #[derive(SerJson, Hash, Default)]
 pub struct MusidexMetadata {
     pub musics: Vec<MusicID>,
-    pub tags: Vec<Tag>,
+    pub tags: Option<Vec<Tag>>,
     pub users: Vec<User>,
     pub settings: Vec<(String, String)>,
+    pub patches: Option<Vec<Patch>>,
 }
-
-pub type CompressedMusidexMetadata = Vec<u8>;
 
 impl Eq for Vector {}
 impl Hash for Vector {

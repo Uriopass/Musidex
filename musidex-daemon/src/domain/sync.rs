@@ -13,31 +13,32 @@ use tokio::sync::watch;
 use tungstenite::Message;
 
 use crate::domain::config;
-use crate::domain::entity::{CompressedMusidexMetadata, Music, MusidexMetadata, User};
+use crate::domain::entity::{Music, MusicID, MusidexMetadata, Patch, Tag, TagKey, User};
 use crate::infrastructure::db::Db;
 use crate::utils::collect_rows;
+use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct SyncBroadcastSubscriber {
-    rx: watch::Receiver<Arc<CompressedMusidexMetadata>>,
+    rx: watch::Receiver<Arc<(MusidexMetadata, Option<MusidexMetadata>)>>,
     refresh_tx: mpsc::Sender<()>,
 }
 
 pub struct SyncBroadcast {
     c: Connection,
-    tx: watch::Sender<Arc<CompressedMusidexMetadata>>,
+    tx: watch::Sender<Arc<(MusidexMetadata, Option<MusidexMetadata>)>>,
     refresh_tx: mpsc::Sender<()>,
     refresh_rx: mpsc::Receiver<()>,
 }
 
-fn compress(x: MusidexMetadata) -> CompressedMusidexMetadata {
+fn compress(x: &MusidexMetadata) -> Vec<u8> {
     let json = x.serialize_json();
     miniz_oxide::deflate::compress_to_vec(json.as_bytes(), 5)
 }
 
 impl SyncBroadcast {
     pub fn new() -> Result<(Self, SyncBroadcastSubscriber)> {
-        let (tx, rx) = watch::channel(Arc::new(compress(MusidexMetadata::default())));
+        let (tx, rx) = watch::channel(Arc::new((MusidexMetadata::default(), None)));
         let (refresh_tx, refresh_rx) = mpsc::channel(16);
         Ok((
             Self {
@@ -63,6 +64,7 @@ impl SyncBroadcast {
         let tx = self.tx;
         tokio::spawn(async move {
             let mut last_hash = 1234;
+            let mut last_map: Option<TagMap> = None;
             while let Some(()) = r.recv().await {
                 let m = fetch_metadata(&db);
                 let m = match m {
@@ -80,10 +82,74 @@ impl SyncBroadcast {
                     continue;
                 }
                 last_hash = hash;
-                let _ = tx.send(Arc::new(compress(m)));
+
+                let (last_mapp, musipatch) = mk_patches(&last_map, &m);
+                last_map = Some(last_mapp);
+
+                let _ = tx.send(Arc::new((m, musipatch)));
             }
         });
     }
+}
+
+type TagMap = HashMap<(i32, TagKey), Tag>;
+
+pub fn mk_patches(
+    last_map: &Option<TagMap>,
+    new: &MusidexMetadata,
+) -> (TagMap, Option<MusidexMetadata>) {
+    let newmap = mk_tag_map(new);
+
+    if let Some(last_map) = last_map {
+        let mut patches = Vec::with_capacity(5);
+
+        for k in last_map.keys() {
+            if newmap.contains_key(k) {
+                continue;
+            }
+            patches.push(Patch {
+                kind: s!("remove"),
+                tag: Tag::new_key(MusicID(k.0), k.1.clone()),
+            })
+        }
+
+        for (k, t) in &newmap {
+            let last_get = last_map.get(k);
+            if last_get == Some(t) {
+                continue;
+            }
+            if last_get.is_none() {
+                patches.push(Patch {
+                    kind: s!("add"),
+                    tag: t.clone(),
+                });
+                continue;
+            }
+            patches.push(Patch {
+                kind: s!("update"),
+                tag: t.clone(),
+            })
+        }
+
+        let newpatch = MusidexMetadata {
+            musics: new.musics.clone(),
+            tags: None,
+            users: new.users.clone(),
+            settings: new.settings.clone(),
+            patches: Some(patches),
+        };
+        return (newmap, Some(newpatch));
+    }
+    (newmap, None)
+}
+
+pub fn mk_tag_map(x: &MusidexMetadata) -> TagMap {
+    let tags = unwrap_ret!(x.tags.as_ref(), HashMap::default());
+    let mut v = HashMap::with_capacity(tags.len());
+    for t in tags {
+        v.insert((t.music_id.0, t.key.clone()), t.clone());
+    }
+    v
 }
 
 pub async fn serve_sync_websocket(
@@ -91,6 +157,7 @@ pub async fn serve_sync_websocket(
     mut b: SyncBroadcastSubscriber,
 ) -> Result<()> {
     let mut websocket = websocket.await?;
+    let mut first_msg = true;
 
     loop {
         tokio::select! {
@@ -113,8 +180,18 @@ pub async fn serve_sync_websocket(
                 }
             }
             Ok(_) = b.rx.changed() => {
-                let encoded = b.rx.borrow().clone();
-                websocket.send(Message::Binary((&*encoded).clone())).await?;
+                let meta = b.rx.borrow().clone();
+
+                let (musi, musipatch) = &*meta;
+
+                let chosen = if first_msg {
+                    first_msg = false;
+                    &musi
+                } else {
+                    musipatch.as_ref().unwrap_or(&musi)
+                };
+
+                websocket.send(Message::Binary(compress(chosen))).await?;
             }
         }
     }
@@ -135,8 +212,9 @@ pub fn fetch_metadata(c: &Connection) -> Result<MusidexMetadata> {
 
     Ok(MusidexMetadata {
         musics,
-        tags,
+        tags: Some(tags),
         users,
         settings: config,
+        patches: None,
     })
 }

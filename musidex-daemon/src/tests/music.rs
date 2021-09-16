@@ -26,7 +26,7 @@ pub async fn test_delete_cascade() -> Result<()> {
     let meta = fetch_metadata(&c)?;
 
     assert_eq!(meta.musics.len(), 0);
-    assert_eq!(meta.tags.len(), 0);
+    assert_eq!(meta.tags.unwrap().len(), 0);
     assert_eq!(meta.users.len(), 1);
 
     Ok(())
