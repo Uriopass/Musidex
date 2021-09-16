@@ -41,7 +41,7 @@
     display: flex;
     align-items: center;
     width: calc(100% - 20px);
-    padding: 10px 0;
+    margin: 10px 0;
     text-align: left;
     font-size: 0.95rem;
     color: var(--color-bg);
@@ -84,8 +84,6 @@
 }
 
 .explorer-search {
-    display: flex;
-    align-items: center;
     width: calc(100% - 20px);
 }
 

@@ -18,6 +18,7 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+    height: 1.75rem;
 }
 
 .form_field::placeholder {
