@@ -206,7 +206,7 @@ pub struct SingleVideo {
     //pub dislike_count: Option<i64>,
     //pub display_id: Option<String>,
     //pub downloader_options: Option<BTreeMap<String, Value>>,
-    pub duration: Option<i64>,
+    pub duration: Option<f64>,
     //pub end_time: Option<String>,
     //pub episode: Option<String>,
     //pub episode_id: Option<String>,

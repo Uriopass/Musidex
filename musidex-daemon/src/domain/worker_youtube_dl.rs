@@ -75,7 +75,7 @@ impl YoutubeDLWorker {
                     music_id: id,
                     key: TagKey::Duration,
                     text: Some(v.to_string()),
-                    integer: v.try_into().ok(),
+                    integer: Some(v as i32),
                     date: None,
                     vector: None,
                 },
