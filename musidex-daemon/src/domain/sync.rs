@@ -92,7 +92,7 @@ pub async fn serve_sync_websocket(
 ) -> Result<()> {
     let mut websocket = websocket.await?;
 
-    let encoded = b.rx.borrow_and_update().clone();
+    let encoded = b.rx.borrow().clone();
     websocket.send(Message::Binary((&*encoded).clone())).await?;
 
     loop {
@@ -116,7 +116,7 @@ pub async fn serve_sync_websocket(
                 }
             }
             Ok(_) = b.rx.changed() => {
-                let encoded = b.rx.borrow_and_update().clone();
+                let encoded = b.rx.borrow().clone();
                 websocket.send(Message::Binary((&*encoded).clone())).await?;
             }
         }
