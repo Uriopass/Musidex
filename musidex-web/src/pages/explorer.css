@@ -38,6 +38,7 @@
 }
 
 .sortfilter-select {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     width: calc(100% - 20px);
@@ -85,6 +86,7 @@
 
 .explorer-search {
     width: calc(100% - 20px);
+    flex: 0 0 auto;
 }
 
 .explorer-search .field {
