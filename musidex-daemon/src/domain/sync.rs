@@ -92,9 +92,6 @@ pub async fn serve_sync_websocket(
 ) -> Result<()> {
     let mut websocket = websocket.await?;
 
-    let encoded = b.rx.borrow().clone();
-    websocket.send(Message::Binary((&*encoded).clone())).await?;
-
     loop {
         tokio::select! {
             Some(message) = websocket.next() => {
