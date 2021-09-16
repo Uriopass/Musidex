@@ -4,7 +4,6 @@ use crate::infrastructure::youtube_dl::{ytdl_run_with_args, SingleVideo, Youtube
 use anyhow::{Context, Result};
 use image::ImageFormat;
 use rusqlite::Connection;
-use std::convert::TryInto;
 use std::time::Duration;
 
 pub struct YoutubeDLWorker {
