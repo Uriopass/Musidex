@@ -3,7 +3,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 
 let apiURL = window.location.origin;
 
-type RawMusidexMetadata = {
+export type RawMusidexMetadata = {
     musics: number[];
     tags: Tag[];
     users: User[];
@@ -20,12 +20,12 @@ export const API = {
         return new ReconnectingWebSocket(prefix + "://" + window.location.host + "/api/metadata/ws");
     },
 
-    async metadataFromWSMsg(m: MessageEvent): Promise<MusidexMetadata> {
+    async metadataFromWSMsg(m: MessageEvent): Promise<[MusidexMetadata, string]> {
         let pako = await import("pako");
         let vv = new Uint8Array(m.data);
         const s = pako.inflateRaw(vv, {to: 'string'});
         let v: RawMusidexMetadata = JSON.parse(s);
-        return new MusidexMetadata(v.musics, v.tags, v.users, v.settings);
+        return [new MusidexMetadata(v.musics, v.tags, v.users, v.settings), s];
     },
 
     async getMetadata(): Promise<MusidexMetadata | null> {

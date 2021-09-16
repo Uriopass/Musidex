@@ -13,13 +13,13 @@ import Tracklist, {
     useNextTrackCallback,
     usePrevTrackCallback
 } from "./domain/tracklist";
-import {emptyMetadata, MetadataCtx, MusidexMetadata} from "./domain/entity";
+import {MetadataCtx, useMetadata} from "./domain/entity";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import {useCookie} from "./components/utils";
 import Filters, {newFilters, FiltersCtx} from "./domain/filters";
 
 const App = () => {
-    const [metadata, setMetadata] = useState<MusidexMetadata>(emptyMetadata());
+    const [metadata, setMetadata] = useMetadata();
     const [userStr, setUserStr] = useCookie("cur_user", undefined);
     const user = parseInt(userStr || "undefined") || undefined;
     const setUser = useCallback((v: number) => setUserStr(v.toString()), [setUserStr]);
@@ -35,11 +35,11 @@ const App = () => {
     const ws = useRef<undefined | ReconnectingWebSocket>();
 
     let onMessage = useCallback(async (ev) => {
-        let meta = await API.metadataFromWSMsg(ev);
+        let [meta, metaStr] = await API.metadataFromWSMsg(ev);
         if (trackplayer.current && !meta.music_tags_idx.has(trackplayer.current)) {
             doNext();
         }
-        setMetadata(meta);
+        setMetadata(meta, metaStr);
         if (user === undefined || !meta.users.some((u) => u.id === user)) {
             const u = meta.firstUser();
             if (u !== undefined) {
