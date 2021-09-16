@@ -12,7 +12,7 @@ interface NavbarProps {
 
 const Navbar = React.memo((props: NavbarProps) => {
     return (
-        <ul className="navbar bg color-fg">
+        <ul className="navbar color-fg">
             <div className="navbar-elems">
                 <div style={{display: "flex"}}>
                     <button onClick={() => props.setCurPage("explorer")} title="Home">

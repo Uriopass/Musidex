@@ -19,6 +19,8 @@ body {
 }
 
 #root {
+    background-image: url(./splash.png);
+    background-repeat: repeat-x;
     background-color: var(--bg);
     color: var(--color-bg);
     height: 100vh;
