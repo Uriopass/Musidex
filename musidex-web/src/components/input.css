@@ -15,6 +15,9 @@
     color: var(--color-fg);
     background: transparent;
     transition: border-color 0.2s;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 .form_field::placeholder {
