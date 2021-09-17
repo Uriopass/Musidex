@@ -21,7 +21,7 @@
 
 .song-elem-buttons {
     flex: 2;
-    max-width: 120px;
+    max-width: 160px;
     display: flex;
     justify-content: space-evenly;
 }
