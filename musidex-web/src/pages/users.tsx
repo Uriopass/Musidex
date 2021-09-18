@@ -1,10 +1,11 @@
 import './users.css'
 import {useContext, useState} from "react";
-import {MetadataCtx, User} from "../domain/entity";
+import {User} from "../common/entity";
 import {PageProps} from "./navigator";
 import {EditableText, MaterialIcon} from "../components/utils";
 import TextInput from "../components/input";
-import API from "../domain/api";
+import API from "../common/api";
+import {MetadataCtx} from "../domain/metadata";
 
 export interface UsersProps extends PageProps {
     onSetUser: (id: number) => void;

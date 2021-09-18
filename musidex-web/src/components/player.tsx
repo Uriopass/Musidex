@@ -4,7 +4,7 @@ import {TrackplayerCtx} from "../domain/trackplayer";
 import React, {useCallback, useContext, useEffect} from "react";
 import {PlayButton} from "./playbutton";
 import {NextTrackCallback} from "../domain/tracklist";
-import {MetadataCtx} from "../domain/entity";
+import {MetadataCtx} from "../domain/metadata";
 
 function timeFormat(total: number): string {
     let minutes = Math.floor(total / 60);

@@ -1,6 +1,5 @@
-import React from "react";
 import {MusidexMetadata} from "./entity";
-import {retain, Setter} from "../components/utils";
+import {retain} from "./utils";
 
 type Filters = {
     user_only: boolean;
@@ -33,5 +32,3 @@ export function findFirst(filters: Filters, list: number[], metadata: MusidexMet
 }
 
 export default Filters;
-
-export const FiltersCtx = React.createContext<[Filters, Setter<Filters>]>([newFilters(), _ => _]);

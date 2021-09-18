@@ -1,5 +1,5 @@
-import {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
-import API from "./domain/api";
+import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import API from "./common/api";
 import Navbar from "./components/navbar";
 import Player from "./components/player";
 import {applyTrackPlayer, newTrackPlayer, setupListeners, TrackplayerCtx} from "./domain/trackplayer";
@@ -13,12 +13,14 @@ import Tracklist, {
     useNextTrackCallback,
     usePrevTrackCallback
 } from "./domain/tracklist";
-import {MetadataCtx, useMetadata} from "./domain/entity";
-import ReconnectingWebSocket from "reconnecting-websocket";
-import {useCookie} from "./components/utils";
-import Filters, {newFilters, FiltersCtx} from "./domain/filters";
+import {Setter, useCookie} from "./components/utils";
+import Filters, {newFilters} from "./common/filters";
+import {MetadataCtx, useMetadata} from "./domain/metadata";
+
+export const FiltersCtx = React.createContext<[Filters, Setter<Filters>]>([newFilters(), _ => _]);
 
 const App = () => {
+    API.setAPIUrl(window.location.origin);
     const [metadata, setMetadata] = useMetadata();
     const [userStr, setUserStr] = useCookie("cur_user", undefined);
     const user = parseInt(userStr || "undefined") || undefined;
@@ -32,7 +34,7 @@ const App = () => {
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters, user);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const canPrev = useCanPrev(list);
-    const ws = useRef<undefined | ReconnectingWebSocket>();
+    const ws = useRef<any>();
 
     let onMessage = useCallback(async (ev) => {
         let [meta, metaStr] = await API.metadataFromWSMsg(ev, metadata);
@@ -58,10 +60,10 @@ const App = () => {
         }
 
         ws.current.onmessage = onMessage;
-        ws.current.onclose = (_) => {
+        ws.current.onclose = (_: any) => {
             setSyncProblem(true);
         };
-        ws.current.onopen = (_) => {
+        ws.current.onopen = (_: any) => {
             setSyncProblem(false);
         };
     }, [setSyncProblem, onMessage])

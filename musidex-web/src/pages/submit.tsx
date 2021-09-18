@@ -2,7 +2,7 @@ import './submit.css'
 import TextInput from "../components/input";
 import {FormEvent, useState} from "react";
 import {MaterialIcon} from "../components/utils";
-import API from "../domain/api";
+import API from "../common/api";
 import {PageProps} from "./navigator";
 
 const Submit = (props: PageProps) => {

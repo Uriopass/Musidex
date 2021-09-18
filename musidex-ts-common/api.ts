@@ -1,10 +1,6 @@
 import {MusidexMetadata, Tag, User} from "./entity";
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
-let apiURL = window.location.origin;
-
-type patch = {kind: 'add' | 'update', tag: Tag} | {kind: 'remove', id: number, key: string}
-
 export type RawMusidexMetadata = {
     musics: number[];
     tags?: Tag[];
@@ -13,14 +9,24 @@ export type RawMusidexMetadata = {
     patches?: patch[];
 }
 
+type patch = {kind: 'add' | 'update', tag: Tag} | {kind: 'remove', id: number, key: string}
+
 export const API = {
+    apiURL: "",
+    host: "",
+
+    setAPIUrl(url: string) {
+        this.apiURL = url;
+        this.host = url.split("://")[1] || "";
+    },
+
     metadataWSInit(): ReconnectingWebSocket {
         let prefix = "ws";
-        if (window.location.protocol === "https:") {
+        if (this.apiURL.startsWith("https")) {
             prefix = "wss";
         }
 
-        return new ReconnectingWebSocket(prefix + "://" + window.location.host + "/api/metadata/ws");
+        return new ReconnectingWebSocket(prefix + "://" + this.host + "/api/metadata/ws");
     },
 
     async metadataFromWSMsg(m: MessageEvent, oldMeta: MusidexMetadata): Promise<[MusidexMetadata, string]> {
@@ -32,14 +38,14 @@ export const API = {
     },
 
     async getMetadata(): Promise<MusidexMetadata | null> {
-        return fetchJson(apiURL + "/api/metadata").then((v: RawMusidexMetadata) => {
+        return fetchJson(this.apiURL + "/api/metadata").then((v: RawMusidexMetadata) => {
             if (v == null) return null;
             return new MusidexMetadata(v);
         })
     },
 
     async youtubeUpload(url: string): Promise<Response> {
-        return fetch(apiURL + "/api/youtube_upload", {
+        return fetch(this.apiURL + "/api/youtube_upload", {
             method: "post",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({url: url})
@@ -47,7 +53,7 @@ export const API = {
     },
 
     async youtubeUploadPlaylist(url: string): Promise<Response> {
-        return fetch(apiURL + "/api/youtube_upload/playlist", {
+        return fetch(this.apiURL + "/api/youtube_upload/playlist", {
             method: "post",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({url: url})
@@ -55,7 +61,7 @@ export const API = {
     },
 
     async insertTag(tag: Tag): Promise<Response> {
-        return fetch(apiURL + "/api/tag/create", {
+        return fetch(this.apiURL + "/api/tag/create", {
             method: "post",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(tag)
@@ -63,7 +69,7 @@ export const API = {
     },
 
     async updateSettings(key: string, value: string): Promise<Response> {
-        return fetch(apiURL + "/api/config/update", {
+        return fetch(this.apiURL + "/api/config/update", {
             method: "post",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
@@ -74,19 +80,19 @@ export const API = {
     },
 
     async deleteMusic(id: number): Promise<Response> {
-        return fetch(apiURL + "/api/music/" + id, {
+        return fetch(this.apiURL + "/api/music/" + id, {
             method: "delete"
         });
     },
 
     async deleteUser(id: number): Promise<Response> {
-        return fetch(apiURL + "/api/user/" + id, {
+        return fetch(this.apiURL + "/api/user/" + id, {
             method: "delete"
         });
     },
 
     async createUser(name: string): Promise<Response> {
-        return fetch(apiURL + "/api/user/create", {
+        return fetch(this.apiURL + "/api/user/create", {
             method: "post",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({name: name})
@@ -94,7 +100,7 @@ export const API = {
     },
 
     async renameUser(id: number, name: string): Promise<Response> {
-        return fetch(apiURL + "/api/user/update/" + id, {
+        return fetch(this.apiURL + "/api/user/update/" + id, {
             method: "post",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({name: name})
@@ -102,7 +108,7 @@ export const API = {
     },
 
     getStreamSrc(id: number): string {
-        return apiURL + "/api/stream/" + id
+        return this.apiURL + "/api/stream/" + id
     }
 }
 

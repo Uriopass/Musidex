@@ -1,8 +1,8 @@
 import {Setter} from "../components/utils";
 import React, {Dispatch, useCallback} from "react";
 import {TrackPlayerAction} from "./trackplayer";
-import {canPlay, dot, MusidexMetadata, Vector} from "./entity";
-import Filters, {findFirst} from "./filters";
+import {canPlay, dot, MusidexMetadata, Vector} from "../common/entity";
+import Filters, {findFirst} from "../common/filters";
 
 interface Tracklist {
     last_played: number[];

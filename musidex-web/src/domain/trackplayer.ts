@@ -1,7 +1,7 @@
 import React from "react";
-import API from "./api";
+import API from "../common/api";
 import {NextTrackCallback, PrevTrackCallback} from "./tracklist";
-import {MusidexMetadata} from "./entity";
+import {MusidexMetadata} from "../common/entity";
 
 type TrackPlayer = {
     current: number | undefined;

@@ -1,13 +1,15 @@
 import './explorer.css'
-import API from "../domain/api";
+import API from "../common/api";
 import React, {Fragment, useContext, useEffect, useMemo, useState} from "react";
 import {PlayButton} from "../components/playbutton";
 import {clamp, EditableText, MaterialIcon, Setter} from "../components/utils";
-import {canPlay, MetadataCtx, Tag} from "../domain/entity";
+import {canPlay, Tag} from "../common/entity";
 import {NextTrackCallback, TracklistCtx} from "../domain/tracklist";
 import TextInput from "../components/input";
 import {PageProps} from "./navigator";
-import Filters, {applyFilters, FiltersCtx} from "../domain/filters";
+import Filters, {applyFilters} from "../common/filters";
+import {MetadataCtx} from "../domain/metadata";
+import {FiltersCtx} from "../App";
 
 export interface ExplorerProps extends PageProps {
     title?: string;

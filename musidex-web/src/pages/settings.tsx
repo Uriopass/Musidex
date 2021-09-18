@@ -2,8 +2,8 @@ import './settings.css'
 import {PageProps} from "./navigator";
 import React, {useContext} from "react";
 import TextInput from "../components/input";
-import {MetadataCtx} from "../domain/entity";
-import API from "../domain/api";
+import API from "../common/api";
+import {MetadataCtx} from "../domain/metadata";
 
 const SettingsPage = (props: PageProps) => {
     let [metadata, metadataSync] = useContext(MetadataCtx);
