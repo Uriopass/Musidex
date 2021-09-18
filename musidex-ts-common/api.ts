@@ -1,5 +1,6 @@
 import {MusidexMetadata, Tag, User} from "./entity";
 import ReconnectingWebSocket from 'reconnecting-websocket';
+import Pako from "pako";
 
 export type RawMusidexMetadata = {
     musics: number[];
@@ -30,9 +31,8 @@ export const API = {
     },
 
     async metadataFromWSMsg(m: MessageEvent, oldMeta: MusidexMetadata): Promise<[MusidexMetadata, string]> {
-        let pako = await import("pako");
         let vv = new Uint8Array(m.data);
-        const s = pako.inflateRaw(vv, {to: 'string'});
+        const s = Pako.inflateRaw(vv, {to: 'string'});
         let v: RawMusidexMetadata = JSON.parse(s);
         return [new MusidexMetadata(v, oldMeta), s];
     },
