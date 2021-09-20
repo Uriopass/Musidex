@@ -83,6 +83,7 @@ const YTSubmit = (props: YTSubmitProps) => {
             break;
         case "accepted":
             icon = "done"
+            message = "Music(s) successfully added to your library. Download will begin shortly."
             color = "var(--success)";
             break;
     }
