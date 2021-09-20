@@ -130,7 +130,7 @@ async fn start() -> anyhow::Result<()> {
             v1?;
             v2?;
 
-            return Ok(());
+            continue;
         }
         let server = Server::builder(incoming)
             .serve(service)
