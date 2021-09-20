@@ -1,6 +1,6 @@
 import './submit.css'
 import TextInput from "../components/input";
-import {FormEvent, useState} from "react";
+import {useState} from "react";
 import {MaterialIcon} from "../components/utils";
 import API from "../common/api";
 import {PageProps} from "./navigator";
@@ -41,17 +41,9 @@ type YTSubmitProps = {
 }
 
 const YTSubmit = (props: YTSubmitProps) => {
-    const [ytUrl, setYTUrl] = useState("");
     const [sendState, setSendState] = useState({type: "waiting_for_url"} as YTSendState);
 
-    const YTsubmit = (ev: FormEvent<HTMLFormElement>) => {
-        ev.preventDefault();
-
-        console.log(ytUrl);
-    };
-
     const onYTInputChange = (v: string) => {
-        setYTUrl(v);
         if (v === "") {
             setSendState({type: "waiting_for_url"});
             return;
@@ -103,7 +95,7 @@ const YTSubmit = (props: YTSubmitProps) => {
             <br/>
             <br/>
             {props.description}
-            <form onSubmit={YTsubmit}>
+            <form>
                 <TextInput onChange={onYTInputChange}
                            name={props.placeholder}
                            title="Input is not a valid youtube URL"

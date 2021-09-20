@@ -15,7 +15,7 @@ type TextInputProps = {
 const TextInput = React.memo((props: TextInputProps) => {
         let id = "form_id_" + props.name.toLowerCase();
         const showl = props.withLabel === true;
-        let [v, setV] = useState(props.startValue);
+        let [v, setV] = useState(props.startValue || "");
         return <div className={"form_group field " + (showl ? " form_show_label" : "")}
                     style={{minWidth: props.minWidth || 0}}>
             <input type="search"
