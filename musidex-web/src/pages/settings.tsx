@@ -1,13 +1,32 @@
 import './settings.css'
 import {PageProps} from "./navigator";
-import React, {useContext} from "react";
+import React, {useContext, useState} from "react";
 import TextInput from "../components/input";
 import API from "../common/api";
 import {MetadataCtx} from "../domain/metadata";
-import {MaterialIcon} from "../components/utils";
+import {MaterialIcon, useDebouncedEffect} from "../components/utils";
 
 const SettingsPage = (props: PageProps) => {
     let [metadata, metadataSync] = useContext(MetadataCtx);
+    let [restartStatus, setRestartStatus] = useState("restart_alt");
+
+    useDebouncedEffect(() => {
+        if (restartStatus !== "pending") {
+            setRestartStatus("restart_alt")
+        }
+    }, [restartStatus], 3000);
+
+    let onRestartServer = () => {
+        setRestartStatus("pending");
+        API.restartServer().then((res) => {
+                if (!res.ok) {
+                    setRestartStatus("error");
+                } else {
+                    setRestartStatus("check");
+                }
+            }
+        );
+    };
 
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")}>
@@ -16,13 +35,17 @@ const SettingsPage = (props: PageProps) => {
                     Settings
                 </div>
                 <div style={{marginTop: 10}}>
-                    <button className="navbar-button"><MaterialIcon name="restart_alt" size={25} />&nbsp;Restart server </button>
+                    <button className="navbar-button" onClick={onRestartServer}>
+                        <MaterialIcon name={restartStatus}
+                                      size={25}/>&nbsp;Restart
+                        server
+                    </button>
                 </div>
-                {/*
-                    metadata.settings_l.map(([key, value]) => {
+                {
+                    metadata.settings_l.slice(0, 0).map(([key, value]) => {
                         return <SettingsElem sync={metadataSync} key={key} setting_key={key} value={value}/>;
                     })
-                */}
+                }
             </div>
         </div>
     )

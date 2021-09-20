@@ -10,7 +10,7 @@ export type RawMusidexMetadata = {
     patches?: patch[];
 }
 
-type patch = {kind: 'add' | 'update', tag: Tag} | {kind: 'remove', id: number, key: string}
+type patch = { kind: 'add' | 'update', tag: Tag } | { kind: 'remove', id: number, key: string }
 
 let apiURL = "";
 let host = "";
@@ -107,9 +107,13 @@ export const API = {
         });
     },
 
+    async restartServer(): Promise<Response> {
+        return fetch(apiURL + "/api/restart_server", {});
+    },
+
     getStreamSrc(id: number): string {
         return apiURL + "/api/stream/" + id
-    }
+    },
 }
 
 async function fetchJson(url: string): Promise<any | null> {
