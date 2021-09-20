@@ -4,6 +4,7 @@ import React, {useContext} from "react";
 import TextInput from "../components/input";
 import API from "../common/api";
 import {MetadataCtx} from "../domain/metadata";
+import {MaterialIcon} from "../components/utils";
 
 const SettingsPage = (props: PageProps) => {
     let [metadata, metadataSync] = useContext(MetadataCtx);
@@ -11,14 +12,17 @@ const SettingsPage = (props: PageProps) => {
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")}>
             <div className="settings color-fg ">
-                <span className="title">
+                <div className="title">
                     Settings
-                </span>
-                {
+                </div>
+                <div style={{marginTop: 10}}>
+                    <button className="navbar-button"><MaterialIcon name="restart_alt" size={25} />&nbsp;Restart server </button>
+                </div>
+                {/*
                     metadata.settings_l.map(([key, value]) => {
                         return <SettingsElem sync={metadataSync} key={key} setting_key={key} value={value}/>;
                     })
-                }
+                */}
             </div>
         </div>
     )

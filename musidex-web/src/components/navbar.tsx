@@ -15,11 +15,11 @@ const Navbar = React.memo((props: NavbarProps) => {
         <ul className="navbar color-fg">
             <div className="navbar-elems">
                 <div style={{display: "flex"}}>
-                    <button onClick={() => props.setCurPage("explorer")} title="Home">
+                    <button className="navbar-button" onClick={() => props.setCurPage("explorer")} title="Home">
                         <MaterialIcon name="home"/>
                         &nbsp;Home
                     </button>
-                    <button onClick={() => props.setCurPage("submit")} title="Add musics to the library">
+                    <button className="navbar-button" onClick={() => props.setCurPage("submit")} title="Add musics to the library">
                         <MaterialIcon name="file_upload" size={25}/>
                         &nbsp;Upload
                     </button>
@@ -32,15 +32,15 @@ const Navbar = React.memo((props: NavbarProps) => {
                     }
                 </div>
                 <div style={{display: "flex"}}>
-                    <button onClick={() => props.setCurPage("users")} title="Manage users">
+                    <button className="navbar-button" onClick={() => props.setCurPage("users")} title="Manage users">
                         {props.curUser?.name || ""}&nbsp;
                         <MaterialIcon name="person" size={25}/>
                     </button>
-                    {/*
-                    <button onClick={() => props.setCurPage("settings")} title="Settings">
+                    {
+                    <button className="navbar-button" onClick={() => props.setCurPage("settings")} title="Settings">
                         <MaterialIcon name="settings" size={20}/>
                     </button>
-                    */}
+                    }
                 </div>
             </div>
         </ul>

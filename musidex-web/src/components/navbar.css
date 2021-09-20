@@ -33,15 +33,15 @@
     justify-content: space-between;
 }
 
-.navbar button:hover {
+.navbar-button:hover {
     cursor: pointer;
 }
 
-.navbar button:active {
+.navbar-button:active {
     color: var(--primary);
 }
 
-.navbar button {
+.navbar-button {
     background-color: var(--bg);
     color: var(--color-fg);
     border: 0;
