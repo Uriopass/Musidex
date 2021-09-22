@@ -17,6 +17,9 @@ let host = "";
 
 export const API = {
     setAPIUrl(url: string) {
+        if (!url.startsWith("http")) {
+            url = "http://" + url;
+        }
         apiURL = url;
         host = url.split("://")[1] || "";
     },
