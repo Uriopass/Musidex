@@ -76,7 +76,8 @@ async fn start() -> anyhow::Result<()> {
             .post("/api/user/update/:id", user_handlers::update)
             .delete("/api/user/:id", user_handlers::delete)
             .static_files("/storage/", "./storage/")
-            .static_files("/", "./web/");
+            .static_files("/", "./web/")
+            .nocors(env_or("NO_CORS", false));
 
         let port = env_or("PORT", 3200);
         let addr = ([0, 0, 0, 0], port).into();
