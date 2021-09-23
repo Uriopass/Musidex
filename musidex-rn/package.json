@@ -34,7 +34,8 @@
     "react-native-screens": "~3.4.0",
     "react-native-web": "~0.13.12",
     "pako": "^2.0.4",
-    "reconnecting-websocket": "^4.4.0"
+    "reconnecting-websocket": "^4.4.0",
+    "@react-native-async-storage/async-storage": "~1.15.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

@@ -3,48 +3,50 @@
  * https://reactnavigation.org/docs/bottom-tab-navigator
  */
 
-import { Ionicons } from '@expo/vector-icons';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import {Ionicons} from '@expo/vector-icons';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createStackNavigator} from '@react-navigation/stack';
 import * as React from 'react';
 
-import Colors from '../constants/Colors';
-import useColorScheme from '../hooks/useColorScheme';
 import MainScreen from '../screens/MainScreen';
 import TabTwoScreen from '../screens/TabTwoScreen';
-import { BottomTabParamList, TabOneParamList, TabTwoParamList } from '../types';
+import {BottomTabParamList, TabOneParamList, TabTwoParamList} from '../types';
+import Colors from "../constants/Colors";
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
 export default function BottomTabNavigator() {
-  const colorScheme = useColorScheme();
-
-  return (
-    <BottomTab.Navigator
-      initialRouteName="TabOne"
-      tabBarOptions={{ activeTintColor: Colors[colorScheme].tint }}>
-      <BottomTab.Screen
-        name="TabOne"
-        component={TabOneNavigator}
-        options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="ios-code" color={color} />,
-        }}
-      />
-      <BottomTab.Screen
-        name="TabTwo"
-        component={TabTwoNavigator}
-        options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="ios-code" color={color} />,
-        }}
-      />
-    </BottomTab.Navigator>
-  );
+    return (
+        <BottomTab.Navigator
+            initialRouteName="TabOne"
+            tabBarOptions={{
+                style: {
+                    backgroundColor: Colors.fg,
+                    borderTopColor: Colors.fg,
+                },
+            }}>
+            <BottomTab.Screen
+                name="TabOne"
+                component={TabOneNavigator}
+                options={{
+                    tabBarIcon: ({color}) => <TabBarIcon name="ios-code" color={color}/>,
+                }}
+            />
+            <BottomTab.Screen
+                name="TabTwo"
+                component={TabTwoNavigator}
+                options={{
+                    tabBarIcon: ({color}) => <TabBarIcon name="ios-code" color={color}/>,
+                }}
+            />
+        </BottomTab.Navigator>
+    );
 }
 
 // You can explore the built-in icon families and icons on the web at:
 // https://icons.expo.fyi/
 function TabBarIcon(props: { name: React.ComponentProps<typeof Ionicons>['name']; color: string }) {
-  return <Ionicons size={30} style={{ marginBottom: -3 }} {...props} />;
+    return <Ionicons size={30} style={{marginBottom: -3}} {...props} />;
 }
 
 // Each tab has its own navigation stack, you can read more about this pattern here:
@@ -52,27 +54,27 @@ function TabBarIcon(props: { name: React.ComponentProps<typeof Ionicons>['name']
 const TabOneStack = createStackNavigator<TabOneParamList>();
 
 function TabOneNavigator() {
-  return (
-    <TabOneStack.Navigator>
-      <TabOneStack.Screen
-        name="TabOneScreen"
-        component={MainScreen}
-        options={{ headerTitle: 'Tab One Title' }}
-      />
-    </TabOneStack.Navigator>
-  );
+    return (
+        <TabOneStack.Navigator>
+            <TabOneStack.Screen
+                name="TabOneScreen"
+                component={MainScreen}
+                options={{headerShown: false}}
+            />
+        </TabOneStack.Navigator>
+    );
 }
 
 const TabTwoStack = createStackNavigator<TabTwoParamList>();
 
 function TabTwoNavigator() {
-  return (
-    <TabTwoStack.Navigator>
-      <TabTwoStack.Screen
-        name="TabTwoScreen"
-        component={TabTwoScreen}
-        options={{ headerTitle: 'Tab Two Title' }}
-      />
-    </TabTwoStack.Navigator>
-  );
+    return (
+        <TabTwoStack.Navigator>
+            <TabTwoStack.Screen
+                name="TabTwoScreen"
+                component={TabTwoScreen}
+                options={{headerShown: false}}
+            />
+        </TabTwoStack.Navigator>
+    );
 }
