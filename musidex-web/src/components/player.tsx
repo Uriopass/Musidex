@@ -36,7 +36,7 @@ const Player = (props: PlayerProps) => {
     let trackProgress = duration > 0 ? curtime / duration : 0;
     let title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";
     let artist = tags?.get("artist")?.text || "";
-    let thumbnail = tags?.get("thumbnail")?.text || "";
+    let thumbnail = tags?.get("compressed_thumbnail")?.text || (tags?.get("thumbnail")?.text || "");
 
     let trackBarOnMove = (ev: React.MouseEvent<HTMLDivElement>) => {
         if (ev.buttons !== 1) return;
