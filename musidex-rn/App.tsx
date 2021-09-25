@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import useCachedResources from './hooks/useCachedResources';
 import Navigation from './navigation';
+import Colors from "./constants/Colors";
 
 export default function App() {
   const isLoadingComplete = useCachedResources();
@@ -15,7 +16,7 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <Navigation />
-        <StatusBar />
+        <StatusBar style="light" backgroundColor={Colors.bg}/>
       </SafeAreaProvider>
     );
   }
