@@ -24,6 +24,10 @@ export const API = {
         host = url.split("://")[1] || "";
     },
 
+    getAPIUrl(): string {
+        return apiURL;
+    },
+
     metadataWSInit(): ReconnectingWebSocket {
         let prefix = "ws";
         if (apiURL.startsWith("https")) {

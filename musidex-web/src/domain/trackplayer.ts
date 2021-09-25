@@ -37,7 +37,6 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
             trackplayer.audio.play().catch((e) => console.log(e));
         }
     }
-
     if ('mediaSession' in navigator) {
         let curtags = metadata.getTags(trackplayer.current);
         let artwork = [];

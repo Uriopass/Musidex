@@ -3,6 +3,8 @@ import {useCallback, useEffect, useState} from "react";
 
 export default function useStored<T>(key: string, initialV: T): [T, (newv: T) => void] {
     const [v, setV] = useState(initialV);
+    return [v, setV];
+    // todo make saving classes work ?
     const {getItem, setItem} = useAsyncStorage(key);
 
     const setValue = useCallback((newv: T) => {
