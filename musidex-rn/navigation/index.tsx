@@ -15,6 +15,7 @@ import MainScreen from "../screens/MainScreen";
 import useStored from "../hooks/useStored";
 import {emptyMetadata, MusidexMetadata} from "../common/entity";
 import API from "../common/api";
+import {MetadataCtx} from "../constants/Contexts";
 
 export default function Navigation() {
     return (
@@ -56,7 +57,3 @@ function RootNavigator() {
         </MetadataCtx.Provider>
     );
 }
-
-export const MetadataCtx = React.createContext<[MusidexMetadata, () => void]>([emptyMetadata(), () => {
-    return;
-}]);

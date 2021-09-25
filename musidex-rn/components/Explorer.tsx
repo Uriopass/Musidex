@@ -1,10 +1,10 @@
 import {FlatList, Image, SafeAreaView, StatusBar, StyleSheet, View} from "react-native";
 import React, {useCallback, useContext} from "react";
-import {MetadataCtx} from "../navigation";
 import {Tag} from "../common/entity";
 import {TextFg} from "./StyledText";
 import Colors from "../constants/Colors";
 import API from "../common/api";
+import {MetadataCtx} from "../constants/Contexts";
 
 export default function Explorer() {
     const [metadata] = useContext(MetadataCtx);
