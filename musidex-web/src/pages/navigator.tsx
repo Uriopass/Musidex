@@ -1,7 +1,7 @@
 import Explorer from "./explorer";
 import Submit from "./submit";
 import Users from "./users";
-import {NextTrackCallback} from "../domain/tracklist";
+import {NextTrackCallback} from "../common/tracklist";
 import SettingsPage from "./settings";
 
 export type PageEnum = "explorer" | "submit" | "users" | "settings";

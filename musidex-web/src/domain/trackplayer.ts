@@ -1,7 +1,8 @@
 import React from "react";
 import API from "../common/api";
-import {NextTrackCallback, PrevTrackCallback} from "./tracklist";
+import {NextTrackCallback, PrevTrackCallback, TrackPlayerAction} from "../common/tracklist";
 import {MusidexMetadata} from "../common/entity";
+import {Dispatch} from "../common/utils";
 
 type TrackPlayer = {
     current: number | undefined;
@@ -11,10 +12,6 @@ type TrackPlayer = {
     audio: HTMLAudioElement;
 }
 
-export type TrackPlayerAction =
-    { action: "play", id: number, duration?: number }
-    | { action: "audioTick" }
-    | { action: "setTime", time: number }
 
 export function newTrackPlayer(): TrackPlayer {
     return {
@@ -26,7 +23,7 @@ export function newTrackPlayer(): TrackPlayer {
     }
 }
 
-export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetadata, doNext: NextTrackCallback, doPrev: PrevTrackCallback, dispatch: React.Dispatch<TrackPlayerAction>) {
+export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetadata, doNext: NextTrackCallback, doPrev: PrevTrackCallback, dispatch: Dispatch<TrackPlayerAction>) {
     trackplayer.audio.onloadeddata = () => dispatch({action: "audioTick"});
     trackplayer.audio.onplaying = () => dispatch({action: "audioTick"});
     trackplayer.audio.onpause = () => dispatch({action: "audioTick"});

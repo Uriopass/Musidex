@@ -3,7 +3,7 @@ import './player.css'
 import {TrackplayerCtx} from "../domain/trackplayer";
 import React, {useCallback, useContext, useEffect} from "react";
 import {PlayButton} from "./playbutton";
-import {NextTrackCallback} from "../domain/tracklist";
+import {NextTrackCallback} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
 
 function timeFormat(total: number): string {

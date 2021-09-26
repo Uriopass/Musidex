@@ -1,8 +1,13 @@
 import {Setter} from "../components/utils";
-import React, {Dispatch, useCallback} from "react";
-import {TrackPlayerAction} from "./trackplayer";
-import {canPlay, dot, MusidexMetadata, Vector} from "../common/entity";
+import {canPlay, MusidexMetadata, Vector} from "./entity";
 import Filters, {findFirst} from "../common/filters";
+import {Dispatch, dot} from "./utils";
+import React, {useCallback} from "react";
+
+export type TrackPlayerAction =
+    { action: "play", id: number, duration?: number }
+    | { action: "audioTick" }
+    | { action: "setTime", time: number }
 
 interface Tracklist {
     last_played: number[];
@@ -109,7 +114,7 @@ export function neuralScore(list: Tracklist, lastvec: Vector | undefined, id: nu
     return dot(lastvec, emb) / (lastvec.mag * emb.mag);
 }
 
-export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata): PrevTrackCallback {
+export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: (action: TrackPlayerAction) => void, metadata: MusidexMetadata): PrevTrackCallback {
     return useCallback(() => {
         const list = {
             ...curlist,

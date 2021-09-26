@@ -4,7 +4,7 @@ import React, {Fragment, useContext, useEffect, useMemo, useState} from "react";
 import {PlayButton} from "../components/playbutton";
 import {clamp, EditableText, MaterialIcon, Setter} from "../components/utils";
 import {canPlay, Tag} from "../common/entity";
-import {NextTrackCallback, TracklistCtx} from "../domain/tracklist";
+import {NextTrackCallback, TracklistCtx} from "../common/tracklist";
 import TextInput from "../components/input";
 import {PageProps} from "./navigator";
 import Filters, {applyFilters} from "../common/filters";

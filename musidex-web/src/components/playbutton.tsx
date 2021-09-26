@@ -1,7 +1,7 @@
 import {useCallback, useContext} from "react";
 import {TrackplayerCtx} from "../domain/trackplayer";
 import {MaterialIcon} from "./utils";
-import {NextTrackCallback} from "../domain/tracklist";
+import {NextTrackCallback} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
 
 export type PlayButtonProps = {

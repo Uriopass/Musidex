@@ -12,7 +12,7 @@ import Tracklist, {
     useCanPrev,
     useNextTrackCallback,
     usePrevTrackCallback
-} from "./domain/tracklist";
+} from "./common/tracklist";
 import {Setter, useCookie} from "./components/utils";
 import Filters, {newFilters} from "./common/filters";
 import {MetadataCtx, useMetadata} from "./domain/metadata";
