@@ -6,7 +6,7 @@
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import * as React from 'react';
-import {useCallback, useEffect} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 import NotFoundScreen from '../screens/NotFoundScreen';
 import {RootStackParamList} from '../types';
@@ -16,6 +16,14 @@ import useStored from "../hooks/useStored";
 import {emptyMetadata, MusidexMetadata} from "../common/entity";
 import API from "../common/api";
 import {MetadataCtx} from "../constants/Contexts";
+import Tracklist, {
+    emptyTracklist,
+    TrackPlayerAction,
+    useCanPrev,
+    useNextTrackCallback,
+    usePrevTrackCallback
+} from "../common/tracklist";
+import Filters, {newFilters} from "../common/filters";
 
 export default function Navigation() {
     return (
@@ -31,9 +39,21 @@ export default function Navigation() {
 const Stack = createStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
+    API.setAPIUrl("http://192.168.0.14:3200");
+    
     let [metadata, setMetadata] = useStored<MusidexMetadata>("metadata", emptyMetadata());
 
-    API.setAPIUrl("http://192.168.0.14:3200");
+    const dispatchPlayer = (action: TrackPlayerAction) => {
+        console.log(action);
+    };
+
+    const [user, setUser] = useStored<number | undefined>("user", metadata.users[0]?.id);
+    const [filters, setFilters] = useStored<Filters>("filters", newFilters());
+    const [list, setList] = useState<Tracklist>(emptyTracklist())
+
+    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters, user);
+    const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
+    const canPrev = useCanPrev(list);
 
     useEffect(() => {
         API.getMetadata().then((m) => {

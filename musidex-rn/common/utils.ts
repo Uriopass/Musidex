@@ -14,6 +14,7 @@ export function retain<T>(a: T[], condition: (x: T) => boolean): T[] {
 }
 
 export type Dispatch<T> = (value: T) => void;
+export type Setter<S> = Dispatch<S | ((prevState: S) => S)>;
 
 export function dot(v1v: Vector, v2v: Vector): number {
     let v1 = v1v.v;

@@ -1,7 +1,6 @@
-import {Setter} from "../components/utils";
 import {canPlay, MusidexMetadata, Vector} from "./entity";
 import Filters, {findFirst} from "../common/filters";
-import {Dispatch, dot} from "./utils";
+import {Setter, Dispatch, dot} from "./utils";
 import React, {useCallback} from "react";
 
 export type TrackPlayerAction =

@@ -89,8 +89,6 @@ export const useDebouncedEffect = (effect: React.EffectCallback, deps: React.Dep
     }, [...deps || [], delay]);
 }
 
-export type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
-
 const isBrowser = typeof window !== 'undefined';
 
 interface cookieOptions {

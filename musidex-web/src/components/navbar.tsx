@@ -1,8 +1,9 @@
 import './navbar.css'
-import {MaterialIcon, Setter} from "./utils";
+import {MaterialIcon} from "./utils";
 import React from "react";
 import {User} from "../common/entity";
 import {PageEnum} from "../pages/navigator";
+import {Setter} from "../common/utils";
 
 interface NavbarProps {
     setCurPage: Setter<PageEnum>;

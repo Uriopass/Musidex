@@ -13,9 +13,10 @@ import Tracklist, {
     useNextTrackCallback,
     usePrevTrackCallback
 } from "./common/tracklist";
-import {Setter, useCookie} from "./components/utils";
+import {useCookie} from "./components/utils";
 import Filters, {newFilters} from "./common/filters";
 import {MetadataCtx, useMetadata} from "./domain/metadata";
+import {Setter} from "./common/utils";
 
 export const FiltersCtx = React.createContext<[Filters, Setter<Filters>]>([newFilters(), _ => _]);
 
@@ -29,8 +30,8 @@ const App = () => {
     const [syncProblem, setSyncProblem] = useState(false);
     const [volume, setVolume] = useLocalStorage("volume", 1);
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
-    const [list, setList] = useState<Tracklist>(emptyTracklist())
     const [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
+    const [list, setList] = useState<Tracklist>(emptyTracklist())
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters, user);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const canPrev = useCanPrev(list);
