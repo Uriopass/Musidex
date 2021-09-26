@@ -1,16 +1,11 @@
-import {clamp, MaterialIcon, ProgressBar, useUpdate} from "./utils";
+import {MaterialIcon, ProgressBar} from "./utils";
 import './player.css'
 import {TrackplayerCtx} from "../domain/trackplayer";
 import React, {useCallback, useContext, useEffect} from "react";
 import {PlayButton} from "./playbutton";
 import {NextTrackCallback} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
-
-function timeFormat(total: number): string {
-    let minutes = Math.floor(total / 60);
-    let seconds = Math.floor(total % 60);
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
-}
+import {clamp, timeFormat, useUpdate} from "../common/utils";
 
 interface PlayerProps {
     onVolumeChange: (volume: number) => void;

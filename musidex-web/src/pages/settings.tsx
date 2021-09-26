@@ -4,7 +4,8 @@ import React, {useContext, useState} from "react";
 import TextInput from "../components/input";
 import API from "../common/api";
 import {MetadataCtx} from "../domain/metadata";
-import {MaterialIcon, useDebouncedEffect} from "../components/utils";
+import {MaterialIcon} from "../components/utils";
+import {useDebouncedEffect} from "../common/utils";
 
 const SettingsPage = (props: PageProps) => {
     let [metadata, metadataSync] = useContext(MetadataCtx);

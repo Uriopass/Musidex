@@ -12,7 +12,7 @@ import NotFoundScreen from '../screens/NotFoundScreen';
 import {RootStackParamList} from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
 import MainScreen from "../screens/MainScreen";
-import useStored from "../hooks/useStored";
+import useStored from "../domain/useStored";
 import {emptyMetadata, MusidexMetadata} from "../common/entity";
 import API from "../common/api";
 import {MetadataCtx} from "../constants/Contexts";
@@ -21,7 +21,8 @@ import Tracklist, {
     TrackPlayerAction,
     useCanPrev,
     useNextTrackCallback,
-    usePrevTrackCallback
+    usePrevTrackCallback,
+    TracklistCtx
 } from "../common/tracklist";
 import Filters, {newFilters} from "../common/filters";
 
@@ -40,7 +41,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
     API.setAPIUrl("http://192.168.0.14:3200");
-    
+
     let [metadata, setMetadata] = useStored<MusidexMetadata>("metadata", emptyMetadata());
 
     const dispatchPlayer = (action: TrackPlayerAction) => {
@@ -70,10 +71,12 @@ function RootNavigator() {
 
     return (
         <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
-            <Stack.Navigator screenOptions={{headerShown: false}}>
-                <Stack.Screen name="Root" component={MainScreen}/>
-                <Stack.Screen name="NotFound" component={NotFoundScreen} options={{title: 'Oops!'}}/>
-            </Stack.Navigator>
+            <TracklistCtx.Provider value={list}>
+                <Stack.Navigator screenOptions={{headerShown: false}}>
+                    <Stack.Screen name="Root" component={MainScreen}/>
+                    <Stack.Screen name="NotFound" component={NotFoundScreen} options={{title: 'Oops!'}}/>
+                </Stack.Navigator>
+            </TracklistCtx.Provider>
         </MetadataCtx.Provider>
     );
 }

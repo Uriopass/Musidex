@@ -33,6 +33,7 @@
     "react-native-safe-area-context": "3.2.0",
     "react-native-screens": "~3.4.0",
     "react-native-web": "~0.13.12",
+    "react-native-elements": "^3.4.2",
     "pako": "^2.0.4",
     "reconnecting-websocket": "^4.4.0",
     "@react-native-async-storage/async-storage": "~1.15.0"

@@ -1,4 +1,5 @@
 import {Vector} from "./entity";
+import React, {useCallback, useEffect, useState} from "react";
 
 export function retain<T>(a: T[], condition: (x: T) => boolean): T[] {
     let i = a.length;
@@ -25,4 +26,31 @@ export function dot(v1v: Vector, v2v: Vector): number {
         d += v1[i] * v2[i];
     }
     return d;
+}
+
+export function timeFormat(total: number): string {
+    let minutes = Math.floor(total / 60);
+    let seconds = Math.floor(total % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
+}
+
+export function clamp(v: number, lower: number, upper: number) {
+    if (v < lower) return lower;
+    if (v > upper) return upper;
+    return v;
+}
+
+export function useUpdate(): [number, () => void] {
+    let [v, setV] = useState(0);
+    let update = useCallback(() => setV((v) => v + 1), [setV]);
+    return [v, update];
+}
+
+export const useDebouncedEffect = (effect: React.EffectCallback, deps: React.DependencyList, delay: number) => {
+    useEffect(() => {
+        const handler = setTimeout(() => effect(), delay);
+
+        return () => clearTimeout(handler);
+        // eslint-disable-next-line react-domain/exhaustive-deps
+    }, [...deps || [], delay]);
 }

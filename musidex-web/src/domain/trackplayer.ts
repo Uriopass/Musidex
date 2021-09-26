@@ -145,5 +145,5 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
     return trackplayer
 }
 
-export const TrackplayerCtx = React.createContext<[TrackPlayer, React.Dispatch<TrackPlayerAction>]>([newTrackPlayer(), _ => _]);
+export const TrackplayerCtx = React.createContext<[TrackPlayer, Dispatch<TrackPlayerAction>]>([newTrackPlayer(), _ => _]);
 export default TrackPlayer;
