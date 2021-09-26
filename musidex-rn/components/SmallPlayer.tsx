@@ -10,7 +10,7 @@ interface PlayerProps {
     style: ViewStyle,
 }
 
-const Player = (props: PlayerProps) => {
+const SmallPlayer = (props: PlayerProps) => {
     const [trackplayer, dispatch] = useContext(TrackplayerCtx);
     const [metadata,] = useContext(MetadataCtx);
     const [doNext, doPrev] = useContext(ControlsCtx);
@@ -94,4 +94,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default Player;
+export default SmallPlayer;

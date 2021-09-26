@@ -5,7 +5,7 @@ import {TextFg} from "./StyledText";
 import Colors from "../constants/Colors";
 import API from "../common/api";
 import {MetadataCtx} from "../constants/Contexts";
-import Player from "./Player";
+import SmallPlayer from "./SmallPlayer";
 
 export default function Explorer() {
     const [metadata] = useContext(MetadataCtx);
@@ -20,7 +20,7 @@ export default function Explorer() {
                       renderItem={renderSong}
                       keyExtractor={(item) => item.toString()}
             style={styles.musiclist}/>
-            <Player style={styles.player}/>
+            <SmallPlayer style={styles.player}/>
         </SafeAreaView>
     )
 }
