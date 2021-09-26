@@ -5,6 +5,7 @@ import {TextFg} from "./StyledText";
 import Colors from "../constants/Colors";
 import API from "../common/api";
 import {MetadataCtx} from "../constants/Contexts";
+import Player from "./Player";
 
 export default function Explorer() {
     const [metadata] = useContext(MetadataCtx);
@@ -17,7 +18,9 @@ export default function Explorer() {
         <SafeAreaView style={styles.container}>
             <FlatList data={metadata.musics}
                       renderItem={renderSong}
-                      keyExtractor={(item) => item.toString()}/>
+                      keyExtractor={(item) => item.toString()}
+            style={styles.musiclist}/>
+            <Player style={styles.player}/>
         </SafeAreaView>
     )
 }
@@ -56,6 +59,10 @@ const styles = StyleSheet.create({
         marginTop: StatusBar.currentHeight || 0,
         backgroundColor: Colors.bg,
     },
+    player: {
+        flexBasis: 60,
+        flexGrow: 0,
+    },
     trackInfo: {
         padding: 10,
     },
@@ -71,5 +78,9 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
         borderRadius: 5,
         overflow: "hidden",
+    },
+    musiclist: {
+        flexBasis: 100,
+        flexGrow: 1,
     }
 })
