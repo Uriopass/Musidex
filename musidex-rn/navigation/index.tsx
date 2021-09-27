@@ -6,7 +6,7 @@
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import * as React from 'react';
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useReducer, useState} from 'react';
 
 import NotFoundScreen from '../screens/NotFoundScreen';
 import {RootStackParamList} from '../types';
@@ -15,16 +15,15 @@ import MainScreen from "../screens/MainScreen";
 import useStored from "../domain/useStored";
 import {emptyMetadata, MusidexMetadata} from "../common/entity";
 import API from "../common/api";
-import {MetadataCtx} from "../constants/Contexts";
+import {MetadataCtx, ControlsCtx, TrackplayerCtx} from "../constants/Contexts";
 import Tracklist, {
     emptyTracklist,
-    TrackPlayerAction,
-    useCanPrev,
     useNextTrackCallback,
     usePrevTrackCallback,
-    TracklistCtx
+    TracklistCtx, updateScoreCache
 } from "../common/tracklist";
 import Filters, {newFilters} from "../common/filters";
+import {applyTrackPlayer, newTrackPlayer, setupListeners} from "../domain/trackplayer";
 
 export default function Navigation() {
     return (
@@ -44,25 +43,31 @@ function RootNavigator() {
 
     let [metadata, setMetadata] = useStored<MusidexMetadata>("metadata", emptyMetadata());
 
-    const dispatchPlayer = (action: TrackPlayerAction) => {
-        console.log(action);
-    };
-
-    const [user, setUser] = useStored<number | undefined>("user", metadata.users[0]?.id);
+    const [user, setUser] = useStored<number | undefined>("user", undefined);
     const [filters, setFilters] = useStored<Filters>("filters", newFilters());
     const [list, setList] = useState<Tracklist>(emptyTracklist())
 
+    const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters, user);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
-    const canPrev = useCanPrev(list);
+
+    setupListeners(trackplayer, dispatchPlayer, doNext);
 
     useEffect(() => {
-        API.getMetadata().then((m) => {
-            if (m === null) {
+        API.getMetadata().then((meta) => {
+            if (meta === null) {
                 return;
             }
-            setMetadata(m);
-        })
+            setMetadata(meta);
+            if (user === undefined || !meta.users.some((u) => u.id === user)) {
+                const u = meta.firstUser();
+                if (u !== undefined) {
+                    setUser(u);
+                }
+            }
+            let l = {...list};
+            l = updateScoreCache(l, meta);
+            setList(l);        })
     }, []);
 
     let fetchMetadata = useCallback(() => {
@@ -72,10 +77,14 @@ function RootNavigator() {
     return (
         <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
             <TracklistCtx.Provider value={list}>
-                <Stack.Navigator screenOptions={{headerShown: false}}>
-                    <Stack.Screen name="Root" component={MainScreen}/>
-                    <Stack.Screen name="NotFound" component={NotFoundScreen} options={{title: 'Oops!'}}/>
-                </Stack.Navigator>
+                <ControlsCtx.Provider value={[doNext, doPrev]}>
+                    <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
+                        <Stack.Navigator screenOptions={{headerShown: false}}>
+                            <Stack.Screen name="Root" component={MainScreen}/>
+                            <Stack.Screen name="NotFound" component={NotFoundScreen} options={{title: 'Oops!'}}/>
+                        </Stack.Navigator>
+                    </TrackplayerCtx.Provider>
+                </ControlsCtx.Provider>
             </TracklistCtx.Provider>
         </MetadataCtx.Provider>
     );

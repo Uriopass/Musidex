@@ -1,6 +1,6 @@
 import React, {useContext} from "react";
 import {TracklistCtx} from "../common/tracklist";
-import {ControlsCtx, MetadataCtx} from "../constants/Contexts";
+import {ControlsCtx, MetadataCtx, TrackplayerCtx} from "../constants/Contexts";
 import {Image, StyleSheet, TouchableOpacity, View, ViewStyle} from "react-native";
 import {TextFg} from "./StyledText";
 import {Icon} from "react-native-elements";
@@ -13,23 +13,31 @@ interface PlayerProps {
 const SmallPlayer = (props: PlayerProps) => {
     const [metadata,] = useContext(MetadataCtx);
     const [doNext, doPrev] = useContext(ControlsCtx);
+    const [player, dispatch] = useContext(TrackplayerCtx);
     const list = useContext(TracklistCtx);
 
     const tags = metadata.getTags(list.last_played[list.last_played.length - 1]);
-    const title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "No Title";
-    const artist = tags?.get("artist")?.text || "No Artist";
+    const title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";
+    const artist = tags?.get("artist")?.text || "";
     const thumbnail = tags?.get("compressed_thumbnail")?.text || (tags?.get("thumbnail")?.text || "");
 
     const canPrev = list.last_played.length > 1;
+
+    const onPlay = () => {
+        if (player.current) {
+            dispatch({action: "play", id: player.current});
+            return;
+        }
+        doNext();
+    };
 
     return (
         <View style={[styles.container, props.style]}>
             <View style={styles.currentTrack}>
                 {
                     (thumbnail !== "") &&
-                    <View style={styles.currentTrackThumbnail}>
-                        <Image source={{uri: API.getAPIUrl() + "/storage/" + thumbnail}}/>
-                    </View>
+                    <Image style={styles.currentTrackThumbnail}
+                           source={{uri: API.getAPIUrl() + "/storage/" + thumbnail}} width={60} height={60}/>
                 }
                 <View style={styles.currentTrackTitle}>
                     <TextFg>{title}</TextFg>
@@ -42,10 +50,10 @@ const SmallPlayer = (props: PlayerProps) => {
                           color={canPrev ? "white" : "gray"}
                           name="skip-previous"/>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => doNext()}>
+                <TouchableOpacity onPress={onPlay}>
                     <Icon size={50}
                           color="white"
-                          name="play-arrow"/>
+                          name={player.paused ? "play-arrow" : "pause"}/>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => doNext()}>
                     <Icon size={50}
@@ -64,10 +72,17 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
     },
     currentTrack: {
+        flexDirection: "row",
         flexBasis: 200,
+        alignItems: "center",
     },
-    currentTrackThumbnail: {},
-    currentTrackTitle: {},
+    currentTrackThumbnail: {
+        width: 60,
+        height: 60,
+    },
+    currentTrackTitle: {
+        padding: 5,
+    },
     trackInfo: {},
     controls: {
         flexBasis: 150,

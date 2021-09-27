@@ -130,12 +130,6 @@ export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Trackli
     }, [curlist, setList, metadata, dispatch])
 }
 
-export function useCanPrev(curlist: Tracklist): () => boolean {
-    return useCallback(() => {
-        return curlist.last_played.length > 1;
-    }, [curlist])
-}
-
 export const TracklistCtx = React.createContext<Tracklist>(emptyTracklist());
 
 export default Tracklist;
