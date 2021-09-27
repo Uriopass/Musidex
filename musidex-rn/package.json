@@ -36,8 +36,7 @@
     "react-native-elements": "^3.4.2",
     "pako": "^2.0.4",
     "reconnecting-websocket": "^4.4.0",
-    "@react-native-async-storage/async-storage": "~1.15.0",
-    "expo-av": "~9.2.3"
+    "@react-native-async-storage/async-storage": "~1.15.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
