@@ -1,10 +1,10 @@
-import {canPlay, MusidexMetadata, Vector} from "./entity";
+import {canPlay, MusidexMetadata, Tags, Vector} from "./entity";
 import Filters, {findFirst} from "../common/filters";
 import {Setter, Dispatch, dot} from "./utils";
 import React, {useCallback} from "react";
 
 export type TrackPlayerAction =
-    { action: "play", id: number, duration?: number }
+    { action: "play", id: number, tags?: Tags }
     | { action: "audioTick" }
     | { action: "setTime", time: number }
 
@@ -53,9 +53,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
             setList(list);
         }
 
-        let duration = metadata.getTags(id)?.get("duration")?.integer;
-
-        dispatch({action: "play", id: id, duration: duration})
+        dispatch({action: "play", id: id, tags: metadata.getTags(id)})
     }, [curlist, setList, metadata, dispatch, filters, curUser])
 }
 
@@ -125,8 +123,7 @@ export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         if (last === undefined) {
             return;
         }
-        let duration = metadata.getTags(last)?.get("duration")?.integer;
-        dispatch({action: "play", id: last, duration: duration})
+        dispatch({action: "play", id: last, tags: metadata.getTags(last)})
     }, [curlist, setList, metadata, dispatch])
 }
 

@@ -1,5 +1,6 @@
-import {Dispatch} from "react";
+import {Dispatch, useEffect} from "react";
 import {NextTrackCallback, TrackPlayerAction} from "../common/tracklist";
+import TrackPlayer, {Event, State, Track} from "react-native-track-player";
 import API from "../common/api";
 
 type Trackplayer = {
@@ -7,49 +8,47 @@ type Trackplayer = {
     duration: number | undefined,
     paused: boolean,
     loading: boolean,
-    //audio: Audio.Sound,
 };
 
-//const playbackObject = new Audio.Sound();
 export function newTrackPlayer(): Trackplayer {
     return {
         current: undefined,
         duration: undefined,
         paused: true,
         loading: false,
-  //      audio: playbackObject,
     }
 }
 
 export function setupListeners(trackplayer: Trackplayer, dispatch: Dispatch<TrackPlayerAction>, doNext: NextTrackCallback) {
-    /*
-    trackplayer.audio.setOnPlaybackStatusUpdate((status) => {
-        if (trackplayer.loading !== status.isLoaded) {
-            trackplayer.loading = status.isLoaded;
-            dispatch({action: "audioTick"});
-        }
-        if (!status.isLoaded) {
-            if (status.error) {
-                console.log(`Encountered a fatal error during playback: ${status.error}`);
+    useEffect(() => {
+        const v = TrackPlayer.addEventListener(Event.PlaybackState, (data) => {
+            let state: State = data.state;
+            let loaded = state === State.Paused || state === State.Playing || state === State.Ready;
+            if (trackplayer.loading !== loaded) {
+                trackplayer.loading = loaded;
+                dispatch({action: "audioTick"});
             }
-            return;
-        }
-        if (status.isPlaying && trackplayer.paused && trackplayer.audio._loaded) {
-            trackplayer.audio.pauseAsync();
-        }
-        if (!status.isPlaying && !trackplayer.paused  && trackplayer.audio._loaded) {
-            trackplayer.audio.playAsync();
-        }
+            if (!loaded) {
+                return;
+            }
+        })
 
-        if (status.durationMillis !== undefined && trackplayer.duration !== status.durationMillis / 1000) {
-            trackplayer.duration = status.durationMillis / 1000;
-            dispatch({action: "audioTick"});
-        }
+        return () => v.remove();
+    }, [trackplayer, dispatch])
 
-        if (status.didJustFinish && !status.isLooping) {
+    useEffect(() => {
+        const v = TrackPlayer.addEventListener(Event.PlaybackQueueEnded, (_) => {
             doNext();
-        }
-    })*/
+        })
+        return () => v.remove();
+    }, [doNext])
+
+    useEffect(() => {
+        const v = TrackPlayer.addEventListener(Event.PlaybackError, (data) => {
+            console.log(data);
+        })
+        return () => v.remove();
+    }, [])
 }
 
 export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAction): Trackplayer {
@@ -57,24 +56,48 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
         case "play":
             if (action.id < 0) return trackplayer;
             if (trackplayer.current === action.id) {
+                if (trackplayer.paused) {
+                    TrackPlayer.play();
+                } else {
+                    TrackPlayer.pause();
+                }
                 return {
                     ...trackplayer,
                     loading: trackplayer.paused,
                     paused: !trackplayer.paused,
                 }
             }
-            /*
-            let load = () => trackplayer.audio.loadAsync({uri: API.getStreamSrc(action.id)});
-            if (trackplayer.audio._loaded) {
-                trackplayer.audio.unloadAsync().then(load);
-            } else {
-                load();
-            }*/
+
+            const duration = action.tags?.get("duration")?.integer;
+            const title = action.tags?.get("title")?.text;
+            const artist = action.tags?.get("artist")?.text;
+            const thumbnail = action.tags?.get("compressed_thumbnail")?.text || (action.tags?.get("thumbnail")?.text || "");
+
+            const track: Track = {
+                url: API.getStreamSrc(action.id), // Load media from the network
+                duration: duration,
+            };
+            if (title) {
+                track.title = title;
+            }
+            if (artist) {
+                track.artist = artist;
+            }
+            if (thumbnail) {
+                track.artwork = API.getAPIUrl() + "/storage/" + thumbnail;
+            }
+
+            const changeSong = async () => {
+                await TrackPlayer.reset();
+                await TrackPlayer.add(track)
+                await TrackPlayer.play();
+            };
+            changeSong();
 
             return {
                 ...trackplayer,
                 current: action.id,
-                duration: action.duration || 0,
+                duration: duration || 0,
                 loading: true,
                 paused: false,
             }
