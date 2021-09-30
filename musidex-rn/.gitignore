@@ -21,6 +21,8 @@ DerivedData
 *.ipa
 *.xcuserstate
 
+android/app/release
+
 # Android/IntelliJ
 #
 build/
@@ -57,3 +59,6 @@ buck-out/
 
 # CocoaPods
 /ios/Pods/
+
+/android/app/src/main/res
+/android/app/src/main/assets/index.android.bundle
