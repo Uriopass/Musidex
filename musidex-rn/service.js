@@ -1,5 +1,11 @@
+import TrackPlayer from 'react-native-track-player';
 // service.js
-module.exports = async function() {
-    // This service needs to be registered for the module to work
-    // but it will be used later in the "Receiving Events" section
+module.exports = async function () {
+    TrackPlayer.addEventListener('remote-play', () => TrackPlayer.play());
+    TrackPlayer.addEventListener('remote-pause', () => TrackPlayer.pause());
+    TrackPlayer.addEventListener('remote-stop', () => TrackPlayer.destroy());
+    TrackPlayer.addEventListener('remote-next', () => TrackPlayer.seekTo(1000000));
+    TrackPlayer.addEventListener('remote-jump-forward', () => {
+        TrackPlayer.getPosition().then((position) => TrackPlayer.seekTo(position + 10))
+    });
 }

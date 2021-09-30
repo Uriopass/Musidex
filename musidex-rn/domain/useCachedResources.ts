@@ -11,17 +11,18 @@ export default function useCachedResources() {
                 await TrackPlayer.setupPlayer({iosCategory: IOSCategory.Playback, waitForBuffer: true, minBuffer: 5})
 
                 await TrackPlayer.updateOptions({
+                    stopWithApp: true,
                     // Media controls capabilities
                     capabilities: [
                         Capability.Play,
                         Capability.Pause,
                         Capability.SkipToNext,
                         Capability.SkipToPrevious,
-                        Capability.Stop,
+                        Capability.JumpForward,
                     ],
 
                     // Capabilities that will show up when the notification is in the compact form on Android
-                    compactCapabilities: [Capability.Play, Capability.Pause],
+                    compactCapabilities: [Capability.Play, Capability.Pause, Capability.SkipToNext],
                 });
             } catch (e) {
                 // We might want to provide this error information to an error reporting service

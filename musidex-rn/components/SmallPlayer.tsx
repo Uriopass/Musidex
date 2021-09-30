@@ -5,6 +5,7 @@ import {Image, StyleSheet, TouchableOpacity, View, ViewStyle} from "react-native
 import {TextFg} from "./StyledText";
 import {Icon} from "react-native-elements";
 import API from "../common/api";
+import TrackPlayer from "react-native-track-player";
 
 interface PlayerProps {
     style: ViewStyle,

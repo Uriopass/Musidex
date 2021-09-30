@@ -38,6 +38,7 @@ export function setupListeners(trackplayer: Trackplayer, dispatch: Dispatch<Trac
 
     useEffect(() => {
         const v = TrackPlayer.addEventListener(Event.PlaybackQueueEnded, (_) => {
+            console.log("playback ended");
             doNext();
         })
         return () => v.remove();
@@ -88,8 +89,11 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
             }
 
             const changeSong = async () => {
-                await TrackPlayer.reset();
-                await TrackPlayer.add(track)
+                const q = await TrackPlayer.getQueue();
+                await TrackPlayer.add(track);
+                if (q.length > 0) {
+                    await TrackPlayer.skipToNext();
+                }
                 await TrackPlayer.play();
             };
             changeSong();
