@@ -34,11 +34,6 @@ type SongElemProps = {
 const SongElem = (props: SongElemProps) => {
     let cover = props.tags?.get("compressed_thumbnail")?.text || (props.tags?.get("thumbnail")?.text || "");
 
-    const hasYT = props.tags.get("youtube_video_id")?.text;
-    const goToYT = () => {
-        window.open("https://youtube.com/watch?v=" + hasYT, "_blank")?.focus();
-    };
-
     const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = props.tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
 
@@ -56,7 +51,6 @@ const SongElem = (props: SongElemProps) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        marginTop: StatusBar.currentHeight || 0,
         backgroundColor: Colors.bg,
     },
     player: {

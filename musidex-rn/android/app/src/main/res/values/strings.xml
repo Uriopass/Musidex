@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <resources>
-  <string name="app_name">musidex-rn</string>
+    <string name="app_name">Musidex</string>
 </resources>

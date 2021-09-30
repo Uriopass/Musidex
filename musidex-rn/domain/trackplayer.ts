@@ -1,4 +1,3 @@
-import {Audio} from "expo-av";
 import {Dispatch} from "react";
 import {NextTrackCallback, TrackPlayerAction} from "../common/tracklist";
 import API from "../common/api";
@@ -8,21 +7,22 @@ type Trackplayer = {
     duration: number | undefined,
     paused: boolean,
     loading: boolean,
-    audio: Audio.Sound,
+    //audio: Audio.Sound,
 };
 
-const playbackObject = new Audio.Sound();
+//const playbackObject = new Audio.Sound();
 export function newTrackPlayer(): Trackplayer {
     return {
         current: undefined,
         duration: undefined,
         paused: true,
         loading: false,
-        audio: playbackObject,
+  //      audio: playbackObject,
     }
 }
 
 export function setupListeners(trackplayer: Trackplayer, dispatch: Dispatch<TrackPlayerAction>, doNext: NextTrackCallback) {
+    /*
     trackplayer.audio.setOnPlaybackStatusUpdate((status) => {
         if (trackplayer.loading !== status.isLoaded) {
             trackplayer.loading = status.isLoaded;
@@ -49,7 +49,7 @@ export function setupListeners(trackplayer: Trackplayer, dispatch: Dispatch<Trac
         if (status.didJustFinish && !status.isLooping) {
             doNext();
         }
-    })
+    })*/
 }
 
 export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAction): Trackplayer {
@@ -63,12 +63,13 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                     paused: !trackplayer.paused,
                 }
             }
+            /*
             let load = () => trackplayer.audio.loadAsync({uri: API.getStreamSrc(action.id)});
             if (trackplayer.audio._loaded) {
                 trackplayer.audio.unloadAsync().then(load);
             } else {
                 load();
-            }
+            }*/
 
             return {
                 ...trackplayer,
@@ -78,7 +79,7 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                 paused: false,
             }
         case "setTime":
-            const _ = trackplayer.audio.setPositionAsync(action.time * 1000);
+            //const _ = trackplayer.audio.setPositionAsync(action.time * 1000);
             return {
                 ...trackplayer
             }

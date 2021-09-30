@@ -4,13 +4,11 @@
  *
  */
 import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import * as React from 'react';
 import {useCallback, useEffect, useReducer, useState} from 'react';
 
 import NotFoundScreen from '../screens/NotFoundScreen';
-import {RootStackParamList} from '../types';
-import LinkingConfiguration from './LinkingConfiguration';
 import MainScreen from "../screens/MainScreen";
 import useStored from "../domain/useStored";
 import {emptyMetadata, MusidexMetadata} from "../common/entity";
@@ -27,8 +25,7 @@ import {applyTrackPlayer, newTrackPlayer, setupListeners} from "../domain/trackp
 
 export default function Navigation() {
     return (
-        <NavigationContainer
-            linking={LinkingConfiguration}>
+        <NavigationContainer>
             <RootNavigator/>
         </NavigationContainer>
     );
@@ -36,7 +33,7 @@ export default function Navigation() {
 
 // A root stack navigator is often used for displaying modals on top of all other content
 // Read more here: https://reactnavigation.org/docs/modal
-const Stack = createStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator();
 
 function RootNavigator() {
     API.setAPIUrl("http://192.168.0.14:3200");
