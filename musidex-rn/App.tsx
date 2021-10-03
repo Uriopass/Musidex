@@ -9,7 +9,7 @@
  */
 
 import React from 'react';
-import {StatusBar,} from 'react-native';
+import {Image, StatusBar, View,} from 'react-native';
 
 import useCachedResources from "./domain/useCachedResources";
 import Navigation from "./navigation";
@@ -20,7 +20,9 @@ export default function App() {
     const isLoadingComplete = useCachedResources();
 
     if (!isLoadingComplete) {
-        return null;
+        return <View style={{backgroundColor: '#383838', flex: 1, alignItems: "center", justifyContent: "center"}}>
+            <Image source={require('./musidex_logo.png')} />
+        </View>
     } else {
         return (
             <SafeAreaProvider>
