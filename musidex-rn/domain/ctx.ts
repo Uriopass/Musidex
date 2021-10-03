@@ -12,5 +12,6 @@ export default {
     Trackplayer: React.createContext<[TrackPlayer, Dispatch<TrackPlayerAction>]>([newTrackPlayer(), _ => _]),
     Controls: React.createContext<[NextTrackCallback, PrevTrackCallback]>([_ => {}, () => {}]),
     Filters: React.createContext<[Filters, Setter<Filters>]>([newFilters(), _ => _]),
-    Tracklist: React.createContext<Tracklist>(emptyTracklist())
+    Tracklist: React.createContext<Tracklist>(emptyTracklist()),
+    User: React.createContext<[number | undefined, (newv: number | undefined) => void]>([0, _ => _]),
 }

@@ -72,16 +72,17 @@ function RootNavigator() {
     }, []);
 
     return (
-        <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
-            <Ctx.Tracklist.Provider value={list}>
-                <Ctx.Controls.Provider value={[doNext, doPrev]}>
-                    <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
-                        <Stack.Navigator screenOptions={{headerShown: false}}>
-                            <Stack.Screen name="Root" component={MainScreen}/>
-                        </Stack.Navigator>
-                    </Ctx.Trackplayer.Provider>
-                </Ctx.Controls.Provider>
-            </Ctx.Tracklist.Provider>
-        </Ctx.Metadata.Provider>
-    );
+        <Ctx.User.Provider value={[user, setUser]}>
+            <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
+                <Ctx.Tracklist.Provider value={list}>
+                    <Ctx.Controls.Provider value={[doNext, doPrev]}>
+                        <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
+                            <Stack.Navigator screenOptions={{headerShown: false}}>
+                                <Stack.Screen name="Root" component={MainScreen}/>
+                            </Stack.Navigator>
+                        </Ctx.Trackplayer.Provider>
+                    </Ctx.Controls.Provider>
+                </Ctx.Tracklist.Provider>
+            </Ctx.Metadata.Provider>
+        </Ctx.User.Provider>);
 }
