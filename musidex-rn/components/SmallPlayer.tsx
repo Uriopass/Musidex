@@ -5,7 +5,6 @@ import {Image, StyleSheet, TouchableOpacity, View, ViewStyle} from "react-native
 import {TextFg} from "./StyledText";
 import {Icon} from "react-native-elements";
 import API from "../common/api";
-import TrackPlayer from "react-native-track-player";
 
 interface PlayerProps {
     style: ViewStyle,
@@ -29,7 +28,7 @@ const SmallPlayer = (props: PlayerProps) => {
             dispatch({action: "play", id: player.current});
             return;
         }
-        doNext();
+        setTimeout(() => doNext(), 0);
     };
 
     return (
@@ -47,17 +46,17 @@ const SmallPlayer = (props: PlayerProps) => {
             </View>
             <View style={styles.controls}>
                 <TouchableOpacity onPress={doPrev} disabled={!canPrev}>
-                    <Icon size={50}
+                    <Icon size={35}
                           color={canPrev ? "white" : "gray"}
                           name="skip-previous"/>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={onPlay}>
-                    <Icon size={50}
+                    <Icon size={40}
                           color="white"
-                          name={player.paused ? "play-arrow" : "pause"}/>
+                          name={player.paused ? "play-circle-fill" : "pause"}/>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => doNext()}>
-                    <Icon size={50}
+                <TouchableOpacity onPress={() => setTimeout(() => doNext(), 0)}>
+                    <Icon size={35}
                           color="white"
                           name="skip-next"/>
                 </TouchableOpacity>
@@ -86,8 +85,10 @@ const styles = StyleSheet.create({
     },
     trackInfo: {},
     controls: {
-        flexBasis: 150,
+        flexBasis: 110,
         flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
     },
 })
 
