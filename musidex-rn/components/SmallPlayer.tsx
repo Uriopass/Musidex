@@ -1,6 +1,6 @@
 import React, {useContext} from "react";
 import {TracklistCtx} from "../common/tracklist";
-import {ControlsCtx, MetadataCtx, TrackplayerCtx} from "../constants/Contexts";
+import {ControlsCtx, MetadataCtx, TrackplayerCtx} from "../domain/contexts";
 import {Image, StyleSheet, TouchableOpacity, View, ViewStyle} from "react-native";
 import {TextFg} from "./StyledText";
 import {Icon} from "react-native-elements";

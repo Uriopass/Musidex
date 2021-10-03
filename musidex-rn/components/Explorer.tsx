@@ -1,11 +1,10 @@
-import {Animated, FlatList, Image, SafeAreaView, StyleSheet, TouchableOpacity, View} from "react-native";
+import {Animated, FlatList, Image, StyleSheet, TouchableOpacity, View} from "react-native";
 import React, {useCallback, useContext, useRef, useState} from "react";
 import {Tag} from "../common/entity";
 import {TextFg} from "./StyledText";
-import Colors from "../constants/Colors";
+import Colors from "../domain/Colors";
 import API from "../common/api";
-import {ControlsCtx, MetadataCtx} from "../constants/Contexts";
-import SmallPlayer from "./SmallPlayer";
+import {ControlsCtx, MetadataCtx} from "../domain/contexts";
 import {NextTrackCallback} from "../common/tracklist";
 import {Icon} from "react-native-elements";
 
@@ -14,15 +13,12 @@ export default function Explorer() {
     const [metadata] = useContext(MetadataCtx);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <SongList musics={metadata.musics}/>
-            <SmallPlayer style={styles.player}/>
-        </SafeAreaView>
+        <SongList musics={metadata.musics}/>
     )
 };
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-function SongList(props: any) {
+function SongList(props: {musics: number[]}) {
     const [metadata] = useContext(MetadataCtx);
     const [doNext] = useContext(ControlsCtx);
 
@@ -97,14 +93,6 @@ const SongElem = (props: SongElemProps) => {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: Colors.bg,
-    },
-    player: {
-        flexBasis: 60,
-        flexGrow: 0,
-    },
     trackInfo: {
         padding: 10,
     },
