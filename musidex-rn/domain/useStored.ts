@@ -1,14 +1,17 @@
 import {useAsyncStorage} from "@react-native-async-storage/async-storage";
 import {useCallback, useEffect, useState} from "react";
 
-export default function useStored<T>(key: string, initialV: T): [T, (newv: T) => void] {
+export default function useStored<T>(key: string, initialV: T, opts?: {ser: (v: T) => string, deser: (v: string) => T}): [T, (newv: T) => void] {
     const [v, setV] = useState(initialV);
-    return [v, setV];
     // todo make saving classes work ?
-    const {getItem, setItem} = useAsyncStorage(key);
+    const {getItem, setItem, removeItem} = useAsyncStorage(key);
 
     const setValue = useCallback((newv: T) => {
         setV(newv);
+        if (opts) {
+            setItem(opts.ser(newv));
+            return;
+        }
         if (typeof (newv) === "string") {
             setItem(newv);
             return;
@@ -19,6 +22,14 @@ export default function useStored<T>(key: string, initialV: T): [T, (newv: T) =>
     useEffect(() => {
         getItem().then((vStr) => {
             if (vStr === null) {
+                if (initialV === undefined) {
+                    removeItem();
+                    return;
+                }
+                if (opts) {
+                    setItem(opts.ser(initialV));
+                    return;
+                }
                 if (typeof (initialV) === "string") {
                     setItem(initialV);
                     return;
@@ -26,8 +37,13 @@ export default function useStored<T>(key: string, initialV: T): [T, (newv: T) =>
                 setItem(JSON.stringify(initialV));
                 return;
             }
+            if (opts) {
+                setV(opts.deser(vStr));
+                return;
+            }
             if (typeof initialV === "string") {
                 setV(vStr as any as T);
+                return;
             }
             setV(JSON.parse(vStr));
         });

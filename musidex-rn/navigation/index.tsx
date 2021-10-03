@@ -10,8 +10,8 @@ import {useCallback, useEffect, useReducer, useState} from 'react';
 
 import MainScreen from "../screens/MainScreen";
 import useStored from "../domain/useStored";
-import {emptyMetadata, firstUser, MusidexMetadata} from "../common/entity";
-import API from "../common/api";
+import {emptyMetadata, firstUser, MusidexMetadata, newMetadata} from "../common/entity";
+import API, {RawMusidexMetadata} from "../common/api";
 import Ctx from "../domain/ctx";
 import Tracklist, {
     emptyTracklist,
@@ -38,7 +38,15 @@ function RootNavigator() {
     API.setAPIUrl("http://192.168.0.14:3200");
 
     const [list, setList] = useState<Tracklist>(emptyTracklist());
-    const [metadata, setMetadata] = useStored<MusidexMetadata>("metadata", emptyMetadata());
+    const [metadata, setMetadata] = useStored<MusidexMetadata>("metadata", emptyMetadata(), {
+        ser: (v: MusidexMetadata): string => {
+            return JSON.stringify(v.raw);
+        },
+        deser: (v: string): MusidexMetadata => {
+            const obj: RawMusidexMetadata = JSON.parse(v);
+            return newMetadata(obj);
+        }
+    });
 
     const [user, setUser] = useStored<number | undefined>("user", undefined);
     const [filters, setFilters] = useStored<Filters>("filters", newFilters());

@@ -29,6 +29,7 @@ export type IndexedMusic = {
 }
 
 export type MusidexMetadata = {
+    raw: RawMusidexMetadata,
     musics: number[];
     tags: Tag[];
     users: User[];
@@ -52,6 +53,7 @@ export function firstUser(meta: MusidexMetadata): number | undefined {
 
 export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata): MusidexMetadata {
     let meta: MusidexMetadata = {
+        raw: raw,
         musics: raw.musics,
         users: raw.users,
         settings_l: raw.settings,
