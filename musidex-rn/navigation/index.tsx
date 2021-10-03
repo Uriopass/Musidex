@@ -8,17 +8,17 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import * as React from 'react';
 import {useCallback, useEffect, useReducer, useState} from 'react';
 
-import NotFoundScreen from '../screens/NotFoundScreen';
 import MainScreen from "../screens/MainScreen";
 import useStored from "../domain/useStored";
 import {emptyMetadata, MusidexMetadata} from "../common/entity";
 import API from "../common/api";
-import {MetadataCtx, ControlsCtx, TrackplayerCtx} from "../constants/Contexts";
+import {ControlsCtx, MetadataCtx, TrackplayerCtx} from "../constants/Contexts";
 import Tracklist, {
     emptyTracklist,
+    TracklistCtx,
+    updateScoreCache,
     useNextTrackCallback,
-    usePrevTrackCallback,
-    TracklistCtx, updateScoreCache
+    usePrevTrackCallback
 } from "../common/tracklist";
 import Filters, {newFilters} from "../common/filters";
 import {applyTrackPlayer, newTrackPlayer, setupListeners} from "../domain/trackplayer";
@@ -64,7 +64,8 @@ function RootNavigator() {
             }
             let l = {...list};
             l = updateScoreCache(l, meta);
-            setList(l);        })
+            setList(l);
+        })
     }, []);
 
     let fetchMetadata = useCallback(() => {
@@ -78,7 +79,6 @@ function RootNavigator() {
                     <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
                         <Stack.Navigator screenOptions={{headerShown: false}}>
                             <Stack.Screen name="Root" component={MainScreen}/>
-                            <Stack.Screen name="NotFound" component={NotFoundScreen} options={{title: 'Oops!'}}/>
                         </Stack.Navigator>
                     </TrackplayerCtx.Provider>
                 </ControlsCtx.Provider>
