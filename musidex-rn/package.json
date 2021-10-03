@@ -35,8 +35,7 @@
     "jest": "^26.6.3",
     "metro-react-native-babel-preset": "^0.66.0",
     "react-native-codegen": "^0.0.7",
-    "typescript": "^3.8.3",
-    "react-native-vector-icons": "^8.1.0"
+    "typescript": "^3.8.3"
   },
   "resolutions": {
     "@types/react": "^17"

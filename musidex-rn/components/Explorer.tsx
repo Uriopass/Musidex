@@ -1,5 +1,5 @@
-import {FlatList, Image, Pressable, SafeAreaView, StyleSheet, TouchableOpacity, View} from "react-native";
-import React, {useCallback, useContext} from "react";
+import {Animated, FlatList, Image, SafeAreaView, StyleSheet, TouchableOpacity, View} from "react-native";
+import React, {useCallback, useContext, useRef, useState} from "react";
 import {Tag} from "../common/entity";
 import {TextFg} from "./StyledText";
 import Colors from "../constants/Colors";
@@ -7,24 +7,69 @@ import API from "../common/api";
 import {ControlsCtx, MetadataCtx} from "../constants/Contexts";
 import SmallPlayer from "./SmallPlayer";
 import {NextTrackCallback} from "../common/tracklist";
+import {Icon} from "react-native-elements";
+
 
 export default function Explorer() {
     const [metadata] = useContext(MetadataCtx);
+
+    return (
+        <SafeAreaView style={styles.container}>
+            <SongList musics={metadata.musics}/>
+            <SmallPlayer style={styles.player}/>
+        </SafeAreaView>
+    )
+};
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+
+function SongList(props: any) {
+    const [metadata] = useContext(MetadataCtx);
     const [doNext] = useContext(ControlsCtx);
+
+    const flatRef = useRef<FlatList>(null);
+    const topOpacity = useRef(new Animated.Value(0)).current;
+    const [hidden, setHidden] = useState(true);
 
     const renderSong = useCallback(({item}: { item: number }) => {
         return <SongElem musicID={item} tags={metadata.getTags(item) || new Map()} doNext={doNext}/>
     }, [metadata]);
 
-    return (
-        <SafeAreaView style={styles.container}>
-            <FlatList data={metadata.musics}
-                      renderItem={renderSong}
-                      keyExtractor={(item) => item.toString()}
-                      style={styles.musiclist}/>
-            <SmallPlayer style={styles.player}/>
-        </SafeAreaView>
-    )
+    const onScroll = (ev: any) => {
+        if (ev.nativeEvent.contentOffset.y <= 0.0) {
+            Animated.timing(topOpacity, {
+                toValue: 0.0,
+                duration: 100,
+                useNativeDriver: true
+            }).start(() => setHidden(true));
+        } else {
+            Animated.timing(topOpacity, {
+                toValue: 0.8,
+                duration: 100,
+                useNativeDriver: true
+            }).start();
+            setHidden(false);
+        }
+    };
+    const onGoToTop = () => {
+        flatRef.current?.scrollToIndex({index: 0, animated: true});
+    };
+
+    return <>
+        <FlatList data={props.musics}
+                  ref={flatRef}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={renderSong}
+                  onScroll={onScroll}
+                  keyExtractor={(item) => item.toString()}
+                  style={styles.musiclist}/>
+        {!hidden &&
+        <AnimatedTouchable
+            style={[styles.arrowUp, {opacity: topOpacity}]}
+            onPress={onGoToTop}>
+            <Icon size={20} name="arrow-upward" color="black"/>
+        </AnimatedTouchable>
+        }
+    </>
 }
 
 
@@ -67,6 +112,14 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
     },
+    arrowUp: {
+        padding: 7,
+        position: "absolute",
+        top: 50,
+        alignSelf: "center",
+        backgroundColor: Colors.primary,
+        borderRadius: 50,
+    },
     item: {
         backgroundColor: Colors.fg,
         display: "flex",
@@ -77,6 +130,7 @@ const styles = StyleSheet.create({
         overflow: "hidden",
     },
     musiclist: {
+        position: "relative",
         flexBasis: 100,
         flexGrow: 1,
     }
