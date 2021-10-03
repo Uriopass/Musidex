@@ -6,7 +6,6 @@ import Colors from "../domain/Colors";
 
 export default function MainScreen() {
     return (
-
         <SafeAreaView style={styles.container}>
             <Explorer/>
             <SmallPlayer style={styles.player}/>

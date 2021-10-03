@@ -127,6 +127,4 @@ export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Trackli
     }, [curlist, setList, metadata, dispatch])
 }
 
-export const TracklistCtx = React.createContext<Tracklist>(emptyTracklist());
-
 export default Tracklist;

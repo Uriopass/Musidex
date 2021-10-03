@@ -12,10 +12,9 @@ import MainScreen from "../screens/MainScreen";
 import useStored from "../domain/useStored";
 import {emptyMetadata, MusidexMetadata} from "../common/entity";
 import API from "../common/api";
-import {ControlsCtx, MetadataCtx, TrackplayerCtx} from "../domain/contexts";
+import {ControlsCtx, MetadataCtx, TrackplayerCtx, TracklistCtx} from "../domain/contexts";
 import Tracklist, {
     emptyTracklist,
-    TracklistCtx,
     updateScoreCache,
     useNextTrackCallback,
     usePrevTrackCallback

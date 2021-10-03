@@ -14,7 +14,7 @@ import {Image, StatusBar, View,} from 'react-native';
 import useCachedResources from "./domain/useCachedResources";
 import Navigation from "./navigation";
 import {SafeAreaProvider} from "react-native-safe-area-context";
-import Colors from "./constants/Colors";
+import Colors from "./domain/Colors";
 
 export default function App() {
     const isLoadingComplete = useCachedResources();

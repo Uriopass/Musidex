@@ -1,38 +1,21 @@
 import './explorer.css'
 import API from "../common/api";
-import React, {Fragment, useContext, useMemo, useState} from "react";
+import React, {Fragment, useContext, useState} from "react";
 import {PlayButton} from "../components/playbutton";
 import {EditableText, MaterialIcon} from "../components/utils";
 import {canPlay, Tag} from "../common/entity";
 import {NextTrackCallback, TracklistCtx} from "../common/tracklist";
 import TextInput from "../components/input";
 import {PageProps} from "./navigator";
-import Filters, {applyFilters} from "../common/filters";
+import Filters, {SortBy, sortby_kind_eq, SortByKind, useMusicSelect} from "../common/filters";
 import {MetadataCtx} from "../domain/metadata";
 import {FiltersCtx} from "../App";
 import {clamp, Setter} from "../common/utils";
-import Fuse from "fuse.js";
 
 export interface ExplorerProps extends PageProps {
     title?: string;
     doNext: NextTrackCallback;
     curUser?: number;
-}
-
-const fuseOptions = {
-    includeScore: true,
-    keys: ['title', 'artist'],
-    threshold: 0.4,
-}
-
-type SortByKind = { kind: "similarity" } | { kind: "creation_time" } | { kind: "tag", value: string }
-type SortBy = { kind: SortByKind, descending: boolean }
-
-function sortby_kind_eq(a: SortByKind, b: SortByKind) {
-    if (a.kind === "tag" && b.kind === "tag") {
-        return a.value === b.value
-    }
-    return a.kind === b.kind
 }
 
 const Explorer = (props: ExplorerProps) => {
@@ -57,63 +40,21 @@ const Explorer = (props: ExplorerProps) => {
     const colorSongs = "#28222f";
     let curPlaying = <></>;
     if (curTrack) {
-        const tags = metadata.getTags(curTrack);
-        if (tags !== undefined) {
-            curPlaying =
-                <>
-                    <div style={{marginTop: 10}}/>
-                    <SongElem musicID={curTrack}
-                              doNext={props.doNext}
-                              syncMetadata={syncMetadata}
-                              tags={tags}
-                              curUser={props.curUser}
-                              progress={1.0}
-                              progressColor={colorCur}/>
-                    <div style={{marginTop: 10}}/>
-                </>;
-        }
+        const tags = metadata.getTags(curTrack) || new Map();
+        curPlaying =
+            <>
+                <div style={{marginTop: 10}}/>
+                <SongElem musicID={curTrack}
+                          doNext={props.doNext}
+                          syncMetadata={syncMetadata}
+                          tags={tags}
+                          curUser={props.curUser}
+                          progress={1.0}
+                          progressColor={colorCur}/>
+                <div style={{marginTop: 10}}/>
+            </>;
     }
-    const fuse = useMemo(() => {
-        return new Fuse(metadata.fuse_document, fuseOptions)
-    }, [metadata]);
-
-    const qryFilter = useMemo(() => {
-        if (searchQry === "") {
-            return [];
-        }
-        return fuse.search(searchQry)
-    }, [searchQry, fuse])
-
-    let toShow: number[];
-    if (searchQry !== "" && fuse !== undefined) {
-        toShow = qryFilter.map((v: any) => v.item.id);
-    } else {
-        switch (sortBy.kind.kind) {
-            case "similarity":
-                toShow = list.best_tracks.slice();
-                if (curTrack === undefined) {
-                    toShow = metadata.musics.slice();
-                    toShow.reverse();
-                }
-                break;
-            case "creation_time":
-                toShow = metadata.musics.slice();
-                toShow.reverse();
-                break;
-            case "tag":
-                let v = sortBy.kind.value;
-                toShow = metadata.musics.slice();
-                toShow.sort((a, b) => {
-                    return (metadata.getTags(a)?.get(v)?.text || "").localeCompare(metadata.getTags(b)?.get(v)?.text || "")
-                })
-                break;
-        }
-        if (!sortBy.descending) {
-            toShow.reverse();
-        }
-    }
-
-    applyFilters(filters, toShow, metadata, props.curUser);
+    let toShow = useMusicSelect(metadata, searchQry, sortBy, list, filters, props.curUser);
 
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
