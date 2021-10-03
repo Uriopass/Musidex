@@ -45,6 +45,13 @@ export function setupListeners(trackplayer: Trackplayer, dispatch: Dispatch<Trac
     }, [doNext])
 
     useEffect(() => {
+        const v = TrackPlayer.addEventListener(Event.RemoteNext, (_) => {
+            doNext();
+        })
+        return () => v.remove();
+    }, [doNext])
+
+    useEffect(() => {
         const v = TrackPlayer.addEventListener(Event.PlaybackError, (data) => {
             console.log(data);
         })
