@@ -12,7 +12,7 @@ import MainScreen from "../screens/MainScreen";
 import useStored from "../domain/useStored";
 import {emptyMetadata, MusidexMetadata} from "../common/entity";
 import API from "../common/api";
-import {ControlsCtx, MetadataCtx, TrackplayerCtx, TracklistCtx} from "../domain/contexts";
+import Ctx from "../domain/ctx";
 import Tracklist, {
     emptyTracklist,
     updateScoreCache,
@@ -72,16 +72,16 @@ function RootNavigator() {
     }, []);
 
     return (
-        <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
-            <TracklistCtx.Provider value={list}>
-                <ControlsCtx.Provider value={[doNext, doPrev]}>
-                    <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
+        <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
+            <Ctx.Tracklist.Provider value={list}>
+                <Ctx.Controls.Provider value={[doNext, doPrev]}>
+                    <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
                         <Stack.Navigator screenOptions={{headerShown: false}}>
                             <Stack.Screen name="Root" component={MainScreen}/>
                         </Stack.Navigator>
-                    </TrackplayerCtx.Provider>
-                </ControlsCtx.Provider>
-            </TracklistCtx.Provider>
-        </MetadataCtx.Provider>
+                    </Ctx.Trackplayer.Provider>
+                </Ctx.Controls.Provider>
+            </Ctx.Tracklist.Provider>
+        </Ctx.Metadata.Provider>
     );
 }

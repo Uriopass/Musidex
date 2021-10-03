@@ -2,7 +2,7 @@ import * as React from 'react';
 import Explorer from "../components/Explorer";
 import {SafeAreaView, StyleSheet} from "react-native";
 import SmallPlayer from "../components/SmallPlayer";
-import Colors from "../domain/Colors";
+import Colors from "../domain/colors";
 
 export default function MainScreen() {
     return (

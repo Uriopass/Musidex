@@ -1,6 +1,5 @@
 import React, {useContext} from "react";
-import {TracklistCtx} from "../common/tracklist";
-import {ControlsCtx, MetadataCtx, TrackplayerCtx} from "../domain/contexts";
+import Ctx from "../domain/ctx";
 import {Image, StyleSheet, TouchableOpacity, View, ViewStyle} from "react-native";
 import {TextFg} from "./StyledText";
 import {Icon} from "react-native-elements";
@@ -11,10 +10,10 @@ interface PlayerProps {
 }
 
 const SmallPlayer = (props: PlayerProps) => {
-    const [metadata,] = useContext(MetadataCtx);
-    const [doNext, doPrev] = useContext(ControlsCtx);
-    const [player, dispatch] = useContext(TrackplayerCtx);
-    const list = useContext(TracklistCtx);
+    const [metadata,] = useContext(Ctx.Metadata);
+    const [doNext, doPrev] = useContext(Ctx.Controls);
+    const [player, dispatch] = useContext(Ctx.Trackplayer);
+    const list = useContext(Ctx.Tracklist);
 
     const tags = metadata.getTags(list.last_played[list.last_played.length - 1]);
     const title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";

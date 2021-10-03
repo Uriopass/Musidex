@@ -2,15 +2,14 @@ import {Animated, FlatList, Image, StyleSheet, TouchableOpacity, View} from "rea
 import React, {useCallback, useContext, useRef, useState} from "react";
 import {Tag} from "../common/entity";
 import {TextFg} from "./StyledText";
-import Colors from "../domain/Colors";
+import Colors from "../domain/colors";
 import API from "../common/api";
-import {ControlsCtx, MetadataCtx} from "../domain/contexts";
+import Ctx from "../domain/ctx";
 import {NextTrackCallback} from "../common/tracklist";
 import {Icon} from "react-native-elements";
 
-
 export default function Explorer() {
-    const [metadata] = useContext(MetadataCtx);
+    const [metadata] = useContext(Ctx.Metadata);
 
     return (
         <SongList musics={metadata.musics}/>
@@ -18,9 +17,9 @@ export default function Explorer() {
 };
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-function SongList(props: {musics: number[]}) {
-    const [metadata] = useContext(MetadataCtx);
-    const [doNext] = useContext(ControlsCtx);
+function SongList(props: { musics: number[] }) {
+    const [metadata] = useContext(Ctx.Metadata);
+    const [doNext] = useContext(Ctx.Controls);
 
     const flatRef = useRef<FlatList>(null);
     const topOpacity = useRef(new Animated.Value(0)).current;
