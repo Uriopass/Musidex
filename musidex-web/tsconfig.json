@@ -20,7 +20,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "downlevelIteration": true,
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": true
   },
   "include": [
     "src"

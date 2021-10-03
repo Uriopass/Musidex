@@ -1,6 +1,6 @@
 import './explorer.css'
 import API from "../common/api";
-import React, {Fragment, useContext, useEffect, useMemo, useState} from "react";
+import React, {Fragment, useContext, useMemo, useState} from "react";
 import {PlayButton} from "../components/playbutton";
 import {EditableText, MaterialIcon} from "../components/utils";
 import {canPlay, Tag} from "../common/entity";
@@ -11,6 +11,7 @@ import Filters, {applyFilters} from "../common/filters";
 import {MetadataCtx} from "../domain/metadata";
 import {FiltersCtx} from "../App";
 import {clamp, Setter} from "../common/utils";
+import Fuse from "fuse.js";
 
 export interface ExplorerProps extends PageProps {
     title?: string;
@@ -72,24 +73,12 @@ const Explorer = (props: ExplorerProps) => {
                 </>;
         }
     }
-    const [Fuse, setFuse] = useState<any>(undefined);
-    useEffect(() => {
-        if (searchQry !== "" && Fuse === undefined) {
-            import("fuse.js").then(fuse => {
-                setFuse(fuse);
-            })
-        }
-    }, [searchQry, Fuse]);
-
     const fuse = useMemo(() => {
-        if (Fuse === undefined) {
-            return undefined;
-        }
-        return new Fuse.default(metadata.fuse_document, fuseOptions)
-    }, [metadata, Fuse]);
+        return new Fuse(metadata.fuse_document, fuseOptions)
+    }, [metadata]);
 
     const qryFilter = useMemo(() => {
-        if (searchQry === "" || fuse === undefined) {
+        if (searchQry === "") {
             return [];
         }
         return fuse.search(searchQry)

@@ -109,10 +109,11 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
             }
             trackplayer.audio.src = API.getStreamSrc(action.id);
             trackplayer.audio.load();
+            const duration = action.tags?.get("duration")?.integer;
             return {
                 ...trackplayer,
                 current: action.id,
-                duration: action.duration || 0,
+                duration: duration || 0,
                 loading: true,
                 paused: false,
             }

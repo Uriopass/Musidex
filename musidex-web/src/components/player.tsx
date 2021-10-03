@@ -3,7 +3,7 @@ import './player.css'
 import {TrackplayerCtx} from "../domain/trackplayer";
 import React, {useCallback, useContext, useEffect} from "react";
 import {PlayButton} from "./playbutton";
-import {NextTrackCallback} from "../common/tracklist";
+import {NextTrackCallback, TracklistCtx} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
 import {clamp, timeFormat, useUpdate} from "../common/utils";
 
@@ -11,11 +11,11 @@ interface PlayerProps {
     onVolumeChange: (volume: number) => void;
     doNext: NextTrackCallback;
     onPrev: () => void;
-    canPrev: () => boolean;
 }
 
 const Player = (props: PlayerProps) => {
     let [trackplayer, dispatch] = useContext(TrackplayerCtx);
+    let list = useContext(TracklistCtx);
     let [metadata,] = useContext(MetadataCtx);
     let [, forceUpdate] = useUpdate();
 
@@ -78,6 +78,8 @@ const Player = (props: PlayerProps) => {
         })
     }
 
+    const canPrev = list.last_played.length > 1;
+
     return (
         <div className="player fg color-fg">
             <div className="player-current-track">
@@ -97,7 +99,7 @@ const Player = (props: PlayerProps) => {
             </div>
             <div className="player-central-menu">
                 <div className="player-controls">
-                    <button className="player-button" onClick={props.onPrev} disabled={!props.canPrev()} title="Previous Track">
+                    <button className="player-button" onClick={props.onPrev} disabled={!canPrev} title="Previous Track">
                         <MaterialIcon size={20}
                                       name="skip_previous"/>
                     </button>

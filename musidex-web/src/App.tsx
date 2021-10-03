@@ -9,7 +9,6 @@ import Tracklist, {
     emptyTracklist,
     TracklistCtx,
     updateScoreCache,
-    useCanPrev,
     useNextTrackCallback,
     usePrevTrackCallback
 } from "./common/tracklist";
@@ -34,7 +33,6 @@ const App = () => {
     const [list, setList] = useState<Tracklist>(emptyTracklist())
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters, user);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
-    const canPrev = useCanPrev(list);
     const ws = useRef<any>();
 
     let onMessage = useCallback(async (ev) => {
@@ -85,7 +83,7 @@ const App = () => {
                     <TracklistCtx.Provider value={list}>
                         <FiltersCtx.Provider value={[filters, setFilters]}>
                             <PageNavigator page={curPage} doNext={doNext} onSetUser={setUser} curUser={user}/>
-                            <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev} canPrev={canPrev}/>
+                            <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev}/>
                         </FiltersCtx.Provider>
                     </TracklistCtx.Provider>
                 </TrackplayerCtx.Provider>
