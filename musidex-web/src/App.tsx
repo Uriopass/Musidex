@@ -7,7 +7,6 @@ import useLocalStorage from "use-local-storage";
 import PageNavigator, {PageEnum} from "./pages/navigator";
 import Tracklist, {
     emptyTracklist,
-    TracklistCtx,
     updateScoreCache,
     useNextTrackCallback,
     usePrevTrackCallback
@@ -16,8 +15,10 @@ import {useCookie} from "./components/utils";
 import Filters, {newFilters} from "./common/filters";
 import {MetadataCtx, useMetadata} from "./domain/metadata";
 import {Setter} from "./common/utils";
+import {firstUser} from "./common/entity";
 
 export const FiltersCtx = React.createContext<[Filters, Setter<Filters>]>([newFilters(), _ => _]);
+export const TracklistCtx = React.createContext<Tracklist>(emptyTracklist());
 
 const App = () => {
     API.setAPIUrl(window.location.origin);
@@ -42,7 +43,7 @@ const App = () => {
         }
         setMetadata(meta, metaStr);
         if (user === undefined || !meta.users.some((u) => u.id === user)) {
-            const u = meta.firstUser();
+            const u = firstUser(meta);
             if (u !== undefined) {
                 setUser(u);
             }

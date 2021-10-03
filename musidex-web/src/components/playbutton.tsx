@@ -3,6 +3,7 @@ import {TrackplayerCtx} from "../domain/trackplayer";
 import {MaterialIcon} from "./utils";
 import {NextTrackCallback} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
+import {getTags} from "../common/entity";
 
 export type PlayButtonProps = {
     musicID?: number;
@@ -14,7 +15,7 @@ export const PlayButton = ({doNext, musicID, size}: PlayButtonProps) => {
     let [trackplayer] = useContext(TrackplayerCtx);
     let [metadata,] = useContext(MetadataCtx);
     let same_v = (trackplayer.current || -1) === musicID;
-    let title = metadata.getTags(musicID)?.get("title")?.text || "No Title";
+    let title = getTags(metadata, musicID)?.get("title")?.text || "No Title";
 
     let onClick = useCallback(() => {
         doNext(musicID);

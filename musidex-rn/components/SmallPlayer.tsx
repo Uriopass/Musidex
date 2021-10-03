@@ -4,6 +4,7 @@ import {Image, StyleSheet, TouchableOpacity, View, ViewStyle} from "react-native
 import {TextFg} from "./StyledText";
 import {Icon} from "react-native-elements";
 import API from "../common/api";
+import {getTags} from "../common/entity";
 
 interface PlayerProps {
     style: ViewStyle,
@@ -15,7 +16,7 @@ const SmallPlayer = (props: PlayerProps) => {
     const [player, dispatch] = useContext(Ctx.Trackplayer);
     const list = useContext(Ctx.Tracklist);
 
-    const tags = metadata.getTags(list.last_played[list.last_played.length - 1]);
+    const tags = getTags(metadata, list.last_played[list.last_played.length - 1]);
     const title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";
     const artist = tags?.get("artist")?.text || "";
     const thumbnail = tags?.get("compressed_thumbnail")?.text || (tags?.get("thumbnail")?.text || "");

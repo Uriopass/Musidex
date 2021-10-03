@@ -1,4 +1,4 @@
-import {canPlay, MusidexMetadata, Tags, Vector} from "./entity";
+import {canPlay, getTags, MusidexMetadata, Tags, Vector} from "./entity";
 import Filters, {findFirst} from "../common/filters";
 import {Setter, Dispatch, dot} from "./utils";
 import React, {useCallback} from "react";
@@ -53,7 +53,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Trackli
             setList(list);
         }
 
-        dispatch({action: "play", id: id, tags: metadata.getTags(id)})
+        dispatch({action: "play", id: id, tags: getTags(metadata, id)})
     }, [curlist, setList, metadata, dispatch, filters, curUser])
 }
 
@@ -70,7 +70,7 @@ export function updateScoreCache(list: Tracklist, metadata: MusidexMetadata): Tr
     list.score_map = new Map();
 
     for (let music of metadata.musics) {
-        let tags = metadata.getTags(music);
+        let tags = getTags(metadata, music);
         if (tags === undefined || !canPlay(tags)) {
             continue;
         }
@@ -123,7 +123,7 @@ export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Trackli
         if (last === undefined) {
             return;
         }
-        dispatch({action: "play", id: last, tags: metadata.getTags(last)})
+        dispatch({action: "play", id: last, tags: getTags(metadata, last)})
     }, [curlist, setList, metadata, dispatch])
 }
 

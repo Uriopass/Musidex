@@ -10,7 +10,7 @@ import {useCallback, useEffect, useReducer, useState} from 'react';
 
 import MainScreen from "../screens/MainScreen";
 import useStored from "../domain/useStored";
-import {emptyMetadata, MusidexMetadata} from "../common/entity";
+import {emptyMetadata, firstUser, MusidexMetadata} from "../common/entity";
 import API from "../common/api";
 import Ctx from "../domain/ctx";
 import Tracklist, {
@@ -37,11 +37,11 @@ const Stack = createNativeStackNavigator();
 function RootNavigator() {
     API.setAPIUrl("http://192.168.0.14:3200");
 
-    let [metadata, setMetadata] = useStored<MusidexMetadata>("metadata", emptyMetadata());
+    const [list, setList] = useState<Tracklist>(emptyTracklist());
+    const [metadata, setMetadata] = useStored<MusidexMetadata>("metadata", emptyMetadata());
 
     const [user, setUser] = useStored<number | undefined>("user", undefined);
     const [filters, setFilters] = useStored<Filters>("filters", newFilters());
-    const [list, setList] = useState<Tracklist>(emptyTracklist())
 
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters, user);
@@ -56,7 +56,7 @@ function RootNavigator() {
             }
             setMetadata(meta);
             if (user === undefined || !meta.users.some((u) => u.id === user)) {
-                const u = meta.firstUser();
+                const u = firstUser(meta);
                 if (u !== undefined) {
                     setUser(u);
                 }

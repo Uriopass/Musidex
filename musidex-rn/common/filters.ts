@@ -1,4 +1,4 @@
-import {MusidexMetadata} from "./entity";
+import {getTags, MusidexMetadata} from "./entity";
 import {retain} from "./utils";
 import Tracklist from "./tracklist";
 import {useMemo} from "react";
@@ -22,7 +22,7 @@ export function applyFilters(filters: Filters, list: number[], metadata: Musidex
     let k = "user_library:" + curUser;
     if (filters.user_only) {
         retain(list, (id) => {
-            return metadata.getTags(id)?.has(k) || false;
+            return getTags(metadata, id)?.has(k) || false;
         })
     }
 }
@@ -30,7 +30,7 @@ export function applyFilters(filters: Filters, list: number[], metadata: Musidex
 export function findFirst(filters: Filters, list: number[], metadata: MusidexMetadata, curUser: number | undefined): number | undefined {
     let k = "user_library:" + curUser;
     for (let id of list) {
-        if (filters.user_only && !metadata.getTags(id)?.has(k)) {
+        if (filters.user_only && !getTags(metadata, id)?.has(k)) {
             continue;
         }
         return id;
@@ -77,7 +77,7 @@ export function useMusicSelect(metadata: MusidexMetadata, searchQry: string, sor
                 let v = sortBy.kind.value;
                 toShow = metadata.musics.slice();
                 toShow.sort((a, b) => {
-                    return (metadata.getTags(a)?.get(v)?.text || "").localeCompare(metadata.getTags(b)?.get(v)?.text || "")
+                    return (getTags(metadata, a)?.get(v)?.text || "").localeCompare(getTags(metadata, b)?.get(v)?.text || "")
                 })
                 break;
         }

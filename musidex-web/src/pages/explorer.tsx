@@ -3,13 +3,13 @@ import API from "../common/api";
 import React, {Fragment, useContext, useState} from "react";
 import {PlayButton} from "../components/playbutton";
 import {EditableText, MaterialIcon} from "../components/utils";
-import {canPlay, Tag} from "../common/entity";
-import {NextTrackCallback, TracklistCtx} from "../common/tracklist";
+import {canPlay, getTags, Tag} from "../common/entity";
+import {NextTrackCallback} from "../common/tracklist";
 import TextInput from "../components/input";
 import {PageProps} from "./navigator";
 import Filters, {SortBy, sortby_kind_eq, SortByKind, useMusicSelect} from "../common/filters";
 import {MetadataCtx} from "../domain/metadata";
-import {FiltersCtx} from "../App";
+import {FiltersCtx, TracklistCtx} from "../App";
 import {clamp, Setter} from "../common/utils";
 
 export interface ExplorerProps extends PageProps {
@@ -40,7 +40,7 @@ const Explorer = (props: ExplorerProps) => {
     const colorSongs = "#28222f";
     let curPlaying = <></>;
     if (curTrack) {
-        const tags = metadata.getTags(curTrack) || new Map();
+        const tags = getTags(metadata, curTrack) || new Map();
         curPlaying =
             <>
                 <div style={{marginTop: 10}}/>
@@ -73,7 +73,7 @@ const Explorer = (props: ExplorerProps) => {
                         if (id === curTrack) {
                             return <Fragment key={id}/>;
                         }
-                        const tags = metadata.getTags(id);
+                        const tags = getTags(metadata, id);
                         if (tags === undefined) {
                             return <Fragment key={id}/>;
                         }

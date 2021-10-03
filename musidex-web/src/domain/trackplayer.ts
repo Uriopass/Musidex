@@ -1,7 +1,7 @@
 import React from "react";
 import API from "../common/api";
 import {NextTrackCallback, PrevTrackCallback, TrackPlayerAction} from "../common/tracklist";
-import {MusidexMetadata} from "../common/entity";
+import {getTags, MusidexMetadata} from "../common/entity";
 import {Dispatch} from "../common/utils";
 
 type TrackPlayer = {
@@ -35,7 +35,7 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
         }
     }
     if ('mediaSession' in navigator) {
-        let curtags = metadata.getTags(trackplayer.current);
+        let curtags = getTags(metadata, trackplayer.current);
         let artwork = [];
         let thumb = curtags?.get("thumbnail")?.text;
         if (thumb) {

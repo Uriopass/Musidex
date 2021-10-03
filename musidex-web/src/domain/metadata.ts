@@ -1,5 +1,5 @@
 import {RawMusidexMetadata} from "../common/api";
-import {emptyMetadata, MusidexMetadata} from "../common/entity";
+import {emptyMetadata, MusidexMetadata, newMetadata} from "../common/entity";
 import useLocalStorage from "use-local-storage";
 import React, {useCallback, useState} from "react";
 
@@ -15,7 +15,7 @@ export function useMetadata(): [MusidexMetadata, (meta: MusidexMetadata, metastr
             return emptyMetadata();
         }
         let v: RawMusidexMetadata = JSON.parse(metaStored);
-        return new MusidexMetadata(v);
+        return newMetadata(v);
     });
 
     let f = useCallback((meta: MusidexMetadata, metaStr: string) => {

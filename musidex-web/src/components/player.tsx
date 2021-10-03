@@ -3,9 +3,11 @@ import './player.css'
 import {TrackplayerCtx} from "../domain/trackplayer";
 import React, {useCallback, useContext, useEffect} from "react";
 import {PlayButton} from "./playbutton";
-import {NextTrackCallback, TracklistCtx} from "../common/tracklist";
+import {NextTrackCallback} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
 import {clamp, timeFormat, useUpdate} from "../common/utils";
+import {getTags} from "../common/entity";
+import {TracklistCtx} from "../App";
 
 interface PlayerProps {
     onVolumeChange: (volume: number) => void;
@@ -25,7 +27,7 @@ const Player = (props: PlayerProps) => {
     }, [forceUpdate, trackplayer.audio])
 
 
-    let tags = metadata.getTags(trackplayer.current);
+    let tags = getTags(metadata, trackplayer.current);
     let curtime = trackplayer.audio.currentTime || 0;
     let duration = trackplayer.duration || (tags?.get("duration")?.integer || 0);
     let trackProgress = duration > 0 ? curtime / duration : 0;

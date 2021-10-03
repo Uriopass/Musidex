@@ -1,6 +1,6 @@
 import {Animated, FlatList, Image, StyleSheet, TouchableOpacity, View} from "react-native";
 import React, {useCallback, useContext, useRef, useState} from "react";
-import {Tag} from "../common/entity";
+import {getTags, Tag} from "../common/entity";
 import {TextFg} from "./StyledText";
 import Colors from "../domain/colors";
 import API from "../common/api";
@@ -24,7 +24,7 @@ export default function Explorer() {
     return (
         <>
             {curTrack &&
-            <SongElem musicID={curTrack} tags={metadata.getTags(curTrack) || new Map()} doNext={doNext} progress={1.0}
+            <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
                       progressColor="#1d2f23"/>
             }
             <SongList musics={musics}/>
@@ -49,7 +49,7 @@ function SongList(props: { musics: number[] }) {
             return <></>;
         }
         return <SongElem musicID={item}
-                         tags={metadata.getTags(item) || new Map()}
+                         tags={getTags(metadata, item) || new Map()}
                          doNext={doNext}
                          progress={tracklist.score_map.get(item)}
                          progressColor="#28222f"/>
