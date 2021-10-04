@@ -8,6 +8,10 @@ export default function useStored<T>(key: string, initialV: T, opts?: {ser: (v: 
 
     const setValue = useCallback((newv: T) => {
         setV(newv);
+        if(newv === undefined) {
+            removeItem();
+            return;
+        }
         if (opts) {
             setItem(opts.ser(newv));
             return;

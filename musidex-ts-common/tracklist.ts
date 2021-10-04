@@ -2,13 +2,14 @@ import {canPlay, getTags, MusidexMetadata, Tags, Vector} from "./entity";
 import Filters, {findFirst} from "../common/filters";
 import {Setter, Dispatch, dot} from "./utils";
 import React, {useCallback} from "react";
+import {Track} from "react-native-track-player";
 
 export type TrackPlayerAction =
     { action: "play", id: number, tags?: Tags }
     | { action: "audioTick" }
     | { action: "setTime", time: number }
 
-interface Tracklist {
+type Tracklist = {
     last_played: number[];
     last_played_maxsize: number;
     best_tracks: number[];
@@ -27,7 +28,7 @@ export function emptyTracklist(): Tracklist {
 export type NextTrackCallback = (id?: number) => void;
 export type PrevTrackCallback = () => void;
 
-export function useNextTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, filters: Filters, curUser: number | undefined): NextTrackCallback {
+export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Tracklist) => void, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, filters: Filters, curUser: number | undefined): NextTrackCallback {
     return useCallback((id) => {
         let list = {
             ...curlist,
@@ -111,7 +112,7 @@ export function neuralScore(list: Tracklist, lastvec: Vector | undefined, id: nu
     return dot(lastvec, emb) / (lastvec.mag * emb.mag);
 }
 
-export function usePrevTrackCallback(curlist: Tracklist, setList: Setter<Tracklist>, dispatch: (action: TrackPlayerAction) => void, metadata: MusidexMetadata): PrevTrackCallback {
+export function usePrevTrackCallback(curlist: Tracklist, setList: (newv: Tracklist) => void, dispatch: (action: TrackPlayerAction) => void, metadata: MusidexMetadata): PrevTrackCallback {
     return useCallback(() => {
         const list = {
             ...curlist,

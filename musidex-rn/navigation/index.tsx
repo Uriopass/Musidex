@@ -6,7 +6,7 @@
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import * as React from 'react';
-import {useCallback, useEffect, useReducer, useState} from 'react';
+import {useCallback, useEffect, useReducer} from 'react';
 
 import MainScreen from "../screens/MainScreen";
 import useStored from "../domain/useStored";
@@ -37,7 +37,17 @@ const Stack = createNativeStackNavigator();
 function RootNavigator() {
     API.setAPIUrl("http://192.168.0.14:3200");
 
-    const [list, setList] = useState<Tracklist>(emptyTracklist());
+    const [list, setList] = useStored<Tracklist>("tracklist", emptyTracklist(), {
+        ser: v => {
+            let lol = {...v, score_map: [...v.score_map]};
+            return JSON.stringify(lol);
+        },
+        deser: s => {
+            let obj: any = JSON.parse(s);
+            obj.score_map = new Map(obj.score_map);
+            return obj as Tracklist;
+        },
+    });
     const [metadata, setMetadata] = useStored<MusidexMetadata>("metadata", emptyMetadata(), {
         ser: (v: MusidexMetadata): string => {
             return JSON.stringify(v.raw);
@@ -58,26 +68,27 @@ function RootNavigator() {
     setupListeners(trackplayer, dispatchPlayer, doNext);
 
     useEffect(() => {
+        if (user === undefined || !metadata.users.some((u) => u.id === user)) {
+            const u = firstUser(metadata);
+            if (u !== undefined) {
+                setUser(u);
+            }
+        }
+
+        let l = {...list};
+        l = updateScoreCache(l, metadata);
+        setList(l);
+    }, [metadata]);
+
+    let fetchMetadata = useCallback(() => {
         API.getMetadata().then((meta) => {
             if (meta === null) {
                 return;
             }
             setMetadata(meta);
-            if (user === undefined || !meta.users.some((u) => u.id === user)) {
-                const u = firstUser(meta);
-                if (u !== undefined) {
-                    setUser(u);
-                }
-            }
-            let l = {...list};
-            l = updateScoreCache(l, meta);
-            setList(l);
         })
     }, []);
-
-    let fetchMetadata = useCallback(() => {
-        console.log("fetch metadata");
-    }, []);
+    useEffect(fetchMetadata, []);
 
     return (
         <Ctx.User.Provider value={[user, setUser]}>
