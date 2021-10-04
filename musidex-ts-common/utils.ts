@@ -45,8 +45,8 @@ export function clamp(v: number, lower: number, upper: number) {
 }
 
 export function useUpdate(): [number, () => void] {
-    let [v, setV] = useState(0);
-    let update = useCallback(() => setV((v) => v + 1), [setV]);
+    const [v, setV] = useState(0);
+    const update = useCallback(() => setV((oldv) => oldv + 1), [setV]);
     return [v, update];
 }
 

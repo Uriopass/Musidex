@@ -21,7 +21,7 @@ export default function useStored<T>(key: string, initialV: T, opts?: { ser: (v:
             return;
         }
         setItem(JSON.stringify(newv));
-    }, [setItem]);
+    }, [setItem, removeItem, opts]);
 
     useEffect(() => {
         getItem().then((vStr) => {

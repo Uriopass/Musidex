@@ -19,7 +19,7 @@ export function newTrackPlayer(): Trackplayer {
     };
 }
 
-export function setupListeners(trackplayer: Trackplayer, dispatch: Dispatch<TrackPlayerAction>, doNext: NextTrackCallback) {
+export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<TrackPlayerAction>, doNext: NextTrackCallback) {
     useEffect(() => {
         const v = TrackPlayer.addEventListener(Event.PlaybackState, (data) => {
             let state: State = data.state;

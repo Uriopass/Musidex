@@ -20,7 +20,7 @@ import Tracklist, {
     usePrevTrackCallback,
 } from "../common/tracklist";
 import Filters, {newFilters} from "../common/filters";
-import {applyTrackPlayer, newTrackPlayer, setupListeners} from "../domain/trackplayer";
+import {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
 
 export default function Navigation() {
     return (
@@ -65,7 +65,7 @@ function RootNavigator() {
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters, user);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
 
-    setupListeners(trackplayer, dispatchPlayer, doNext);
+    useSetupListeners(trackplayer, dispatchPlayer, doNext);
 
     useEffect(() => {
         if (user === undefined || !metadata.users.some((u) => u.id === user)) {
