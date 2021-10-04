@@ -23,4 +23,4 @@ const styles = StyleSheet.create({
         flexBasis: 60,
         flexGrow: 0,
     },
-})
+});

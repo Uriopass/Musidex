@@ -16,7 +16,7 @@ export function newTrackPlayer(): Trackplayer {
         duration: undefined,
         paused: true,
         loading: false,
-    }
+    };
 }
 
 export function setupListeners(trackplayer: Trackplayer, dispatch: Dispatch<TrackPlayerAction>, doNext: NextTrackCallback) {
@@ -31,38 +31,40 @@ export function setupListeners(trackplayer: Trackplayer, dispatch: Dispatch<Trac
             if (!loaded) {
                 return;
             }
-        })
+        });
 
         return () => v.remove();
-    }, [trackplayer, dispatch])
+    }, [trackplayer, dispatch]);
 
     useEffect(() => {
         const v = TrackPlayer.addEventListener(Event.PlaybackQueueEnded, (_) => {
             console.log("playback ended");
             doNext();
-        })
+        });
         return () => v.remove();
-    }, [doNext])
+    }, [doNext]);
 
     useEffect(() => {
         const v = TrackPlayer.addEventListener(Event.RemoteNext, (_) => {
             doNext();
-        })
+        });
         return () => v.remove();
-    }, [doNext])
+    }, [doNext]);
 
     useEffect(() => {
         const v = TrackPlayer.addEventListener(Event.PlaybackError, (data) => {
             console.log(data);
-        })
+        });
         return () => v.remove();
-    }, [])
+    }, []);
 }
 
 export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAction): Trackplayer {
     switch (action.action) {
         case "play":
-            if (action.id < 0) return trackplayer;
+            if (action.id < 0) {
+                return trackplayer;
+            }
             if (trackplayer.current === action.id) {
                 if (trackplayer.paused) {
                     TrackPlayer.play();
@@ -73,7 +75,7 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                     ...trackplayer,
                     loading: trackplayer.paused,
                     paused: !trackplayer.paused,
-                }
+                };
             }
 
             const duration = action.tags?.get("duration")?.integer;
@@ -111,18 +113,18 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                 duration: duration || 0,
                 loading: true,
                 paused: false,
-            }
+            };
         case "setTime":
             //const _ = trackplayer.audio.setPositionAsync(action.time * 1000);
             return {
-                ...trackplayer
-            }
+                ...trackplayer,
+            };
         case "audioTick":
             return {
                 ...trackplayer,
-            }
+            };
     }
-    return trackplayer
+    return trackplayer;
 }
 
 export default Trackplayer;

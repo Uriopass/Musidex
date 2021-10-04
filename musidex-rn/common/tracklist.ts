@@ -1,8 +1,7 @@
 import {canPlay, getTags, MusidexMetadata, Tags, Vector} from "./entity";
 import Filters, {findFirst} from "../common/filters";
-import {Setter, Dispatch, dot} from "./utils";
-import React, {useCallback} from "react";
-import {Track} from "react-native-track-player";
+import {Dispatch, dot} from "./utils";
+import {useCallback} from "react";
 
 export type TrackPlayerAction =
     { action: "play", id: number, tags?: Tags }
@@ -22,7 +21,7 @@ export function emptyTracklist(): Tracklist {
         last_played_maxsize: 30,
         best_tracks: [],
         score_map: new Map(),
-    }
+    };
 }
 
 export type NextTrackCallback = (id?: number) => void;
@@ -54,8 +53,8 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
             setList(list);
         }
 
-        dispatch({action: "play", id: id, tags: getTags(metadata, id)})
-    }, [curlist, setList, metadata, dispatch, filters, curUser])
+        dispatch({action: "play", id: id, tags: getTags(metadata, id)});
+    }, [curlist, setList, metadata, dispatch, filters, curUser]);
 }
 
 export function updateScoreCache(list: Tracklist, metadata: MusidexMetadata): Tracklist {
@@ -101,7 +100,7 @@ export function updateScoreCache(list: Tracklist, metadata: MusidexMetadata): Tr
 }
 
 export function getLastvec(list: Tracklist, metadata: MusidexMetadata): Vector | undefined {
-    return metadata.embeddings.get(list.last_played[list.last_played.length - 1] || -1)
+    return metadata.embeddings.get(list.last_played[list.last_played.length - 1] || -1);
 }
 
 export function neuralScore(list: Tracklist, lastvec: Vector | undefined, id: number, metadata: MusidexMetadata): number | undefined {
@@ -124,8 +123,8 @@ export function usePrevTrackCallback(curlist: Tracklist, setList: (newv: Trackli
         if (last === undefined) {
             return;
         }
-        dispatch({action: "play", id: last, tags: getTags(metadata, last)})
-    }, [curlist, setList, metadata, dispatch])
+        dispatch({action: "play", id: last, tags: getTags(metadata, last)});
+    }, [curlist, setList, metadata, dispatch]);
 }
 
 export default Tracklist;

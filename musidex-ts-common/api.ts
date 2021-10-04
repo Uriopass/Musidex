@@ -46,16 +46,18 @@ export const API = {
 
     async getMetadata(): Promise<MusidexMetadata | null> {
         return fetchJson(apiURL + "/api/metadata").then((v: RawMusidexMetadata) => {
-            if (v == null) return null;
+            if (v == null) {
+                return null;
+            }
             return newMetadata(v);
-        })
+        });
     },
 
     async youtubeUpload(url: string): Promise<Response> {
         return fetch(apiURL + "/api/youtube_upload", {
             method: "post",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({url: url})
+            body: JSON.stringify({url: url}),
         });
     },
 
@@ -63,7 +65,7 @@ export const API = {
         return fetch(apiURL + "/api/youtube_upload/playlist", {
             method: "post",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({url: url})
+            body: JSON.stringify({url: url}),
         });
     },
 
@@ -71,7 +73,7 @@ export const API = {
         return fetch(apiURL + "/api/tag/create", {
             method: "post",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(tag)
+            body: JSON.stringify(tag),
         });
     },
 
@@ -82,19 +84,19 @@ export const API = {
             body: JSON.stringify({
                 key: key,
                 value: value,
-            })
+            }),
         });
     },
 
     async deleteMusic(id: number): Promise<Response> {
         return fetch(apiURL + "/api/music/" + id, {
-            method: "delete"
+            method: "delete",
         });
     },
 
     async deleteUser(id: number): Promise<Response> {
         return fetch(apiURL + "/api/user/" + id, {
-            method: "delete"
+            method: "delete",
         });
     },
 
@@ -102,7 +104,7 @@ export const API = {
         return fetch(apiURL + "/api/user/create", {
             method: "post",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({name: name})
+            body: JSON.stringify({name: name}),
         });
     },
 
@@ -110,7 +112,7 @@ export const API = {
         return fetch(apiURL + "/api/user/update/" + id, {
             method: "post",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({name: name})
+            body: JSON.stringify({name: name}),
         });
     },
 
@@ -119,9 +121,9 @@ export const API = {
     },
 
     getStreamSrc(id: number): string {
-        return apiURL + "/api/stream/" + id
+        return apiURL + "/api/stream/" + id;
     },
-}
+};
 
 async function fetchJson(url: string): Promise<any | null> {
     try {

@@ -17,7 +17,7 @@ import Tracklist, {
     emptyTracklist,
     updateScoreCache,
     useNextTrackCallback,
-    usePrevTrackCallback
+    usePrevTrackCallback,
 } from "../common/tracklist";
 import Filters, {newFilters} from "../common/filters";
 import {applyTrackPlayer, newTrackPlayer, setupListeners} from "../domain/trackplayer";
@@ -55,7 +55,7 @@ function RootNavigator() {
         deser: (v: string): MusidexMetadata => {
             const obj: RawMusidexMetadata = JSON.parse(v);
             return newMetadata(obj);
-        }
+        },
     });
 
     const [user, setUser] = useStored<number | undefined>("user", undefined);
@@ -86,7 +86,7 @@ function RootNavigator() {
                 return;
             }
             setMetadata(meta);
-        })
+        });
     }, []);
     useEffect(fetchMetadata, []);
 

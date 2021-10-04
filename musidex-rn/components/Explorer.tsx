@@ -29,8 +29,8 @@ export default function Explorer() {
             }
             <SongList musics={musics}/>
         </>
-    )
-};
+    );
+}
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 function SongList(props: { musics: number[] }) {
@@ -52,7 +52,7 @@ function SongList(props: { musics: number[] }) {
                          tags={getTags(metadata, item) || new Map()}
                          doNext={doNext}
                          progress={tracklist.score_map.get(item)}
-                         progressColor="#28222f"/>
+                         progressColor="#28222f"/>;
     }, [metadata, doNext, tracklist, curTrack]);
 
     const onScroll = (ev: any) => {
@@ -60,13 +60,13 @@ function SongList(props: { musics: number[] }) {
             Animated.timing(topOpacity, {
                 toValue: 0.0,
                 duration: 100,
-                useNativeDriver: true
+                useNativeDriver: true,
             }).start(() => setHidden(true));
         } else {
             Animated.timing(topOpacity, {
                 toValue: 0.8,
                 duration: 100,
-                useNativeDriver: true
+                useNativeDriver: true,
             }).start();
             setHidden(false);
         }
@@ -93,7 +93,7 @@ function SongList(props: { musics: number[] }) {
             <Icon size={20} name="arrow-upward" color="black"/>
         </AnimatedTouchable>
         }
-    </>
+    </>;
 }
 
 
@@ -118,7 +118,7 @@ const SongElem = React.memo((props: SongElemProps) => {
                 (
                     <View style={[styles.progress, {
                         width: (props.progress * 100) + "%",
-                        backgroundColor: props.progressColor
+                        backgroundColor: props.progressColor,
                     }]}/>
                 )
             }
@@ -128,8 +128,8 @@ const SongElem = React.memo((props: SongElemProps) => {
                 <TextFg>{artist?.text}</TextFg>
             </View>
         </TouchableOpacity>
-    )
-})
+    );
+});
 
 const styles = StyleSheet.create({
     progress: {
@@ -167,5 +167,5 @@ const styles = StyleSheet.create({
         position: "relative",
         flexBasis: 100,
         flexGrow: 1,
-    }
-})
+    },
+});

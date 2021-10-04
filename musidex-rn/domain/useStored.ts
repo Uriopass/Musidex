@@ -1,14 +1,14 @@
 import {useAsyncStorage} from "@react-native-async-storage/async-storage";
 import {useCallback, useEffect, useState} from "react";
 
-export default function useStored<T>(key: string, initialV: T, opts?: {ser: (v: T) => string, deser: (v: string) => T}): [T, (newv: T) => void] {
+export default function useStored<T>(key: string, initialV: T, opts?: { ser: (v: T) => string, deser: (v: string) => T }): [T, (newv: T) => void] {
     const [v, setV] = useState(initialV);
     // todo make saving classes work ?
     const {getItem, setItem, removeItem} = useAsyncStorage(key);
 
     const setValue = useCallback((newv: T) => {
         setV(newv);
-        if(newv === undefined) {
+        if (newv === undefined) {
             removeItem();
             return;
         }
@@ -21,7 +21,7 @@ export default function useStored<T>(key: string, initialV: T, opts?: {ser: (v: 
             return;
         }
         setItem(JSON.stringify(newv));
-    }, [setItem])
+    }, [setItem]);
 
     useEffect(() => {
         getItem().then((vStr) => {
@@ -51,7 +51,7 @@ export default function useStored<T>(key: string, initialV: T, opts?: {ser: (v: 
             }
             setV(JSON.parse(vStr));
         });
-    }, [])
+    }, []);
 
     return [v, setValue];
 }

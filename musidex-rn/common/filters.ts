@@ -14,7 +14,7 @@ export type SortBy = { kind: SortByKind, descending: boolean }
 export function newFilters(): Filters {
     return {
         user_only: true,
-    }
+    };
 }
 
 // in place
@@ -23,7 +23,7 @@ export function applyFilters(filters: Filters, list: number[], metadata: Musidex
     if (filters.user_only) {
         retain(list, (id) => {
             return getTags(metadata, id)?.has(k) || false;
-        })
+        });
     }
 }
 
@@ -41,21 +41,21 @@ const fuseOptions = {
     includeScore: true,
     keys: ['title', 'artist'],
     threshold: 0.4,
-}
+};
 
 export function useMusicSelect(metadata: MusidexMetadata, searchQry: string, sortBy: SortBy, list: Tracklist, filters: Filters, curUser: number | undefined) {
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
 
     const fuse = useMemo(() => {
-        return new Fuse(metadata.fuse_document, fuseOptions)
+        return new Fuse(metadata.fuse_document, fuseOptions);
     }, [metadata]);
 
     const qryFilter = useMemo(() => {
         if (searchQry === "") {
             return [];
         }
-        return fuse.search(searchQry)
-    }, [searchQry, fuse])
+        return fuse.search(searchQry);
+    }, [searchQry, fuse]);
 
     let toShow: number[];
     if (searchQry !== "" && fuse !== undefined) {
@@ -77,8 +77,8 @@ export function useMusicSelect(metadata: MusidexMetadata, searchQry: string, sor
                 let v = sortBy.kind.value;
                 toShow = metadata.musics.slice();
                 toShow.sort((a, b) => {
-                    return (getTags(metadata, a)?.get(v)?.text || "").localeCompare(getTags(metadata, b)?.get(v)?.text || "")
-                })
+                    return (getTags(metadata, a)?.get(v)?.text || "").localeCompare(getTags(metadata, b)?.get(v)?.text || "");
+                });
                 break;
         }
         if (!sortBy.descending) {
@@ -92,9 +92,9 @@ export function useMusicSelect(metadata: MusidexMetadata, searchQry: string, sor
 
 export function sortby_kind_eq(a: SortByKind, b: SortByKind) {
     if (a.kind === "tag" && b.kind === "tag") {
-        return a.value === b.value
+        return a.value === b.value;
     }
-    return a.kind === b.kind
+    return a.kind === b.kind;
 }
 
 export default Filters;

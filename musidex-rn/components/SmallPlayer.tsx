@@ -11,7 +11,7 @@ interface PlayerProps {
 }
 
 const SmallPlayer = (props: PlayerProps) => {
-    const [metadata,] = useContext(Ctx.Metadata);
+    const [metadata] = useContext(Ctx.Metadata);
     const [doNext, doPrev] = useContext(Ctx.Controls);
     const [player, dispatch] = useContext(Ctx.Trackplayer);
     const list = useContext(Ctx.Tracklist);
@@ -62,8 +62,8 @@ const SmallPlayer = (props: PlayerProps) => {
                 </TouchableOpacity>
             </View>
         </View>
-    )
-}
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -90,6 +90,6 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
     },
-})
+});
 
 export default SmallPlayer;

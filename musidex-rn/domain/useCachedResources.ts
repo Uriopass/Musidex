@@ -8,7 +8,7 @@ export default function useCachedResources() {
     React.useEffect(() => {
         async function loadResourcesAndDataAsync() {
             try {
-                await TrackPlayer.setupPlayer({iosCategory: IOSCategory.Playback, waitForBuffer: true, minBuffer: 5})
+                await TrackPlayer.setupPlayer({iosCategory: IOSCategory.Playback, waitForBuffer: true, minBuffer: 5});
 
                 await TrackPlayer.updateOptions({
                     stopWithApp: true,

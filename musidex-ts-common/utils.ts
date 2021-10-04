@@ -31,12 +31,16 @@ export function dot(v1v: Vector, v2v: Vector): number {
 export function timeFormat(total: number): string {
     let minutes = Math.floor(total / 60);
     let seconds = Math.floor(total % 60);
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 }
 
 export function clamp(v: number, lower: number, upper: number) {
-    if (v < lower) return lower;
-    if (v > upper) return upper;
+    if (v < lower) {
+        return lower;
+    }
+    if (v > upper) {
+        return upper;
+    }
     return v;
 }
 
@@ -53,4 +57,4 @@ export const useDebouncedEffect = (effect: React.EffectCallback, deps: React.Dep
         return () => clearTimeout(handler);
         // eslint-disable-next-line react-domain/exhaustive-deps
     }, [...deps || [], delay]);
-}
+};

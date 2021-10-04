@@ -1,6 +1,6 @@
 import React from "react";
 
-import {StyleSheet, Text, View,} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import {timeFormat} from "../common/utils";
 import Colors from "../domain/colors";
 import {Slider} from "react-native-elements";
@@ -63,5 +63,5 @@ const styles = StyleSheet.create({
         color: 'rgba(255, 255, 255, 0.72)',
         fontSize: 12,
         textAlign: 'center',
-    }
+    },
 });

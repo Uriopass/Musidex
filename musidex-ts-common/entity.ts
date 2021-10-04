@@ -61,7 +61,7 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
         music_tags_idx: new Map(),
         embeddings: new Map(),
         fuse_document: [],
-        tags: raw.tags || previous?.tags || []
+        tags: raw.tags || previous?.tags || [],
     };
 
     if (raw.patches) {
@@ -69,12 +69,12 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
             switch (patch.kind) {
                 case "add":
                     meta.tags.push(patch.tag);
-                    break
+                    break;
                 case "remove":
                     let id = patch.id;
                     let k = patch.key;
-                    retain(meta.tags, (t) => t.music_id !== id && t.key !== k)
-                    break
+                    retain(meta.tags, (t) => t.music_id !== id && t.key !== k);
+                    break;
                 case "update":
                     for (let i = 0; i < meta.tags.length; i++) {
                         let v = meta.tags[i];
@@ -83,14 +83,14 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
                             meta.tags[i] = patch.tag;
                         }
                     }
-                    break
+                    break;
             }
         }
     }
 
     meta.musics.forEach((m) => {
         meta.music_tags_idx.set(m, new Map());
-    })
+    });
 
     meta.tags.forEach((tag) => {
         meta.music_tags_idx.get(tag.music_id)?.set(tag.key, tag);
@@ -102,14 +102,14 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
             mag = Math.sqrt(mag);
             meta.embeddings.set(tag.music_id, {v: tag.vector, mag: mag});
         }
-    })
+    });
 
     for (let [id, tags] of meta.music_tags_idx.entries()) {
         meta.fuse_document.push({
             id: id,
             title: tags.get("title")?.text || "",
             artist: tags.get("artist")?.text || "",
-        })
+        });
     }
 
     return meta;
