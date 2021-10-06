@@ -62,7 +62,7 @@ const SmallPlayer = (props: PlayerProps) => {
                           name="skip-previous"/>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={onPlay}>
-                    <Icon size={38}
+                    <Icon size={37}
                           color="white"
                           name={player.paused ? "play-circle-fill" : "pause"}/>
                 </TouchableOpacity>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     },
     trackInfo: {},
     controls: {
-        flexBasis: 135,
+        flexBasis: 140,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",

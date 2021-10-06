@@ -58,10 +58,12 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
     }, [curlist, setList, metadata, dispatch, filters, curUser]);
 }
 
-export function useResetCallback(setList: (newv: Tracklist) => void): NextTrackCallback {
+export function useResetCallback(setList: (newv: Tracklist) => void, metadata: MusidexMetadata): NextTrackCallback {
     return useCallback(() => {
-        setList(emptyTracklist());
-    }, [setList]);
+        let l = emptyTracklist();
+        l = updateScoreCache(l, metadata);
+        setList(l);
+    }, [metadata, setList]);
 }
 
 export function updateScoreCache(list: Tracklist, metadata: MusidexMetadata): Tracklist {

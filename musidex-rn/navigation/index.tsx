@@ -64,7 +64,7 @@ function RootNavigator() {
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters, user);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
-    const doReset = useResetCallback(setList);
+    const doReset = useResetCallback(setList, metadata);
 
     useSetupListeners(trackplayer, dispatchPlayer, doNext);
 
