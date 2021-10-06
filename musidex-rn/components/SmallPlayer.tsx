@@ -46,7 +46,7 @@ const SmallPlayer = (props: PlayerProps) => {
                            source={{uri: API.getAPIUrl() + "/storage/" + thumbnail}} width={60} height={60}/>
                 }
                 <View style={styles.currentTrackTitle}>
-                    <TextFg numberOfLines={1}>{title}</TextFg>
+                    <TextFg numberOfLines={2}>{title}</TextFg>
                     <TextFgGray numberOfLines={1}>{artist}</TextFgGray>
                 </View>
             </View>
