@@ -1,7 +1,7 @@
 import {Animated, FlatList, Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import React, {useCallback, useContext, useRef, useState} from "react";
 import {getTags, Tag} from "../common/entity";
-import {TextBg, TextFg, TextPrimary, TextSecondary} from "./StyledText";
+import {TextBg, TextFg, TextFgGray, TextPrimary, TextSecondary} from "./StyledText";
 import Colors from "../domain/colors";
 import API from "../common/api";
 import Ctx from "../domain/ctx";
@@ -193,8 +193,8 @@ const SongElem = React.memo((props: SongElemProps) => {
             }
             <Image style={styles.itemImage} source={{uri: API.getAPIUrl() + "/storage/" + cover}}/>
             <View style={styles.trackInfo}>
-                <TextFg>{title?.text}</TextFg>
-                <TextFg>{artist?.text}</TextFg>
+                <TextFg numberOfLines={1}>{title?.text}</TextFg>
+                <TextFgGray numberOfLines={1}>{artist?.text}</TextFgGray>
             </View>
         </TouchableOpacity>
     );

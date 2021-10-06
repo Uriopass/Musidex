@@ -8,4 +8,5 @@ export default {
     fg: "#1b1d21",
     colorfg: "#e0e0e0",
     colorbg: "#495165",
+    colorfggray: "#7e8692",
 };

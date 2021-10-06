@@ -6,6 +6,10 @@ export function TextFg(props: any) {
   return <Text {...props} style={[props.style, {color: Colors.colorfg}]} />;
 }
 
+export function TextFgGray(props: any) {
+  return <Text {...props} style={[props.style, {color: Colors.colorfggray}]} />;
+}
+
 export function TextBg(props: any) {
   return <Text {...props} style={[props.style, {color: Colors.colorbg}]} />;
 }

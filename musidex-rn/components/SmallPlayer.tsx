@@ -1,7 +1,7 @@
 import React, {useContext} from "react";
 import Ctx from "../domain/ctx";
 import {Image, StyleSheet, TouchableOpacity, View, ViewStyle} from "react-native";
-import {TextBg, TextFg} from "./StyledText";
+import {TextBg, TextFg, TextFgGray} from "./StyledText";
 import {Icon} from "react-native-elements";
 import API from "../common/api";
 import {getTags} from "../common/entity";
@@ -18,7 +18,7 @@ const SmallPlayer = (props: PlayerProps) => {
 
     const tags = getTags(metadata, list.last_played[list.last_played.length - 1]);
     const title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";
-    const artist = tags?.get("artist")?.text || "";
+    const artist = (tags !== undefined) ? (tags.get("artist")?.text || "Unknown Artist") : "";
     const thumbnail = tags?.get("compressed_thumbnail")?.text || (tags?.get("thumbnail")?.text || "");
 
     const canPrev = list.last_played.length > 1;
@@ -47,7 +47,7 @@ const SmallPlayer = (props: PlayerProps) => {
                 }
                 <View style={styles.currentTrackTitle}>
                     <TextFg>{title}</TextFg>
-                    <TextBg>{artist}</TextBg>
+                    <TextFgGray>{artist}</TextFgGray>
                 </View>
             </View>
             <View style={styles.controls}>
