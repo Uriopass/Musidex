@@ -193,8 +193,8 @@ const SongElem = React.memo((props: SongElemProps) => {
             }
             <Image style={styles.itemImage} source={{uri: API.getAPIUrl() + "/storage/" + cover}}/>
             <View style={styles.trackInfo}>
-                <TextFg numberOfLines={1}>{title?.text}</TextFg>
-                <TextFgGray numberOfLines={1}>{artist?.text}</TextFgGray>
+                <TextFg>{title?.text}</TextFg>
+                <TextFgGray>{artist?.text}</TextFgGray>
             </View>
         </TouchableOpacity>
     );

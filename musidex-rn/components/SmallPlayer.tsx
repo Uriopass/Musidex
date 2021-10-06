@@ -1,6 +1,6 @@
 import React, {useContext} from "react";
 import Ctx from "../domain/ctx";
-import {Image, StyleSheet, TouchableOpacity, View, ViewStyle} from "react-native";
+import {Dimensions, Image, StyleSheet, TouchableOpacity, View, ViewStyle} from "react-native";
 import {TextBg, TextFg, TextFgGray} from "./StyledText";
 import {Icon} from "react-native-elements";
 import API from "../common/api";
@@ -46,8 +46,8 @@ const SmallPlayer = (props: PlayerProps) => {
                            source={{uri: API.getAPIUrl() + "/storage/" + thumbnail}} width={60} height={60}/>
                 }
                 <View style={styles.currentTrackTitle}>
-                    <TextFg>{title}</TextFg>
-                    <TextFgGray>{artist}</TextFgGray>
+                    <TextFg numberOfLines={1}>{title}</TextFg>
+                    <TextFgGray numberOfLines={1}>{artist}</TextFgGray>
                 </View>
             </View>
             <View style={styles.controls}>
@@ -84,15 +84,16 @@ const styles = StyleSheet.create({
     },
     currentTrack: {
         flexDirection: "row",
-        flexBasis: 200,
         alignItems: "center",
+        flex: 1,
     },
     currentTrackThumbnail: {
-        width: 60,
+        flexBasis: 60,
         height: 60,
     },
     currentTrackTitle: {
         padding: 5,
+        flex: 1,
     },
     trackInfo: {},
     controls: {
