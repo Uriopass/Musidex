@@ -1,7 +1,7 @@
 import React, {useContext} from "react";
 import Ctx from "../domain/ctx";
 import {Image, StyleSheet, TouchableOpacity, View, ViewStyle} from "react-native";
-import {TextFg} from "./StyledText";
+import {TextBg, TextFg} from "./StyledText";
 import {Icon} from "react-native-elements";
 import API from "../common/api";
 import {getTags} from "../common/entity";
@@ -41,7 +41,7 @@ const SmallPlayer = (props: PlayerProps) => {
                 }
                 <View style={styles.currentTrackTitle}>
                     <TextFg>{title}</TextFg>
-                    <TextFg>{artist}</TextFg>
+                    <TextBg>{artist}</TextBg>
                 </View>
             </View>
             <View style={styles.controls}>
