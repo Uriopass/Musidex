@@ -1,14 +1,15 @@
-import {Animated, FlatList, Image, StyleSheet, TouchableOpacity, View} from "react-native";
+import {Animated, FlatList, Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import React, {useCallback, useContext, useRef, useState} from "react";
 import {getTags, Tag} from "../common/entity";
-import {TextFg} from "./StyledText";
+import {TextBg, TextFg, TextPrimary, TextSecondary} from "./StyledText";
 import Colors from "../domain/colors";
 import API from "../common/api";
 import Ctx from "../domain/ctx";
 import {NextTrackCallback} from "../common/tracklist";
 import {Icon} from "react-native-elements";
-import {SortBy, useMusicSelect} from "../common/filters";
+import {SortBy, sortby_kind_eq, SortByKind, useMusicSelect} from "../common/filters";
 import {SearchInput} from "./SearchInput";
+import {Setter} from "../common/utils";
 
 export default function Explorer() {
     const [metadata] = useContext(Ctx.Metadata);
@@ -29,12 +30,70 @@ export default function Explorer() {
         <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
                   progressColor="#1d2f23"/>
         }
+        <SortBySelect forced={(searchQry !== "") ? "Query match score" : undefined}
+                      sortBy={sortBy} setSortBy={setSortBy}
+                      hasSimilarity={curTrack !== undefined}/>
     </>
 
     return (
         <SongList musics={musics} topComp={TopComp}/>
     );
 };
+
+
+type SortBySelectProps = {
+    forced?: string;
+    sortBy: SortBy,
+    setSortBy: Setter<SortBy>,
+    hasSimilarity: boolean,
+}
+
+const SortBySelect = React.memo((props: SortBySelectProps) => {
+    let SortByElem = (props2: { sort: SortByKind, name: string }) => {
+        let is_same = sortby_kind_eq(props.sortBy.kind, props2.sort)
+        let on_click = () => {
+            let new_desc = true;
+            if (is_same) {
+                new_desc = !props.sortBy.descending;
+            }
+            props.setSortBy({kind: props2.sort, descending: new_desc});
+        };
+
+        return <TouchableOpacity style={[styles.sortByElem]}
+                                 activeOpacity={0.7}
+                                 onPress={on_click}>
+            {
+                is_same ? <TextPrimary>{props2.name}</TextPrimary> : <TextBg>{props2.name}</TextBg>
+
+            }
+            {
+                (is_same) &&
+                (
+                    props.sortBy.descending ?
+                        <Icon name="south" size={18} color={Colors.primary}/> :
+                        <Icon name="north" size={18} color={Colors.primary}/>
+                )
+            }
+        </TouchableOpacity>
+    }
+
+    if (props.forced !== undefined) {
+        return <View style={styles.sortFilterSelect}>
+            <TextBg>Sort By:</TextBg>
+            <TextSecondary style={styles.sortByElem}>{props.forced}</TextSecondary>
+        </View>;
+    }
+
+    return <View style={styles.sortFilterSelect}>
+        <TextBg>Sort By:</TextBg>
+        {props.hasSimilarity &&
+        <SortByElem sort={{kind: "similarity"}} name="Similarity"/>
+        }
+        <SortByElem sort={{kind: "tag", value: "title"}} name="Title"/>
+        <SortByElem sort={{kind: "creation_time"}} name="Last added"/>
+    </View>;
+})
+
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -142,6 +201,14 @@ const SongElem = React.memo((props: SongElemProps) => {
 });
 
 const styles = StyleSheet.create({
+    sortFilterSelect: {
+        flexDirection: "row",
+        padding: 10,
+    },
+    sortByElem: {
+        paddingHorizontal: 7,
+        flexDirection: "row",
+    },
     progress: {
         position: "absolute",
         left: 0,

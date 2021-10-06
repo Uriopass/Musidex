@@ -5,3 +5,15 @@ import Colors from "../domain/colors";
 export function TextFg(props: any) {
   return <Text {...props} style={[props.style, {color: Colors.colorfg}]} />;
 }
+
+export function TextBg(props: any) {
+  return <Text {...props} style={[props.style, {color: Colors.colorbg}]} />;
+}
+
+export function TextPrimary(props: any) {
+  return <Text {...props} style={[props.style, {color: Colors.primary}]} />;
+}
+
+export function TextSecondary(props: any) {
+  return <Text {...props} style={[props.style, {color: Colors.secondary}]} />;
+}
