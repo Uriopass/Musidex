@@ -8,6 +8,7 @@ import Ctx from "../domain/ctx";
 import {NextTrackCallback} from "../common/tracklist";
 import {Icon} from "react-native-elements";
 import {SortBy, useMusicSelect} from "../common/filters";
+import {SearchInput} from "./SearchInput";
 
 export default function Explorer() {
     const [metadata] = useContext(Ctx.Metadata);
@@ -21,19 +22,26 @@ export default function Explorer() {
     const curTrack: number | undefined = tracklist.last_played[tracklist.last_played.length - 1];
     const musics = useMusicSelect(metadata, searchQry, sortBy, tracklist, filters, user);
 
+    const TopComp = <>
+        <SearchInput value={searchQry} onChangeText={(text => setSearchQry(text))}
+                     placeholderTextColor={Colors.colorbg}/>
+        {curTrack &&
+        <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
+                  progressColor="#1d2f23"/>
+        }
+    </>
+
     return (
-        <>
-            {curTrack &&
-            <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
-                      progressColor="#1d2f23"/>
-            }
-            <SongList musics={musics}/>
-        </>
+        <SongList musics={musics} topComp={TopComp}/>
     );
-}
+};
+
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-function SongList(props: { musics: number[] }) {
+function SongList(props: {
+    musics: number[],
+    topComp: any,
+}) {
     const [metadata] = useContext(Ctx.Metadata);
     const [doNext] = useContext(Ctx.Controls);
     const tracklist = useContext(Ctx.Tracklist);
@@ -72,12 +80,14 @@ function SongList(props: { musics: number[] }) {
         }
     };
     const onGoToTop = () => {
-        flatRef.current?.scrollToIndex({index: 0, animated: true});
+        flatRef.current?.scrollToOffset({offset: 0, animated: true});
     };
 
     return <>
         <FlatList data={props.musics}
+                  keyboardShouldPersistTaps={"handled"}
                   ref={flatRef}
+                  ListHeaderComponent={props.topComp}
                   showsVerticalScrollIndicator={false}
                   renderItem={renderSong}
                   onScroll={onScroll}
