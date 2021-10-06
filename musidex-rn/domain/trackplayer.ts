@@ -114,8 +114,11 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                 loading: true,
                 paused: false,
             };
+        case "reset":
+            TrackPlayer.reset();
+            return newTrackPlayer();
         case "setTime":
-            //const _ = trackplayer.audio.setPositionAsync(action.time * 1000);
+            TrackPlayer.seekTo(action.time);
             return {
                 ...trackplayer,
             };

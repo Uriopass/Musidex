@@ -17,7 +17,7 @@ import Tracklist, {
     emptyTracklist,
     updateScoreCache,
     useNextTrackCallback,
-    usePrevTrackCallback,
+    usePrevTrackCallback, useResetCallback,
 } from "../common/tracklist";
 import Filters, {newFilters} from "../common/filters";
 import {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
@@ -64,6 +64,7 @@ function RootNavigator() {
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters, user);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
+    const doReset = useResetCallback(setList);
 
     useSetupListeners(trackplayer, dispatchPlayer, doNext);
 
@@ -94,7 +95,7 @@ function RootNavigator() {
         <Ctx.User.Provider value={[user, setUser]}>
             <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
                 <Ctx.Tracklist.Provider value={list}>
-                    <Ctx.Controls.Provider value={[doNext, doPrev]}>
+                    <Ctx.Controls.Provider value={[doNext, doPrev, doReset]}>
                         <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
                             <Stack.Navigator screenOptions={{headerShown: false}}>
                                 <Stack.Screen name="Root" component={MainScreen}/>

@@ -12,7 +12,7 @@ interface PlayerProps {
 
 const SmallPlayer = (props: PlayerProps) => {
     const [metadata] = useContext(Ctx.Metadata);
-    const [doNext, doPrev] = useContext(Ctx.Controls);
+    const [doNext, doPrev, reset] = useContext(Ctx.Controls);
     const [player, dispatch] = useContext(Ctx.Trackplayer);
     const list = useContext(Ctx.Tracklist);
 
@@ -22,6 +22,7 @@ const SmallPlayer = (props: PlayerProps) => {
     const thumbnail = tags?.get("compressed_thumbnail")?.text || (tags?.get("thumbnail")?.text || "");
 
     const canPrev = list.last_played.length > 1;
+    const canReset = list.last_played.length > 0;
 
     const onPlay = () => {
         if (player.current) {
@@ -30,6 +31,11 @@ const SmallPlayer = (props: PlayerProps) => {
         }
         setTimeout(() => doNext(), 0);
     };
+
+    const onReset = () => {
+        dispatch({action: "reset"});
+        reset();
+    }
 
     return (
         <View style={[styles.container, props.style]}>
@@ -45,18 +51,23 @@ const SmallPlayer = (props: PlayerProps) => {
                 </View>
             </View>
             <View style={styles.controls}>
+                <TouchableOpacity onPress={onReset} disabled={!canReset}>
+                    <Icon size={30}
+                          color={canReset ? "white" : "gray"}
+                          name="clear"/>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={doPrev} disabled={!canPrev}>
-                    <Icon size={35}
+                    <Icon size={32}
                           color={canPrev ? "white" : "gray"}
                           name="skip-previous"/>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={onPlay}>
-                    <Icon size={40}
+                    <Icon size={38}
                           color="white"
                           name={player.paused ? "play-circle-fill" : "pause"}/>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setTimeout(() => doNext(), 0)}>
-                    <Icon size={35}
+                    <Icon size={32}
                           color="white"
                           name="skip-next"/>
                 </TouchableOpacity>
@@ -85,7 +96,7 @@ const styles = StyleSheet.create({
     },
     trackInfo: {},
     controls: {
-        flexBasis: 110,
+        flexBasis: 135,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
