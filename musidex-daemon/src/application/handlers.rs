@@ -3,7 +3,7 @@ use std::convert::TryInto;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
 
-use crate::domain::entity::{Music, MusicID, Tag, User};
+use crate::domain::entity::{Music, MusicID, Tag, TagKey, User};
 use crate::domain::sync::{serve_sync_websocket, SyncBroadcastSubscriber};
 use crate::domain::{stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
@@ -62,6 +62,20 @@ pub async fn delete_music(req: Request<Body>) -> Result<Response<Body>> {
             .parse()
             .context("couldn't parse music id as integer")?,
     );
+    let uid = User::from_req(&req).context("no user id")?;
+
+    if Tag::has(&c, id, TagKey::UserLibrary(uid.to_string()))? {
+        Tag::remove(&c, id, TagKey::UserLibrary(uid.to_string()))?;
+        return Ok(Response::new(Body::empty()));
+    }
+
+    let users = User::list(&c)?;
+
+    for user in users {
+        if Tag::has(&c, id, TagKey::UserLibrary(user.id.to_string()))? {
+            return Ok(res_status(StatusCode::UNAUTHORIZED));
+        }
+    }
 
     Music::delete(&c, id).context("couldn't delete music from db")?;
 

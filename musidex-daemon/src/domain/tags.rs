@@ -78,6 +78,18 @@ impl Tag {
         Ok(())
     }
 
+    pub fn remove(c: &Connection, id: MusicID, key: TagKey) -> Result<()> {
+        log::info!("removing tag {}:{}", id.0, &key);
+        let mut stmt = c.prepare_cached("DELETE FROM tags WHERE music_id=?1 AND key=?2;")?;
+        let v = stmt
+            .execute(rusqlite::params![id.0, key,])
+            .context("error deleting tag")?;
+        if v == 0 {
+            log::warn!("removing tag {}:{} but it didn't exist", id.0, &key);
+        }
+        Ok(())
+    }
+
     pub fn by_text(c: &Connection, text: &str) -> Result<Vec<Tag>> {
         let mut stmt = c.prepare_cached(
             "
