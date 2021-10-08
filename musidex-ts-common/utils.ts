@@ -55,6 +55,5 @@ export const useDebouncedEffect = (effect: React.EffectCallback, deps: React.Dep
         const handler = setTimeout(() => effect(), delay);
 
         return () => clearTimeout(handler);
-        // eslint-disable-next-line react-domain/exhaustive-deps
     }, [...deps || [], delay]);
 };
