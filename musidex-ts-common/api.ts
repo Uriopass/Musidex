@@ -10,7 +10,7 @@ export type RawMusidexMetadata = {
     patches?: patch[];
 }
 
-type patch = { kind: 'add' | 'update', tag: Tag } | { kind: 'remove', id: number, key: string }
+type patch = { kind: 'add' | 'update' | 'remove', tag: Tag }
 
 let apiURL = "";
 let host = "";
