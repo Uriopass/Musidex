@@ -66,6 +66,7 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
 
     if (raw.patches) {
         for (let patch of raw.patches) {
+            console.log(patch);
             switch (patch.kind) {
                 case "add":
                     meta.tags.push(patch.tag);
