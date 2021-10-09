@@ -3,6 +3,7 @@ import Submit from "./submit";
 import Users from "./users";
 import {NextTrackCallback} from "../common/tracklist";
 import SettingsPage from "./settings";
+import {Setter} from "../../../musidex-ts-common/utils";
 
 export type PageEnum = "explorer" | "submit" | "users" | "settings";
 
@@ -11,6 +12,7 @@ interface NavigatorProps {
     doNext: NextTrackCallback;
     onSetUser: (id: number) => void;
     curUser?: number;
+    setCurPage: Setter<PageEnum>;
 }
 
 export interface PageProps {
@@ -22,7 +24,7 @@ const PageNavigator = (props: NavigatorProps) => {
         <>
             <Explorer hidden={props.page !== "explorer"} curUser={props.curUser} doNext={props.doNext}/>
             <Submit hidden={props.page !== "submit"}/>
-            <Users hidden={props.page !== "users"} onSetUser={props.onSetUser} curUser={props.curUser}/>
+            <Users hidden={props.page !== "users"} onSetUser={props.onSetUser} curUser={props.curUser} setCurPage={}/>
             <SettingsPage hidden={props.page !== "settings"}/>
         </>
     )

@@ -83,7 +83,7 @@ const App = () => {
                 <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
                     <TracklistCtx.Provider value={list}>
                         <FiltersCtx.Provider value={[filters, setFilters]}>
-                            <PageNavigator page={curPage} doNext={doNext} onSetUser={setUser} curUser={user}/>
+                            <PageNavigator page={curPage} doNext={doNext} onSetUser={setUser} curUser={user} setCurPage={setCurPage}/>
                             <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev}/>
                         </FiltersCtx.Provider>
                     </TracklistCtx.Provider>

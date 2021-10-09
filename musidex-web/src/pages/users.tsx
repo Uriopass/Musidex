@@ -1,15 +1,17 @@
 import './users.css'
 import {useContext, useState} from "react";
 import {User} from "../common/entity";
-import {PageProps} from "./navigator";
+import {PageEnum, PageProps} from "./navigator";
 import {EditableText, MaterialIcon} from "../components/utils";
 import TextInput from "../components/input";
 import API from "../common/api";
 import {MetadataCtx} from "../domain/metadata";
+import {Setter} from "../../../musidex-ts-common/utils";
 
 export interface UsersProps extends PageProps {
     onSetUser: (id: number) => void;
     curUser?: number;
+    setCurPage: Setter<PageEnum>;
 }
 
 const Users = (props: UsersProps) => {
@@ -32,6 +34,11 @@ const Users = (props: UsersProps) => {
         setNewName("");
     };
 
+    const onSelectUser = (user: number) => {
+        props.onSetUser(user);
+        props.setCurPage("explorer");
+    };
+
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")}>
             <div className="users color-fg ">
@@ -40,7 +47,7 @@ const Users = (props: UsersProps) => {
                         return <UserCard key={user.id}
                                          user={user}
                                          isCurrent={props.curUser === user.id}
-                                         onSelect={props.onSetUser}
+                                         onSelect={onSelectUser}
                                          onDelete={onDelete}
                                          onRename={onRename}/>;
                     })
