@@ -70,7 +70,7 @@ const Explorer = (props: ExplorerProps) => {
                                 setFilters={setFilters}/>
                 {
                     toShow.slice(0, shown).map((id) => {
-                        if (id === curTrack) {
+                        if (id === curTrack && sortBy.kind.kind === "similarity") {
                             return <Fragment key={id}/>;
                         }
                         const tags = getTags(metadata, id);
