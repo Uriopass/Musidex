@@ -11,7 +11,7 @@ import Filters, {SortBy, sortby_kind_eq, SortByKind, useMusicSelect} from "../co
 import {MetadataCtx} from "../domain/metadata";
 import {FiltersCtx, TracklistCtx} from "../App";
 import {clamp, Setter} from "../common/utils";
-import useStored from "../../../musidex-rn/domain/useStored";
+import useLocalStorage from "use-local-storage";
 
 export interface ExplorerProps extends PageProps {
     title?: string;
@@ -25,7 +25,7 @@ const Explorer = (props: ExplorerProps) => {
     const list = useContext(TracklistCtx);
     const [shown, setShown] = useState(40);
     const [searchQry, setSearchQry] = useState("");
-    const [sortBy, setSortBy] = useStored<SortBy>("sortby", {kind: {kind: "similarity"}, descending: true})
+    const [sortBy, setSortBy] = useLocalStorage<SortBy>("sortby", {kind: {kind: "similarity"}, descending: true})
 
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
     const onScroll = (e: any) => {
