@@ -7,6 +7,7 @@ export type TrackPlayerAction =
     { action: "play", id: number, tags?: Tags }
     | { action: "audioTick" }
     | { action: "setTime", time: number }
+    | { action: "reset" }
 
 type Tracklist = {
     last_played: number[];
@@ -55,6 +56,14 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
 
         dispatch({action: "play", id: id, tags: getTags(metadata, id)});
     }, [curlist, setList, metadata, dispatch, filters, curUser]);
+}
+
+export function useResetCallback(setList: (newv: Tracklist) => void, metadata: MusidexMetadata): NextTrackCallback {
+    return useCallback(() => {
+        let l = emptyTracklist();
+        l = updateScoreCache(l, metadata);
+        setList(l);
+    }, [metadata, setList]);
 }
 
 export function updateScoreCache(list: Tracklist, metadata: MusidexMetadata): Tracklist {

@@ -66,14 +66,15 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
 
     if (raw.patches) {
         for (let patch of raw.patches) {
+            console.log(patch);
             switch (patch.kind) {
                 case "add":
                     meta.tags.push(patch.tag);
                     break;
                 case "remove":
-                    let id = patch.id;
-                    let k = patch.key;
-                    retain(meta.tags, (t) => t.music_id !== id && t.key !== k);
+                    let id = patch.tag.music_id;
+                    let k = patch.tag.key;
+                    retain(meta.tags, (t) => !(t.music_id === id && t.key === k));
                     break;
                 case "update":
                     for (let i = 0; i < meta.tags.length; i++) {

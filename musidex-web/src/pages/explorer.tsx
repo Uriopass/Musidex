@@ -1,7 +1,6 @@
 import './explorer.css'
 import API from "../common/api";
 import React, {Fragment, useContext, useState} from "react";
-import {PlayButton} from "../components/playbutton";
 import {EditableText, MaterialIcon} from "../components/utils";
 import {canPlay, getTags, Tag} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";
@@ -12,6 +11,7 @@ import {MetadataCtx} from "../domain/metadata";
 import {FiltersCtx, TracklistCtx} from "../App";
 import {clamp, Setter} from "../common/utils";
 import useLocalStorage from "use-local-storage";
+import noCoverImg from "../no_cover.jpg";
 
 export interface ExplorerProps extends PageProps {
     title?: string;
@@ -19,7 +19,7 @@ export interface ExplorerProps extends PageProps {
     curUser?: number;
 }
 
-const Explorer = (props: ExplorerProps) => {
+const Explorer = React.memo((props: ExplorerProps) => {
     const [metadata, syncMetadata] = useContext(MetadataCtx);
     const [filters, setFilters] = useContext(FiltersCtx);
     const list = useContext(TracklistCtx);
@@ -101,7 +101,7 @@ const Explorer = (props: ExplorerProps) => {
             </div>
         </div>
     )
-}
+})
 
 type FilterBySelectProps = {
     filters: Filters,
@@ -189,8 +189,8 @@ type SongElemProps = {
     curUser?: number;
 }
 
-const SongElem = (props: SongElemProps) => {
-    let cover = props.tags?.get("compressed_thumbnail")?.text || (props.tags?.get("thumbnail")?.text || "");
+const SongElem = React.memo((props: SongElemProps) => {
+    let cover = props.tags?.get("compressed_thumbnail")?.text || props.tags?.get("thumbnail")?.text;
 
     const playable = canPlay(props.tags);
     const hasYT = props.tags.get("youtube_video_id")?.text;
@@ -221,15 +221,19 @@ const SongElem = (props: SongElemProps) => {
     const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = props.tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
 
+    const onNext = () => props.doNext(props.musicID);
+
     return (
-        <div className="song-elem" style={{background: grad}}>
-            <div className="cover-image-container">
+        <div className={`song-elem ${playable ? "" : "song-elem-disabled"}`}
+             style={{background: grad}}>
+            <div className={`cover-image-container ${playable ? "song-elem-playable": ""}`} onClick={onNext}>
                 {
-                    (cover !== null) &&
-                    <img src={"storage/" + cover} alt="album or video cover" loading="lazy"/>
+                    (cover) ?
+                        <img src={"storage/" + cover} alt="album or video cover" loading="lazy"/> :
+                        <img src={noCoverImg} alt="album or video cover"/>
                 }
             </div>
-            <div style={{flex: "3", padding: "10px"}}>
+            <div style={{paddingLeft: "10px"}}>
                 <b>
                     <EditableText text={title.text || ""}
                                   onRename={(v) => API.insertTag({...title, text: v})}/>
@@ -240,13 +244,9 @@ const SongElem = (props: SongElemProps) => {
                                   onRename={(v) => API.insertTag({...artist, text: v})}/>
                 </span>
             </div>
+            <div className={`${playable ? "song-elem-playable": ""}`} style={{flexBasis: 0, flexGrow: 1, flexShrink: 1, height: "100%"}} onClick={onNext}>
+            </div>
             <div className="song-elem-buttons">
-                {
-                    hasYT &&
-                    <button className="player-button" onClick={goToYT}>
-                        <img src="yt_icon.png" width={20} height={20} alt="Go to Youtube"/>
-                    </button>
-                }
                 {
                     showAddToLibrary &&
                     <button className="player-button" onClick={onAddToLibrary} title="Add to library">
@@ -254,8 +254,10 @@ const SongElem = (props: SongElemProps) => {
                     </button>
                 }
                 {
-                    playable &&
-                    <PlayButton doNext={props.doNext} musicID={props.musicID}/>
+                    hasYT &&
+                    <button className="player-button" onClick={goToYT}>
+                        <img src="yt_icon.png" width={20} height={20} alt="Go to Youtube"/>
+                    </button>
                 }
                 <button className="player-button" onClick={onDelete} title="Remove from library">
                     <MaterialIcon name="delete"/>
@@ -263,7 +265,7 @@ const SongElem = (props: SongElemProps) => {
             </div>
         </div>
     )
-}
+})
 
 
 export default Explorer;

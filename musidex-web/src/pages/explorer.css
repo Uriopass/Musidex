@@ -19,9 +19,17 @@
     width: calc(100% - 20px);
 }
 
+.song-elem-playable {
+    cursor: pointer;
+}
+
+.song-elem-disabled {
+    opacity: 0.6;
+}
+
 .song-elem-buttons {
-    flex: 2;
-    max-width: 160px;
+    flex: 2 0 100px;
+    max-width: 100px;
     display: flex;
     justify-content: space-evenly;
 }
@@ -33,8 +41,8 @@
 
 .cover-image-container img {
     object-fit: cover;
-    width: 100%;
-    height: 100%;
+    width: 60px;
+    height: 60px;
 }
 
 .sortfilter-select {
