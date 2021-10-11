@@ -50,6 +50,7 @@ export function useUpdate(): [number, () => void] {
     return [v, update];
 }
 
+/* eslint-disable */
 export const useDebouncedEffect = (effect: React.EffectCallback, deps: React.DependencyList, delay: number) => {
     useEffect(() => {
         const handler = setTimeout(() => effect(), delay);
@@ -57,3 +58,4 @@ export const useDebouncedEffect = (effect: React.EffectCallback, deps: React.Dep
         return () => clearTimeout(handler);
     }, [...deps || [], delay]);
 };
+/* eslint-enable */
