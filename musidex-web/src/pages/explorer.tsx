@@ -221,7 +221,12 @@ const SongElem = React.memo((props: SongElemProps) => {
     const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = props.tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
 
-    const onNext = () => props.doNext(props.musicID);
+    const onNext = () => {
+        if (!playable) {
+            return;
+        }
+        props.doNext(props.musicID);
+    }
 
     return (
         <div className={`song-elem ${playable ? "" : "song-elem-disabled"}`}
