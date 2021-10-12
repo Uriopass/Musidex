@@ -1,4 +1,4 @@
-import {Animated, FlatList, Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {Animated, FlatList, Image, StyleSheet, TouchableOpacity, View} from "react-native";
 import React, {useCallback, useContext, useRef, useState} from "react";
 import {getTags, Tag} from "../common/entity";
 import {TextBg, TextFg, TextFgGray, TextPrimary, TextSecondary} from "./StyledText";
@@ -7,36 +7,36 @@ import API from "../common/api";
 import Ctx from "../domain/ctx";
 import {NextTrackCallback} from "../common/tracklist";
 import {Icon} from "react-native-elements";
-import {SortBy, sortby_kind_eq, SortByKind, useMusicSelect} from "../common/filters";
+import {SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {SearchInput} from "./SearchInput";
-import {Setter} from "../common/utils";
 
 export default function Explorer() {
     const [metadata] = useContext(Ctx.Metadata);
     const tracklist = useContext(Ctx.Tracklist);
     const [doNext] = useContext(Ctx.Controls);
-    const [filters, setFilters] = useContext(Ctx.Filters);
+    const [searchForm, setSearchForm] = useContext(Ctx.SearchForm);
     const [user] = useContext(Ctx.User);
-    const [searchQry, setSearchQry] = useState("");
-    const [sortBy, setSortBy] = useState({kind: {kind: "similarity"}, descending: true} as SortBy);
+    const toShow = useContext(Ctx.SelectedMusics);
+
+    //const setFilters = useCallback((f: Filters) => setSearchForm({...searchForm, filters: f}), [setSearchForm, searchForm]);
+    const setSortBy = useCallback((s: SortBy) => setSearchForm({...searchForm, sort: s}), [setSearchForm, searchForm]);
+    const setSearchQry = useCallback((s: string) => setSearchForm({...searchForm, filters: {...searchForm.filters, searchQry: s}}), [setSearchForm, searchForm]);
 
     const curTrack: number | undefined = tracklist.last_played[tracklist.last_played.length - 1];
-    const musics = useMusicSelect(metadata, searchQry, sortBy, tracklist, filters, user);
-
     const TopComp = <>
-        <SearchInput value={searchQry} onChangeText={(text => setSearchQry(text))}
+        <SearchInput value={searchForm.filters.searchQry} onChangeText={(text => setSearchQry(text))}
                      placeholderTextColor={Colors.colorbg}/>
         {curTrack &&
         <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
                   progressColor="#1d2f23"/>
         }
-        <SortBySelect forced={(searchQry !== "") ? "Query match score" : undefined}
-                      sortBy={sortBy} setSortBy={setSortBy}
+        <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
+                      sortBy={searchForm.sort} setSortBy={setSortBy}
                       hasSimilarity={curTrack !== undefined}/>
     </>
 
     return (
-        <SongList musics={musics} topComp={TopComp}/>
+        <SongList musics={toShow} topComp={TopComp}/>
     );
 };
 
@@ -44,7 +44,7 @@ export default function Explorer() {
 type SortBySelectProps = {
     forced?: string;
     sortBy: SortBy,
-    setSortBy: Setter<SortBy>,
+    setSortBy: (v: SortBy) => void,
     hasSimilarity: boolean,
 }
 

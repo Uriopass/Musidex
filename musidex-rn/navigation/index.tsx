@@ -19,7 +19,7 @@ import Tracklist, {
     useNextTrackCallback,
     usePrevTrackCallback, useResetCallback,
 } from "../common/tracklist";
-import Filters, {newFilters} from "../common/filters";
+import Filters, {newFilters, newSearchForm, SearchForm, useMusicSelect} from "../common/filters";
 import {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
 
 export default function Navigation() {
@@ -59,10 +59,11 @@ function RootNavigator() {
     });
 
     const [user, setUser] = useStored<number | undefined>("user", undefined);
-    const [filters, setFilters] = useStored<Filters>("filters", newFilters());
+    const [searchForm, setSearchForm] = useStored<SearchForm>("searchForm", newSearchForm());
 
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
-    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters, user);
+    const selectedMusics = useMusicSelect(metadata, searchForm, list, user);
+    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, searchForm, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const doReset = useResetCallback(setList, metadata);
 
@@ -93,16 +94,20 @@ function RootNavigator() {
 
     return (
         <Ctx.User.Provider value={[user, setUser]}>
-            <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
-                <Ctx.Tracklist.Provider value={list}>
-                    <Ctx.Controls.Provider value={[doNext, doPrev, doReset]}>
-                        <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
-                            <Stack.Navigator screenOptions={{headerShown: false}}>
-                                <Stack.Screen name="Root" component={MainScreen}/>
-                            </Stack.Navigator>
-                        </Ctx.Trackplayer.Provider>
-                    </Ctx.Controls.Provider>
-                </Ctx.Tracklist.Provider>
-            </Ctx.Metadata.Provider>
+        <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
+        <Ctx.Tracklist.Provider value={list}>
+        <Ctx.Controls.Provider value={[doNext, doPrev, doReset]}>
+        <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
+        <Ctx.SearchForm.Provider value={[searchForm, setSearchForm]}>
+        <Ctx.SelectedMusics.Provider value={selectedMusics}>
+            <Stack.Navigator screenOptions={{headerShown: false}}>
+                <Stack.Screen name="Root" component={MainScreen}/>
+            </Stack.Navigator>
+        </Ctx.SelectedMusics.Provider>
+        </Ctx.SearchForm.Provider>
+        </Ctx.Trackplayer.Provider>
+        </Ctx.Controls.Provider>
+        </Ctx.Tracklist.Provider>
+        </Ctx.Metadata.Provider>
         </Ctx.User.Provider>);
 }

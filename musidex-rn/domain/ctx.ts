@@ -3,7 +3,7 @@ import React from "react";
 import Tracklist, {emptyTracklist, NextTrackCallback, PrevTrackCallback, TrackPlayerAction} from "../common/tracklist";
 import TrackPlayer, {newTrackPlayer} from "../domain/trackplayer";
 import {Dispatch, Setter} from "../common/utils";
-import Filters, {newFilters} from "../common/filters";
+import {newSearchForm, SearchForm} from "../common/filters";
 
 export default {
     Metadata: React.createContext<[MusidexMetadata,() => void]>([emptyMetadata(), () => {
@@ -11,7 +11,8 @@ export default {
     }]),
     Trackplayer: React.createContext<[TrackPlayer, Dispatch<TrackPlayerAction>]>([newTrackPlayer(), _ => _]),
     Controls: React.createContext<[NextTrackCallback, PrevTrackCallback, () => void]>([_ => {}, () => {}, () => {}]),
-    Filters: React.createContext<[Filters, Setter<Filters>]>([newFilters(), _ => _]),
+    SearchForm: React.createContext<[SearchForm, (newv: SearchForm) => void]>([newSearchForm(), _ => _]),
+    SelectedMusics: React.createContext<number[]>([]),
     Tracklist: React.createContext<Tracklist>(emptyTracklist()),
     User: React.createContext<[number | undefined,(newv: number | undefined) => void]>([0, _ => _]),
 };

@@ -1,16 +1,15 @@
 import './explorer.css'
 import API from "../common/api";
-import React, {Fragment, useContext, useState} from "react";
+import React, {Fragment, useCallback, useContext, useState} from "react";
 import {EditableText, MaterialIcon} from "../components/utils";
 import {canPlay, getTags, Tag} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";
 import TextInput from "../components/input";
 import {PageProps} from "./navigator";
-import Filters, {SortBy, sortby_kind_eq, SortByKind, useMusicSelect} from "../common/filters";
+import Filters, {SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {MetadataCtx} from "../domain/metadata";
-import {FiltersCtx, TracklistCtx} from "../App";
-import {clamp, Setter} from "../common/utils";
-import useLocalStorage from "use-local-storage";
+import {SearchFormCtx, SelectedMusicsCtx, TracklistCtx} from "../App";
+import {clamp} from "../common/utils";
 import noCoverImg from "../no_cover.jpg";
 
 export interface ExplorerProps extends PageProps {
@@ -21,11 +20,14 @@ export interface ExplorerProps extends PageProps {
 
 const Explorer = React.memo((props: ExplorerProps) => {
     const [metadata, syncMetadata] = useContext(MetadataCtx);
-    const [filters, setFilters] = useContext(FiltersCtx);
+    const [searchForm, setSearchForm] = useContext(SearchFormCtx);
+    const toShow = useContext(SelectedMusicsCtx);
     const list = useContext(TracklistCtx);
     const [shown, setShown] = useState(40);
-    const [searchQry, setSearchQry] = useState("");
-    const [sortBy, setSortBy] = useLocalStorage<SortBy>("sortby", {kind: {kind: "similarity"}, descending: true})
+
+    const setFilters = useCallback((f: Filters) => setSearchForm({...searchForm, filters: f}), [setSearchForm, searchForm]);
+    const setSortBy = useCallback((s: SortBy) => setSearchForm({...searchForm, sort: s}), [setSearchForm, searchForm]);
+    const setSearchQry = useCallback((s: string) => setSearchForm({...searchForm, filters: {...searchForm.filters, searchQry: s}}), [setSearchForm, searchForm]);
 
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
     const onScroll = (e: any) => {
@@ -55,7 +57,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
                 <div style={{marginTop: 10}}/>
             </>;
     }
-    let toShow = useMusicSelect(metadata, searchQry, sortBy, list, filters, props.curUser);
+
 
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
@@ -64,14 +66,14 @@ const Explorer = React.memo((props: ExplorerProps) => {
                     <TextInput onChange={setSearchQry} name="Search"/>
                 </div>
                 {curPlaying}
-                <SortBySelect forced={(searchQry !== "") ? "Query match score" : undefined} sortBy={sortBy}
-                              setSortBy={setSortBy}
+                <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
+                              sortBy={searchForm.sort} setSortBy={setSortBy}
                               hasSimilarity={curTrack !== undefined}/>
-                <FilterBySelect filters={filters}
+                <FilterBySelect filters={searchForm.filters}
                                 setFilters={setFilters}/>
                 {
                     toShow.slice(0, shown).map((id) => {
-                        if (id === curTrack && sortBy.kind.kind === "similarity") {
+                        if (id === curTrack && searchForm.sort.kind.kind === "similarity") {
                             return <Fragment key={id}/>;
                         }
                         const tags = getTags(metadata, id);
@@ -105,7 +107,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
 
 type FilterBySelectProps = {
     filters: Filters,
-    setFilters: Setter<Filters>,
+    setFilters: (newv: Filters) => void,
 }
 
 const FilterBySelect = React.memo((props: FilterBySelectProps) => {
@@ -131,7 +133,7 @@ const FilterBySelect = React.memo((props: FilterBySelectProps) => {
 type SortBySelectProps = {
     forced?: string;
     sortBy: SortBy,
-    setSortBy: Setter<SortBy>,
+    setSortBy: (v: SortBy) => void,
     hasSimilarity: boolean,
 }
 
@@ -271,6 +273,5 @@ const SongElem = React.memo((props: SongElemProps) => {
         </div>
     )
 })
-
 
 export default Explorer;

@@ -12,12 +12,13 @@ import Tracklist, {
     usePrevTrackCallback
 } from "./common/tracklist";
 import {useCookie} from "./components/utils";
-import Filters, {newFilters} from "./common/filters";
+import {newSearchForm, SearchForm, useMusicSelect} from "./common/filters";
 import {MetadataCtx, useMetadata} from "./domain/metadata";
 import {Setter} from "./common/utils";
 import {firstUser} from "./common/entity";
 
-export const FiltersCtx = React.createContext<[Filters, Setter<Filters>]>([newFilters(), _ => _]);
+export const SearchFormCtx = React.createContext<[SearchForm, Setter<SearchForm>]>([newSearchForm(), _ => _]);
+export const SelectedMusicsCtx = React.createContext<number[]>([]);
 export const TracklistCtx = React.createContext<Tracklist>(emptyTracklist());
 
 const App = () => {
@@ -26,13 +27,14 @@ const App = () => {
     const [userStr, setUserStr] = useCookie("cur_user", undefined);
     const user = parseInt(userStr || "undefined") || undefined;
     const setUser = useCallback((v: number) => setUserStr(v.toString()), [setUserStr]);
-    const [filters, setFilters] = useLocalStorage<Filters>("filters", newFilters());
+    const [sform, setSform] = useLocalStorage<SearchForm>("searchform", newSearchForm());
     const [syncProblem, setSyncProblem] = useState(false);
     const [volume, setVolume] = useLocalStorage("volume", 1);
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
     const [list, setList] = useState<Tracklist>(emptyTracklist())
-    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, filters, user);
+    const selectedMusics = useMusicSelect(metadata, sform, list, user);
+    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, sform, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const ws = useRef<any>();
 
@@ -82,10 +84,12 @@ const App = () => {
             <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
                 <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
                     <TracklistCtx.Provider value={list}>
-                        <FiltersCtx.Provider value={[filters, setFilters]}>
-                            <PageNavigator page={curPage} doNext={doNext} onSetUser={setUser} curUser={user} setCurPage={setCurPage}/>
-                            <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev}/>
-                        </FiltersCtx.Provider>
+                        <SearchFormCtx.Provider value={[sform, setSform]}>
+                            <SelectedMusicsCtx.Provider value={selectedMusics}>
+                                <PageNavigator page={curPage} doNext={doNext} onSetUser={setUser} curUser={user} setCurPage={setCurPage}/>
+                                <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev}/>
+                            </SelectedMusicsCtx.Provider>
+                        </SearchFormCtx.Provider>
                     </TracklistCtx.Provider>
                 </TrackplayerCtx.Provider>
             </MetadataCtx.Provider>

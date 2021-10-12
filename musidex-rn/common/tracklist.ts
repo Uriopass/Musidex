@@ -1,5 +1,5 @@
 import {canPlay, getTags, MusidexMetadata, Tags, Vector} from "./entity";
-import Filters, {findFirst} from "../common/filters";
+import {SearchForm} from "../common/filters";
 import {Dispatch, dot} from "./utils";
 import {useCallback} from "react";
 
@@ -12,7 +12,6 @@ export type TrackPlayerAction =
 type Tracklist = {
     last_played: number[];
     last_played_maxsize: number;
-    best_tracks: number[];
     score_map: Map<number, number>;
 }
 
@@ -20,7 +19,6 @@ export function emptyTracklist(): Tracklist {
     return {
         last_played: [],
         last_played_maxsize: 30,
-        best_tracks: [],
         score_map: new Map(),
     };
 }
@@ -28,18 +26,29 @@ export function emptyTracklist(): Tracklist {
 export type NextTrackCallback = (id?: number) => void;
 export type PrevTrackCallback = () => void;
 
-export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Tracklist) => void, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, filters: Filters, curUser: number | undefined): NextTrackCallback {
+export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Tracklist) => void, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, sform: SearchForm, selectedMusics: number[]): NextTrackCallback {
     return useCallback((id) => {
         let list = {
             ...curlist,
         };
 
         if (id === undefined) {
-            let best_id = findFirst(filters, list.best_tracks, metadata, curUser);
-            let score = list.score_map.get(best_id || -1);
-            if (score !== undefined) {
-                id = best_id;
+            let best_id = selectedMusics[0];
+            const curp = list.last_played[list.last_played.length - 1]
+            if (curp) {
+                const v = selectedMusics.indexOf(curp);
+                if (v !== -1) {
+                    best_id = selectedMusics[(v + 1) % selectedMusics.length];
+                }
             }
+
+            if (sform.sort.kind.kind === "similarity") {
+                const score = list.score_map.get(best_id || -1);
+                if (score === undefined) {
+                    return;
+                }
+            }
+            id = best_id;
         }
         if (id === undefined) {
             return;
@@ -55,7 +64,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
         }
 
         dispatch({action: "play", id: id, tags: getTags(metadata, id)});
-    }, [curlist, setList, metadata, dispatch, filters, curUser]);
+    }, [curlist, setList, metadata, dispatch, selectedMusics, sform.sort.kind.kind]);
 }
 
 export function useResetCallback(setList: (newv: Tracklist) => void, metadata: MusidexMetadata): NextTrackCallback {
@@ -98,11 +107,6 @@ export function updateScoreCache(list: Tracklist, metadata: MusidexMetadata): Tr
         }
         let d = list.last_played.length - l_index;
         list.score_map.set(id, prev - 1 / d);
-    });
-
-    list.best_tracks = metadata.musics.slice();
-    list.best_tracks.sort((a, b) => {
-        return (list.score_map.get(b) || -100000) - (list.score_map.get(a) || -100000);
     });
 
     return list;
