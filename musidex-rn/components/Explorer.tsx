@@ -26,13 +26,13 @@ export default function Explorer() {
     const TopComp = <>
         <SearchInput value={searchForm.filters.searchQry} onChangeText={(text => setSearchQry(text))}
                      placeholderTextColor={Colors.colorbg}/>
-        {curTrack &&
-        <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
-                  progressColor="#1d2f23"/>
-        }
         <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
                       sortBy={searchForm.sort} setSortBy={setSortBy}
                       hasSimilarity={curTrack !== undefined}/>
+        {(curTrack && searchForm.sort.kind.kind === "similarity") &&
+        <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
+                  progressColor="#1d2f23"/>
+        }
     </>
 
     return (
@@ -104,6 +104,7 @@ function SongList(props: {
     const [metadata] = useContext(Ctx.Metadata);
     const [doNext] = useContext(Ctx.Controls);
     const tracklist = useContext(Ctx.Tracklist);
+    const [searchForm] = useContext(Ctx.SearchForm);
 
     const flatRef = useRef<FlatList>(null);
     const topOpacity = useRef(new Animated.Value(0)).current;
@@ -112,15 +113,21 @@ function SongList(props: {
     const curTrack: number | undefined = tracklist.last_played[tracklist.last_played.length - 1];
 
     const renderSong = useCallback(({item}: { item: number }) => {
+        let color = "#28222f";
+        let progress = tracklist.score_map.get(item);
         if (item === curTrack) {
-            return <></>;
+            if (searchForm.sort.kind.kind === "similarity") {
+                return <></>;
+            }
+            color = "#1d2f23";
+            progress = 1.0;
         }
         return <SongElem musicID={item}
                          tags={getTags(metadata, item) || new Map()}
                          doNext={doNext}
-                         progress={tracklist.score_map.get(item)}
-                         progressColor="#28222f"/>;
-    }, [metadata, doNext, tracklist, curTrack]);
+                         progress={progress}
+                         progressColor={color}/>;
+    }, [metadata, doNext, tracklist, curTrack, searchForm.sort.kind.kind]);
 
     const onScroll = (ev: any) => {
         if (ev.nativeEvent.contentOffset.y <= 0.0) {
