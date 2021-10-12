@@ -65,12 +65,12 @@ const Explorer = React.memo((props: ExplorerProps) => {
                 <div className="explorer-search">
                     <TextInput onChange={setSearchQry} name="Search"/>
                 </div>
-                {curPlaying}
                 <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
                               sortBy={searchForm.sort} setSortBy={setSortBy}
                               hasSimilarity={curTrack !== undefined}/>
                 <FilterBySelect filters={searchForm.filters}
                                 setFilters={setFilters}/>
+                {curPlaying}
                 {
                     toShow.slice(0, shown).map((id) => {
                         const tags = getTags(metadata, id);
