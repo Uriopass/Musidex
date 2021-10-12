@@ -42,7 +42,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
     const colorCur = "#1d2f23";
     const colorSongs = "#28222f";
     let curPlaying = <></>;
-    if (curTrack) {
+    if (curTrack && searchForm.sort.kind.kind === "similarity") {
         const tags = getTags(metadata, curTrack) || new Map();
         curPlaying =
             <>
@@ -73,22 +73,27 @@ const Explorer = React.memo((props: ExplorerProps) => {
                                 setFilters={setFilters}/>
                 {
                     toShow.slice(0, shown).map((id) => {
-                        if (id === curTrack && searchForm.sort.kind.kind === "similarity") {
-                            return <Fragment key={id}/>;
-                        }
                         const tags = getTags(metadata, id);
                         if (tags === undefined) {
                             return <Fragment key={id}/>;
                         }
-                        let score = list.score_map.get(id);
+                        let progress = list.score_map.get(id);
+                        let progressColor = colorSongs;
+                        if (id === curTrack) {
+                            if (searchForm.sort.kind.kind === "similarity") {
+                                return <Fragment key={id}/>;
+                            }
+                            progress = 1.0;
+                            progressColor = colorCur;
+                        }
                         return (
                             <SongElem key={id} musicID={id}
                                       tags={tags}
                                       curUser={props.curUser}
                                       syncMetadata={syncMetadata}
                                       doNext={props.doNext}
-                                      progress={score}
-                                      progressColor={colorSongs}
+                                      progress={progress}
+                                      progressColor={progressColor}
                             />
                         )
                     })
