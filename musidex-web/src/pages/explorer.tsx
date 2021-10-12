@@ -46,7 +46,6 @@ const Explorer = React.memo((props: ExplorerProps) => {
         const tags = getTags(metadata, curTrack) || new Map();
         curPlaying =
             <>
-                <div style={{marginTop: 10}}/>
                 <SongElem musicID={curTrack}
                           doNext={props.doNext}
                           syncMetadata={syncMetadata}
@@ -54,7 +53,6 @@ const Explorer = React.memo((props: ExplorerProps) => {
                           curUser={props.curUser}
                           progress={1.0}
                           progressColor={colorCur}/>
-                <div style={{marginTop: 10}}/>
             </>;
     }
 
