@@ -235,7 +235,7 @@ const SongElem = React.memo((props: SongElemProps) => {
     }
 
     return (
-        <div className={`song-elem ${playable ? "" : "song-elem-disabled"} ${hovered ? "song-elem-hovered": ""}`}
+        <div className={`song-elem ${playable ? "" : "song-elem-disabled"} ${(hovered && playable) ? "song-elem-hovered": ""}`}
              style={{background: grad}}>
             <div className={`cover-image-container ${playable ? "song-elem-playable": ""}`} onClick={onNext} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
                 {
