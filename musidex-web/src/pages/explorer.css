@@ -23,6 +23,10 @@
     cursor: pointer;
 }
 
+.song-elem-hovered {
+    filter: brightness(130%);
+}
+
 .song-elem-disabled {
     opacity: 0.6;
 }

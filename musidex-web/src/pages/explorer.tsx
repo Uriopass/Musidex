@@ -203,6 +203,7 @@ const SongElem = React.memo((props: SongElemProps) => {
         window.open("https://youtube.com/watch?v=" + hasYT, "_blank")?.focus();
     };
 
+    const [hovered, setHovered] = useState(false);
     const c = props.progressColor;
     const p = clamp(100 * (props.progress || 0), 0, 100);
     const grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
@@ -234,9 +235,9 @@ const SongElem = React.memo((props: SongElemProps) => {
     }
 
     return (
-        <div className={`song-elem ${playable ? "" : "song-elem-disabled"}`}
+        <div className={`song-elem ${playable ? "" : "song-elem-disabled"} ${hovered ? "song-elem-hovered": ""}`}
              style={{background: grad}}>
-            <div className={`cover-image-container ${playable ? "song-elem-playable": ""}`} onClick={onNext}>
+            <div className={`cover-image-container ${playable ? "song-elem-playable": ""}`} onClick={onNext} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
                 {
                     (cover) ?
                         <img src={"storage/" + cover} alt="album or video cover" loading="lazy"/> :
@@ -254,7 +255,7 @@ const SongElem = React.memo((props: SongElemProps) => {
                                   onRename={(v) => API.insertTag({...artist, text: v})}/>
                 </span>
             </div>
-            <div className={`${playable ? "song-elem-playable": ""}`} style={{flexBasis: 0, flexGrow: 1, flexShrink: 1, height: "100%"}} onClick={onNext}>
+            <div className={`${playable ? "song-elem-playable": ""}`} style={{flexBasis: 0, flexGrow: 1, flexShrink: 1, height: "100%"}} onClick={onNext} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
             </div>
             <div className="song-elem-buttons">
                 {
