@@ -45,6 +45,11 @@
     background-color: white;
 }
 
+.editable-text {
+    display: inherit;
+    cursor: text;
+}
+
 .editable-text:hover {
     text-decoration: underline dotted;
 }

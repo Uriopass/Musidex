@@ -49,23 +49,26 @@ export type EditableTextProps = {
 
 export const EditableText = (props: EditableTextProps) => {
     return <span contentEditable={true}
-                 onBlur={(v: FormEvent<HTMLSpanElement>) => {
-                     if (v.currentTarget.innerText !== props.text) {
-                         props.onRename(v.currentTarget.innerText)
-                     }
-                 }}
-                 onKeyDown={(ev) => {
-                     if (ev.code === "Enter") {
-                         ev.preventDefault();
-                         ev.currentTarget.blur();
-                     }
-                 }}
-                 suppressContentEditableWarning={true}
-                 spellCheck={false}
-                 className="editable-text"
+                onBlur={(v: FormEvent<HTMLSpanElement>) => {
+                    if (v.currentTarget.innerText !== props.text) {
+                        props.onRename(v.currentTarget.innerText)
+                    }
+                }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                }}
+                onKeyDown={(ev) => {
+                    if (ev.code === "Enter") {
+                        ev.preventDefault();
+                        ev.currentTarget.blur();
+                    }
+                }}
+                suppressContentEditableWarning={true}
+                spellCheck={false}
+                className="editable-text"
     >
-                {props.text}
-            </span>;
+        {props.text}
+    </span>;
 }
 
 const isBrowser = typeof window !== 'undefined';

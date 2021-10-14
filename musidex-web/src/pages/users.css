@@ -16,6 +16,7 @@
     align-items: center;
     margin: 10px 10px;
     position: relative;
+    cursor: pointer;
 }
 
 .user-card:hover {
