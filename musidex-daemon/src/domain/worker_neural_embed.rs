@@ -22,7 +22,7 @@ impl NeuralEmbedWorker {
                 let v = self
                     .step()
                     .await
-                    .context("error while running youtubedl worker");
+                    .context("error while running neural worker");
                 if let Err(e) = v {
                     log::error!("{:?}", e);
                 }
