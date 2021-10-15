@@ -4,7 +4,6 @@
  *
  */
 import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import * as React from 'react';
 import {useCallback, useEffect, useReducer} from 'react';
 
@@ -19,8 +18,10 @@ import Tracklist, {
     useNextTrackCallback,
     usePrevTrackCallback, useResetCallback,
 } from "../common/tracklist";
-import Filters, {newFilters, newSearchForm, SearchForm, useMusicSelect} from "../common/filters";
+import {newSearchForm, SearchForm, useMusicSelect} from "../common/filters";
 import {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
+import {createDrawerNavigator} from '@react-navigation/drawer';
+import {TextFg} from "../components/StyledText";
 
 export default function Navigation() {
     return (
@@ -30,9 +31,7 @@ export default function Navigation() {
     );
 }
 
-// A root stack navigator is often used for displaying modals on top of all other content
-// Read more here: https://reactnavigation.org/docs/modal
-const Stack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
 
 function RootNavigator() {
     API.setAPIUrl("http://192.168.0.14:3200");
@@ -92,6 +91,10 @@ function RootNavigator() {
     }, []);
     useEffect(fetchMetadata, []);
 
+    const Test = () => (<>
+        <TextFg>salut</TextFg>
+    </>);
+
     return (
         <Ctx.User.Provider value={[user, setUser]}>
         <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
@@ -100,9 +103,10 @@ function RootNavigator() {
         <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
         <Ctx.SearchForm.Provider value={[searchForm, setSearchForm]}>
         <Ctx.SelectedMusics.Provider value={selectedMusics}>
-            <Stack.Navigator screenOptions={{headerShown: false}}>
-                <Stack.Screen name="Root" component={MainScreen}/>
-            </Stack.Navigator>
+            <Drawer.Navigator initialRouteName="Home">
+                <Drawer.Screen name="Home" component={MainScreen} />
+                <Drawer.Screen name="Notifications" component={Test}/>
+            </Drawer.Navigator>
         </Ctx.SelectedMusics.Provider>
         </Ctx.SearchForm.Provider>
         </Ctx.Trackplayer.Provider>
