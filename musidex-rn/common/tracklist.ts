@@ -43,6 +43,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
             }
 
             if (sform.sort.kind.kind === "similarity") {
+                best_id = selectedMusics[0];
                 const score = list.score_map.get(best_id || -1);
                 if (score === undefined) {
                     return;
