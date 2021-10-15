@@ -20,8 +20,11 @@ import Tracklist, {
 } from "../common/tracklist";
 import {newSearchForm, SearchForm, useMusicSelect} from "../common/filters";
 import {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
-import {createDrawerNavigator} from '@react-navigation/drawer';
+import {createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerItemList} from '@react-navigation/drawer';
 import {TextFg} from "../components/StyledText";
+import {StyleSheet, View} from "react-native";
+import Colors from "../domain/colors";
+import {Icon} from "react-native-elements";
 
 export default function Navigation() {
     return (
@@ -91,27 +94,69 @@ function RootNavigator() {
     }, []);
     useEffect(fetchMetadata, []);
 
-    const Test = () => (<>
-        <TextFg>salut</TextFg>
-    </>);
-
     return (
         <Ctx.User.Provider value={[user, setUser]}>
-        <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
-        <Ctx.Tracklist.Provider value={list}>
-        <Ctx.Controls.Provider value={[doNext, doPrev, doReset]}>
-        <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
-        <Ctx.SearchForm.Provider value={[searchForm, setSearchForm]}>
-        <Ctx.SelectedMusics.Provider value={selectedMusics}>
-            <Drawer.Navigator initialRouteName="Home">
-                <Drawer.Screen name="Home" component={MainScreen} />
-                <Drawer.Screen name="Notifications" component={Test}/>
-            </Drawer.Navigator>
-        </Ctx.SelectedMusics.Provider>
-        </Ctx.SearchForm.Provider>
-        </Ctx.Trackplayer.Provider>
-        </Ctx.Controls.Provider>
-        </Ctx.Tracklist.Provider>
-        </Ctx.Metadata.Provider>
+            <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
+                <Ctx.Tracklist.Provider value={list}>
+                    <Ctx.Controls.Provider value={[doNext, doPrev, doReset]}>
+                        <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
+                            <Ctx.SearchForm.Provider value={[searchForm, setSearchForm]}>
+                                <Ctx.SelectedMusics.Provider value={selectedMusics}>
+                                    <MusidexDrawer/>
+                                </Ctx.SelectedMusics.Provider>
+                            </Ctx.SearchForm.Provider>
+                        </Ctx.Trackplayer.Provider>
+                    </Ctx.Controls.Provider>
+                </Ctx.Tracklist.Provider>
+            </Ctx.Metadata.Provider>
         </Ctx.User.Provider>);
 }
+
+const Test = () => (<>
+    <TextFg>salut</TextFg>
+</>);
+
+function MusidexDrawer() {
+    return (
+        <Drawer.Navigator screenOptions={(props) => {
+            return {
+                drawerStyle: styles.drawer,
+                drawerActiveBackgroundColor: Colors.primaryDarker,
+                drawerActiveTintColor: Colors.colorfg,
+                drawerInactiveBackgroundColor: Colors.bg,
+                drawerInactiveTintColor: Colors.colorfg,
+                headerShown: true,
+                headerStyle: styles.header,
+                drawerType: "front",
+                overlayColor: Colors.bg,
+                headerTitleStyle: styles.headerTitle,
+                swipeEdgeWidth: 1000,
+                headerLeft:
+                    () => (<View style={{paddingLeft: 16}}>
+                        <Icon
+                            name="menu"
+                            size={25}
+                            color={Colors.colorbg}
+                            onPress={() => props.navigation.openDrawer()}/>
+                    </View>),
+            }
+        }} initialRouteName="Home">
+            <Drawer.Screen name="Home" component={MainScreen}/>
+            <Drawer.Screen name="Notifications" component={Test}/>
+        </Drawer.Navigator>
+    )
+}
+
+
+const styles = StyleSheet.create({
+    drawer: {
+        backgroundColor: Colors.fg,
+    },
+    header: {
+        height: 30,
+        backgroundColor: Colors.bg,
+    },
+    headerTitle: {
+        color: Colors.colorbg,
+    }
+})

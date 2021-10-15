@@ -2,6 +2,7 @@ export default {
     danger: "#de5050",
     alert: "#dcaa2c",
     primary: "#8761a2",
+    primaryDarker: "#513b5f",
     success: "#2abe2a",
     secondary: "#3f7a51",
     bg: "#151517",
