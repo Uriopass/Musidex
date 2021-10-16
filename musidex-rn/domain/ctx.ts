@@ -2,7 +2,7 @@ import {emptyMetadata, MusidexMetadata} from "../common/entity";
 import React from "react";
 import Tracklist, {emptyTracklist, NextTrackCallback, PrevTrackCallback, TrackPlayerAction} from "../common/tracklist";
 import TrackPlayer, {newTrackPlayer} from "../domain/trackplayer";
-import {Dispatch, Setter} from "../common/utils";
+import {Dispatch} from "../common/utils";
 import {newSearchForm, SearchForm} from "../common/filters";
 
 export default {
@@ -15,4 +15,5 @@ export default {
     SelectedMusics: React.createContext<number[]>([]),
     Tracklist: React.createContext<Tracklist>(emptyTracklist()),
     User: React.createContext<[number | undefined,(newv: number | undefined) => void]>([0, _ => _]),
+    APIUrl: React.createContext<[string,(newv: string) => void]>(["", _ => _]),
 };

@@ -20,6 +20,10 @@ pub async fn metadata(req: Request<Body>) -> Result<Response<Body>> {
     Ok(Response::new(Body::from(metadata.serialize_json())))
 }
 
+pub async fn ping(_: Request<Body>) -> Result<Response<Body>> {
+    Ok(Response::new(Body::empty()))
+}
+
 pub async fn subscribe_sync(request: Request<Body>) -> Result<Response<Body>> {
     if !hyper_tungstenite::is_upgrade_request(&request) {
         return Ok(Response::new(Body::empty()));

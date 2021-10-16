@@ -15,17 +15,18 @@ export default function Explorer() {
     const tracklist = useContext(Ctx.Tracklist);
     const [doNext] = useContext(Ctx.Controls);
     const [searchForm, setSearchForm] = useContext(Ctx.SearchForm);
-    const [user] = useContext(Ctx.User);
     const toShow = useContext(Ctx.SelectedMusics);
 
     //const setFilters = useCallback((f: Filters) => setSearchForm({...searchForm, filters: f}), [setSearchForm, searchForm]);
     const setSortBy = useCallback((s: SortBy) => setSearchForm({...searchForm, sort: s}), [setSearchForm, searchForm]);
-    const setSearchQry = useCallback((s: string) => setSearchForm({...searchForm, filters: {...searchForm.filters, searchQry: s}}), [setSearchForm, searchForm]);
+    const setSearchQry = useCallback((s: string) => setSearchForm({
+        ...searchForm,
+        filters: {...searchForm.filters, searchQry: s}
+    }), [setSearchForm, searchForm]);
 
     const curTrack: number | undefined = tracklist.last_played[tracklist.last_played.length - 1];
     const TopComp = <>
-        <SearchInput value={searchForm.filters.searchQry} onChangeText={(text => setSearchQry(text))}
-                     placeholderTextColor={Colors.colorbg}/>
+        <SearchInput value={searchForm.filters.searchQry} onChangeText={(text => setSearchQry(text))}/>
         <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
                       sortBy={searchForm.sort} setSortBy={setSortBy}
                       hasSimilarity={curTrack !== undefined}/>

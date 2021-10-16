@@ -15,13 +15,20 @@ type patch = { kind: 'add' | 'update' | 'remove', tag: Tag }
 let apiURL = "";
 let host = "";
 
+function parseURL(url: string): string {
+    if (!url.startsWith("http")) {
+        url = "http://" + url;
+    }
+    while (url.endsWith("/")) {
+        url = url.slice(0, url.length - 1);
+    }
+    return url;
+}
+
 export const API = {
     setAPIUrl(url: string) {
-        if (!url.startsWith("http")) {
-            url = "http://" + url;
-        }
-        apiURL = url;
-        host = url.split("://")[1] || "";
+        apiURL = parseURL(url);
+        host = apiURL.split("://")[1] || "";
     },
 
     getAPIUrl(): string {
@@ -35,6 +42,10 @@ export const API = {
         }
 
         return new ReconnectingWebSocket(prefix + "://" + host + "/api/metadata/ws");
+    },
+
+    async testConnection(localApiUrl: string): Promise<boolean> {
+        return fetch(parseURL(localApiUrl) + "/api/ping").then((v) => v.ok).catch(() => false)
     },
 
     async metadataFromWSMsg(m: MessageEvent, oldMeta: MusidexMetadata): Promise<[MusidexMetadata, string]> {

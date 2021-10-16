@@ -7,7 +7,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import * as React from 'react';
 import {useCallback, useEffect, useReducer} from 'react';
 
-import MainScreen from "../screens/MainScreen";
+import MainScreen from "./MainScreen";
 import useStored from "../domain/useStored";
 import {emptyMetadata, firstUser, MusidexMetadata, newMetadata, User} from "../common/entity";
 import API, {RawMusidexMetadata} from "../common/api";
@@ -30,6 +30,7 @@ import {TextFg} from "../components/StyledText";
 import {StyleSheet, View} from "react-native";
 import Colors from "../domain/colors";
 import {Icon} from "react-native-elements";
+import SettingsScreen from "./SettingsScreen";
 
 export default function Navigation() {
     return (
@@ -67,6 +68,9 @@ function RootNavigator() {
 
     const [user, setUser] = useStored<number | undefined>("user", undefined);
     const [searchForm, setSearchForm] = useStored<SearchForm>("searchForm", newSearchForm());
+    const [apiURL, setAPIUrl] = useStored<string>("api_url", "");
+    API.setAPIUrl(apiURL);
+    console.log(apiURL);
 
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const selectedMusics = useMusicSelect(metadata, searchForm, list, user);
@@ -97,7 +101,7 @@ function RootNavigator() {
             setMetadata(meta);
         });
     }, []);
-    useEffect(fetchMetadata, []);
+    useEffect(fetchMetadata, [apiURL]);
 
     return (
         <Ctx.User.Provider value={[user, setUser]}>
@@ -107,7 +111,9 @@ function RootNavigator() {
                         <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
                             <Ctx.SearchForm.Provider value={[searchForm, setSearchForm]}>
                                 <Ctx.SelectedMusics.Provider value={selectedMusics}>
-                                    <MusidexDrawer users={metadata.users} curUser={user} setUser={setUser}/>
+                                    <Ctx.APIUrl.Provider value={[apiURL, setAPIUrl]}>
+                                        <MusidexDrawer users={metadata.users} curUser={user} setUser={setUser}/>
+                                    </Ctx.APIUrl.Provider>
                                 </Ctx.SelectedMusics.Provider>
                             </Ctx.SearchForm.Provider>
                         </Ctx.Trackplayer.Provider>
@@ -135,7 +141,7 @@ const MusidexDrawer = React.memo((props: MusidexDrawerProps) => {
                     drawerType: "front",
                     overlayColor: Colors.bg,
                     headerTitleStyle: styles.headerTitle,
-                    swipeEdgeWidth: 250,
+                    swipeEdgeWidth: 500,
                     headerLeft:
                         () => (<View style={{paddingLeft: 16}}>
                             <Icon
@@ -145,8 +151,9 @@ const MusidexDrawer = React.memo((props: MusidexDrawerProps) => {
                                 onPress={() => props.navigation.openDrawer()}/>
                         </View>),
                 }
-            }} initialRouteName="Home">
+            }} initialRouteName={props.curUser === undefined ? "Settings" : "Home"}>
             <Drawer.Screen name="Home" component={MainScreen}/>
+            <Drawer.Screen name="Settings" component={SettingsScreen}/>
         </Drawer.Navigator>
     )
 })
@@ -168,19 +175,27 @@ function CustomDrawerContent(d: MusidexDrawerProps): (props: DrawerContentCompon
                                }}/>
         }
 
+        const focusedRoute = props.state.routes[props.state.index];
+
         return (
             <DrawerContentScrollView {...props}>
                 <TextFg style={styles.drawerTitle}>Users</TextFg>
                 {d.users.map((user) => {
-                    return <DrawerItemLink label={user.name}
-                                           link="Home"
-                                           focused={user.id === d.curUser}
-                                           onPress={() => {
-                                               if (user.id !== d.curUser) {
-                                                   d.setUser(user.id);
-                                               }
-                                           }}/>
+                    return <DrawerItemLink
+                        key={user.id}
+                        label={user.name}
+                        link="Home"
+                        focused={focusedRoute.name === "Home" && user.id === d.curUser}
+                        onPress={() => {
+                            if (user.id !== d.curUser) {
+                                d.setUser(user.id);
+                            }
+                        }}/>
                 })}
+                <View style={{height: 20}}/>
+                <DrawerItemLink label="Settings"
+                                link="Settings"
+                                focused={focusedRoute.name === "Settings"}/>
             </DrawerContentScrollView>
         );
     }

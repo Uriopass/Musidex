@@ -17,9 +17,10 @@ export function SearchInput(props: TextInputProps & { searchStyle?: StyleProp<Te
                        setActive(false);
                        props.onBlur?.(e);
                    }}
+                   placeholderTextColor={Colors.colorbg}
                    placeholder="Search" style={[styles.searchInput, searchStyle]} {...textprops}/>
         {(props.value?.length || 0) > 0 && (
-            <TouchableOpacity style={styles.clearButton} onPress={() => props.onChangeText?.("")} >
+            <TouchableOpacity style={styles.clearButton} onPress={() => props.onChangeText?.("")}>
                 <Icon size={20} name="clear" color={Colors.colorfg}/>
             </TouchableOpacity>)
         }
