@@ -9,7 +9,7 @@ import {useCallback, useEffect, useReducer} from 'react';
 
 import MainScreen from "../screens/MainScreen";
 import useStored from "../domain/useStored";
-import {emptyMetadata, firstUser, MusidexMetadata, newMetadata} from "../common/entity";
+import {emptyMetadata, firstUser, MusidexMetadata, newMetadata, User} from "../common/entity";
 import API, {RawMusidexMetadata} from "../common/api";
 import Ctx from "../domain/ctx";
 import Tracklist, {
@@ -20,7 +20,12 @@ import Tracklist, {
 } from "../common/tracklist";
 import {newSearchForm, SearchForm, useMusicSelect} from "../common/filters";
 import {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
-import {createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerItemList} from '@react-navigation/drawer';
+import {
+    createDrawerNavigator,
+    DrawerContentComponentProps,
+    DrawerContentScrollView,
+    DrawerItem,
+} from '@react-navigation/drawer';
 import {TextFg} from "../components/StyledText";
 import {StyleSheet, View} from "react-native";
 import Colors from "../domain/colors";
@@ -102,7 +107,7 @@ function RootNavigator() {
                         <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
                             <Ctx.SearchForm.Provider value={[searchForm, setSearchForm]}>
                                 <Ctx.SelectedMusics.Provider value={selectedMusics}>
-                                    <MusidexDrawer/>
+                                    <MusidexDrawer users={metadata.users} curUser={user} setUser={setUser}/>
                                 </Ctx.SelectedMusics.Provider>
                             </Ctx.SearchForm.Provider>
                         </Ctx.Trackplayer.Provider>
@@ -112,43 +117,81 @@ function RootNavigator() {
         </Ctx.User.Provider>);
 }
 
-const Test = () => (<>
-    <TextFg>salut</TextFg>
-</>);
-
-function MusidexDrawer() {
-    return (
-        <Drawer.Navigator screenOptions={(props) => {
-            return {
-                drawerStyle: styles.drawer,
-                drawerActiveBackgroundColor: Colors.primaryDarker,
-                drawerActiveTintColor: Colors.colorfg,
-                drawerInactiveBackgroundColor: Colors.bg,
-                drawerInactiveTintColor: Colors.colorfg,
-                headerShown: true,
-                headerStyle: styles.header,
-                drawerType: "front",
-                overlayColor: Colors.bg,
-                headerTitleStyle: styles.headerTitle,
-                swipeEdgeWidth: 1000,
-                headerLeft:
-                    () => (<View style={{paddingLeft: 16}}>
-                        <Icon
-                            name="menu"
-                            size={25}
-                            color={Colors.colorbg}
-                            onPress={() => props.navigation.openDrawer()}/>
-                    </View>),
-            }
-        }} initialRouteName="Home">
-            <Drawer.Screen name="Home" component={MainScreen}/>
-            <Drawer.Screen name="Notifications" component={Test}/>
-        </Drawer.Navigator>
-    )
+type MusidexDrawerProps = {
+    users: User[],
+    curUser: number | undefined,
+    setUser: (user: number) => void;
 }
 
+const MusidexDrawer = React.memo((props: MusidexDrawerProps) => {
+    return (
+        <Drawer.Navigator
+            drawerContent={CustomDrawerContent(props)}
+            screenOptions={(props) => {
+                return {
+                    drawerStyle: styles.drawer,
+                    headerShown: true,
+                    headerStyle: styles.header,
+                    drawerType: "front",
+                    overlayColor: Colors.bg,
+                    headerTitleStyle: styles.headerTitle,
+                    swipeEdgeWidth: 250,
+                    headerLeft:
+                        () => (<View style={{paddingLeft: 16}}>
+                            <Icon
+                                name="menu"
+                                size={25}
+                                color={Colors.colorbg}
+                                onPress={() => props.navigation.openDrawer()}/>
+                        </View>),
+                }
+            }} initialRouteName="Home">
+            <Drawer.Screen name="Home" component={MainScreen}/>
+        </Drawer.Navigator>
+    )
+})
+
+function CustomDrawerContent(d: MusidexDrawerProps): (props: DrawerContentComponentProps) => any {
+    return (props) => {
+        const DrawerItemLink = (lprops: any) => {
+            return <DrawerItem style={styles.drawerItem}
+                               labelStyle={styles.drawerItemLabel}
+                               activeBackgroundColor={Colors.primaryDarker}
+                               activeTintColor={Colors.colorfg}
+                               inactiveBackgroundColor={Colors.bg}
+                               focused={lprops.focused}
+                               inactiveTintColor={Colors.colorfg}
+                               label={lprops.label}
+                               onPress={() => {
+                                   lprops.onPress?.();
+                                   props.navigation.jumpTo(lprops.link);
+                               }}/>
+        }
+
+        return (
+            <DrawerContentScrollView {...props}>
+                <TextFg style={styles.drawerTitle}>Users</TextFg>
+                {d.users.map((user) => {
+                    return <DrawerItemLink label={user.name}
+                                           link="Home"
+                                           focused={user.id === d.curUser}
+                                           onPress={() => {
+                                               if (user.id !== d.curUser) {
+                                                   d.setUser(user.id);
+                                               }
+                                           }}/>
+                })}
+            </DrawerContentScrollView>
+        );
+    }
+}
 
 const styles = StyleSheet.create({
+    drawerTitle: {
+        paddingLeft: 10,
+    },
+    drawerItem: {},
+    drawerItemLabel: {},
     drawer: {
         backgroundColor: Colors.fg,
     },
