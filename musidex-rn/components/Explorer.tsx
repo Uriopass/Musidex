@@ -80,13 +80,13 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
 
     if (props.forced !== undefined) {
         return <View style={styles.sortFilterSelect}>
-            <TextBg>Sort By:</TextBg>
+            <Icon size={20} name="sort" color={Colors.colorbg}/>
             <TextSecondary style={styles.sortByElem}>{props.forced}</TextSecondary>
         </View>;
     }
 
     return <View style={styles.sortFilterSelect}>
-        <TextBg>Sort By:</TextBg>
+        <Icon size={20} name="sort" color={Colors.colorbg}/>
         {props.hasSimilarity &&
         <SortByElem sort={{kind: "similarity"}} name="Similarity"/>
         }
