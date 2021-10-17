@@ -27,7 +27,29 @@ export function SearchInput(props: TextInputProps & { searchStyle?: StyleProp<Te
     </View>
 }
 
+type CheckboxProps = {
+    checked: boolean,
+    onChange: (newv: boolean) => void;
+    style?: StyleProp<TextStyle>,
+    size?: number,
+    children?: JSX.Element;
+}
+
+export function Checkbox(props: CheckboxProps) {
+
+    return <TouchableOpacity style={styles.checkboxContainer} onPress={() => props.onChange(!props.checked)}>
+        <Icon color={props.checked ? Colors.primary : Colors.colorbg}
+              size={props.size}
+              name={props.checked ? "check-box" : "check-box-outline-blank"}/>
+        {props.children}
+    </TouchableOpacity>
+}
+
 const styles = StyleSheet.create({
+    checkboxContainer: {
+        flexDirection: "row",
+        alignItems: "center"
+    },
     clearButton: {
         position: "absolute",
         right: 0,

@@ -8,7 +8,8 @@ import Ctx from "../domain/ctx";
 import {NextTrackCallback} from "../common/tracklist";
 import {Icon} from "react-native-elements";
 import {SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
-import {SearchInput} from "./SearchInput";
+import {Checkbox, SearchInput} from "./Input";
+import Filters from "../../musidex-web/src/common/filters";
 
 export default function Explorer() {
     const [metadata] = useContext(Ctx.Metadata);
@@ -24,12 +25,15 @@ export default function Explorer() {
         filters: {...searchForm.filters, searchQry: s}
     }), [setSearchForm, searchForm]);
 
+    const setFilters = useCallback((f) => setSearchForm({...searchForm, filters: f}), [setSearchForm, searchForm]);
+
     const curTrack: number | undefined = tracklist.last_played[tracklist.last_played.length - 1];
     const TopComp = <>
         <SearchInput value={searchForm.filters.searchQry} onChangeText={(text => setSearchQry(text))}/>
         <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
                       sortBy={searchForm.sort} setSortBy={setSortBy}
                       hasSimilarity={curTrack !== undefined}/>
+        <FilterBySelect filters={searchForm.filters} setFilters={setFilters}/>
         {(curTrack && searchForm.sort.kind.kind === "similarity") &&
         <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
                   progressColor="#1d2f23"/>
@@ -93,6 +97,31 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
         <SortByElem sort={{kind: "tag", value: "title"}} name="Title"/>
         <SortByElem sort={{kind: "creation_time"}} name="Last added"/>
     </View>;
+})
+
+type FilterBySelectProps = {
+    filters: Filters,
+    setFilters: (newv: Filters) => void,
+}
+
+const FilterBySelect = React.memo((props: FilterBySelectProps) => {
+    let onMySongsChange = (v: boolean) => {
+        props.setFilters({
+            ...props.filters,
+            user_only: v,
+        });
+    };
+
+    return <View style={styles.sortFilterSelect}>
+        <Icon size={20} name="filter-alt" color={Colors.colorbg}/>
+        <View style={styles.sortByElem}>
+            <Checkbox
+                checked={props.filters.user_only}
+                onChange={onMySongsChange}>
+                <TextBg> My Songs</TextBg>
+            </Checkbox>
+        </View>
+    </View>
 })
 
 

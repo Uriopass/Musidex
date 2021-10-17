@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from "react";
 import {ScrollView, StyleSheet, View} from "react-native";
-import {SearchInput} from "./SearchInput";
+import {SearchInput} from "./Input";
 import Ctx from "../domain/ctx";
 import useStored from "../domain/useStored";
 import {Icon} from "react-native-elements";
