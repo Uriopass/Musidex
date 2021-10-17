@@ -16,7 +16,8 @@ import Tracklist, {
     emptyTracklist,
     updateScoreCache,
     useNextTrackCallback,
-    usePrevTrackCallback, useResetCallback,
+    usePrevTrackCallback,
+    useResetCallback,
 } from "../common/tracklist";
 import {newSearchForm, SearchForm, useMusicSelect} from "../common/filters";
 import {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
@@ -29,7 +30,6 @@ import {
 import {TextFg} from "../components/StyledText";
 import {StyleSheet, View} from "react-native";
 import Colors from "../domain/colors";
-import {Icon} from "react-native-elements";
 import SettingsScreen from "./SettingsScreen";
 
 export default function Navigation() {
@@ -130,23 +130,13 @@ const MusidexDrawer = React.memo((props: MusidexDrawerProps) => {
     return (
         <Drawer.Navigator
             drawerContent={CustomDrawerContent(props)}
-            screenOptions={(props) => {
+            screenOptions={() => {
                 return {
                     drawerStyle: styles.drawer,
-                    headerShown: true,
-                    headerStyle: styles.header,
+                    headerShown: false,
                     drawerType: "front",
                     overlayColor: Colors.bg,
-                    headerTitleStyle: styles.headerTitle,
                     swipeEdgeWidth: 500,
-                    headerLeft:
-                        () => (<View style={{paddingLeft: 16}}>
-                            <Icon
-                                name="menu"
-                                size={25}
-                                color={Colors.colorbg}
-                                onPress={() => props.navigation.openDrawer()}/>
-                        </View>),
                 }
             }} initialRouteName={props.curUser === undefined ? "Settings" : "Home"}>
             <Drawer.Screen name="Home" component={MainScreen}/>
@@ -176,7 +166,6 @@ function CustomDrawerContent(d: MusidexDrawerProps): (props: DrawerContentCompon
 
         return (
             <DrawerContentScrollView {...props}>
-                <TextFg style={styles.drawerTitle}>Users</TextFg>
                 {d.users.map((user) => {
                     return <DrawerItemLink
                         key={user.id}
@@ -199,19 +188,9 @@ function CustomDrawerContent(d: MusidexDrawerProps): (props: DrawerContentCompon
 }
 
 const styles = StyleSheet.create({
-    drawerTitle: {
-        paddingLeft: 10,
-    },
     drawerItem: {},
     drawerItemLabel: {},
     drawer: {
         backgroundColor: Colors.fg,
-    },
-    header: {
-        height: 30,
-        backgroundColor: Colors.bg,
-    },
-    headerTitle: {
-        color: Colors.colorbg,
     }
 })
