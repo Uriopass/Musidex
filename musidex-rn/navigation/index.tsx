@@ -43,8 +43,6 @@ export default function Navigation() {
 const Drawer = createDrawerNavigator();
 
 function RootNavigator() {
-    API.setAPIUrl("http://192.168.0.14:3200");
-
     const [list, setList] = useStored<Tracklist>("tracklist", emptyTracklist(), {
         ser: v => {
             let lol = {...v, score_map: [...v.score_map]};
@@ -70,7 +68,6 @@ function RootNavigator() {
     const [searchForm, setSearchForm] = useStored<SearchForm>("searchForm", newSearchForm());
     const [apiURL, setAPIUrl] = useStored<string>("api_url", "");
     API.setAPIUrl(apiURL);
-    console.log(apiURL);
 
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const selectedMusics = useMusicSelect(metadata, searchForm, list, user);
