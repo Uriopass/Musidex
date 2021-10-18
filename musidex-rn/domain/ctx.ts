@@ -6,9 +6,7 @@ import {Dispatch} from "../common/utils";
 import {newSearchForm, SearchForm} from "../common/filters";
 
 export default {
-    Metadata: React.createContext<[MusidexMetadata,() => void]>([emptyMetadata(), () => {
-        return;
-    }]),
+    Metadata: React.createContext<[MusidexMetadata,() => Promise<void>]>([emptyMetadata(), async () => {}]),
     Trackplayer: React.createContext<[TrackPlayer, Dispatch<TrackPlayerAction>]>([newTrackPlayer(), _ => _]),
     Controls: React.createContext<[NextTrackCallback, PrevTrackCallback, () => void]>([_ => {}, () => {}, () => {}]),
     SearchForm: React.createContext<[SearchForm, (newv: SearchForm) => void]>([newSearchForm(), _ => _]),

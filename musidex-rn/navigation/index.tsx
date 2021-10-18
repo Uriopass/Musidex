@@ -91,14 +91,14 @@ function RootNavigator() {
     }, [metadata]);
 
     let fetchMetadata = useCallback(() => {
-        API.getMetadata().then((meta) => {
+        return API.getMetadata().then((meta) => {
             if (meta === null) {
                 return;
             }
             setMetadata(meta);
-        });
+        })
     }, []);
-    useEffect(fetchMetadata, [apiURL]);
+    useEffect(() => {fetchMetadata()}, [apiURL]);
 
     return (
         <Ctx.User.Provider value={[user, setUser]}>

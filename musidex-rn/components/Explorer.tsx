@@ -1,5 +1,5 @@
 import {Animated, FlatList, Image, StyleSheet, TouchableOpacity, View} from "react-native";
-import React, {useCallback, useContext, useRef, useState} from "react";
+import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
 import {getTags, Tag} from "../common/entity";
 import {TextBg, TextFg, TextFgGray, TextPrimary, TextSecondary} from "./StyledText";
 import Colors from "../domain/colors";
@@ -132,10 +132,12 @@ function SongList(props: {
     musics: number[],
     topComp: any,
 }) {
-    const [metadata] = useContext(Ctx.Metadata);
+    const [metadata, fetchMetadata] = useContext(Ctx.Metadata);
     const [doNext] = useContext(Ctx.Controls);
     const tracklist = useContext(Ctx.Tracklist);
     const [searchForm] = useContext(Ctx.SearchForm);
+
+    const [refreshing, setRefreshing] = useState(false);
 
     const flatRef = useRef<FlatList>(null);
     const topOpacity = useRef(new Animated.Value(0)).current;
@@ -182,6 +184,11 @@ function SongList(props: {
 
     return <>
         <FlatList data={props.musics}
+                  refreshing={refreshing}
+                  onRefresh={() => {
+                      setRefreshing(true);
+                      fetchMetadata().then(() => setRefreshing(false))
+                  }}
                   keyboardShouldPersistTaps={"handled"}
                   ref={flatRef}
                   ListHeaderComponent={props.topComp}
