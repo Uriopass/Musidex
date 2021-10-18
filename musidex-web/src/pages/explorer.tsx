@@ -1,6 +1,6 @@
 import './explorer.css'
 import API from "../common/api";
-import React, {Fragment, useCallback, useContext, useState} from "react";
+import React, {Fragment, useCallback, useContext, useMemo, useState} from "react";
 import {EditableText, MaterialIcon} from "../components/utils";
 import {canPlay, getTags, Tag} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";
@@ -56,6 +56,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
             </>;
     }
 
+    console.log(searchForm, toShow);
 
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
@@ -181,6 +182,7 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
         }
         <SortByElem sort={{kind: "tag", value: "title"}} name="Title"/>
         <SortByElem sort={{kind: "creation_time"}} name="Last added"/>
+        <SortByElem sort={{kind: "random"}} name="Random"/>
     </div>;
 })
 

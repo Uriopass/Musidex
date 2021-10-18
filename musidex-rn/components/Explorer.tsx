@@ -96,6 +96,7 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
         }
         <SortByElem sort={{kind: "tag", value: "title"}} name="Title"/>
         <SortByElem sort={{kind: "creation_time"}} name="Last added"/>
+        <SortByElem sort={{kind: "random"}} name="Random"/>
     </View>;
 })
 

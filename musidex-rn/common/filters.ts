@@ -1,5 +1,5 @@
 import {getTags, MusidexMetadata} from "./entity";
-import {retain} from "./utils";
+import {prng, retain} from "./utils";
 import Tracklist from "./tracklist";
 import {useMemo} from "react";
 import Fuse from "fuse.js";
@@ -14,7 +14,7 @@ export type Filters = {
     searchQry: string;
 }
 
-export type SortByKind = { kind: "similarity" } | { kind: "creation_time" } | { kind: "tag", value: string }
+export type SortByKind = { kind: "similarity" } | { kind: "creation_time" } | { kind: "tag", value: string } | { kind: "random" }
 export type SortBy = { kind: SortByKind, descending: boolean }
 
 export function newSearchForm(): SearchForm {
@@ -52,6 +52,8 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
     const searchQry = search.filters.searchQry;
     const scoremap = list.score_map;
     const skind = sortBy.kind.kind;
+
+    const seed = useMemo(() => Math.floor(Math.random() * 10000000), []);
 
     const best_tracks = useMemo(() => {
         const l = metadata.musics.slice();
@@ -93,10 +95,16 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
                     toShow.reverse();
                     break;
                 case "tag":
-                    let v = sortBy.kind.value;
+                    const v = sortBy.kind.value;
                     toShow = metadata.musics.slice();
                     toShow.sort((a, b) => {
                         return (getTags(metadata, a)?.get(v)?.text || "").localeCompare(getTags(metadata, b)?.get(v)?.text || "");
+                    });
+                    break;
+                case "random":
+                    toShow = metadata.musics.slice();
+                    toShow.sort((a, b) => {
+                        return prng(seed + a)() - prng(seed + b)();
                     });
                     break;
             }
