@@ -8,18 +8,44 @@
  * @format
  */
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {Image, StatusBar, View} from 'react-native';
 
 import useCachedResources from "./domain/useCachedResources";
 import Navigation from "./navigation";
 import {SafeAreaProvider} from "react-native-safe-area-context";
 import Colors from "./domain/colors";
+import useStored from "./domain/useStored";
+import {emptyMetadata, MusidexMetadata, newMetadata} from "./common/entity";
+import API, {RawMusidexMetadata} from "./common/api";
+import Ctx from "./domain/ctx";
 
 export default function App() {
     const isLoadingComplete = useCachedResources();
+    const [metadata, setMetadata, loaded] = useStored<MusidexMetadata>("metadata", emptyMetadata(), {
+        ser: (v: MusidexMetadata): string => {
+            return JSON.stringify(v.raw);
+        },
+        deser: (v: string): MusidexMetadata => {
+            const obj: RawMusidexMetadata = JSON.parse(v);
+            return newMetadata(obj);
+        },
+    });
+    console.log(loaded);
 
-    if (!isLoadingComplete) {
+    const [apiURL, setAPIUrl, loadedAPI] = useStored<string>("api_url", "");
+    API.setAPIUrl(apiURL);
+
+    let fetchMetadata = useCallback(() => {
+        return API.getMetadata().then((meta) => {
+            if (meta === null) {
+                return;
+            }
+            setMetadata(meta);
+        })
+    }, [setMetadata]);
+
+    if (!isLoadingComplete || !loaded || !loadedAPI) {
         return <View style={{backgroundColor: '#383838', flex: 1, alignItems: "center", justifyContent: "center"}}>
             <Image source={require('./musidex_logo.png')}/>
         </View>;
@@ -27,7 +53,11 @@ export default function App() {
         return (
             <SafeAreaProvider>
                 <StatusBar backgroundColor={Colors.bg}/>
-                <Navigation/>
+                <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
+                    <Ctx.APIUrl.Provider value={[apiURL, setAPIUrl]}>
+                        <Navigation/>
+                    </Ctx.APIUrl.Provider>
+                </Ctx.Metadata.Provider>
             </SafeAreaProvider>
         );
     }

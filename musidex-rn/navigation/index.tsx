@@ -5,12 +5,11 @@
  */
 import {NavigationContainer} from '@react-navigation/native';
 import * as React from 'react';
-import {useCallback, useEffect, useReducer} from 'react';
+import {useContext, useEffect, useReducer} from 'react';
 
 import MainScreen from "./MainScreen";
 import useStored from "../domain/useStored";
-import {emptyMetadata, firstUser, MusidexMetadata, newMetadata, User} from "../common/entity";
-import API, {RawMusidexMetadata} from "../common/api";
+import {firstUser, User} from "../common/entity";
 import Ctx from "../domain/ctx";
 import Tracklist, {
     emptyTracklist,
@@ -27,7 +26,6 @@ import {
     DrawerContentScrollView,
     DrawerItem,
 } from '@react-navigation/drawer';
-import {TextFg} from "../components/StyledText";
 import {StyleSheet, View} from "react-native";
 import Colors from "../domain/colors";
 import SettingsScreen from "./SettingsScreen";
@@ -54,20 +52,15 @@ function RootNavigator() {
             return obj as Tracklist;
         },
     });
-    const [metadata, setMetadata] = useStored<MusidexMetadata>("metadata", emptyMetadata(), {
-        ser: (v: MusidexMetadata): string => {
-            return JSON.stringify(v.raw);
-        },
-        deser: (v: string): MusidexMetadata => {
-            const obj: RawMusidexMetadata = JSON.parse(v);
-            return newMetadata(obj);
-        },
-    });
+    const [metadata, fetchMetadata] = useContext(Ctx.Metadata);
+    const [apiURL] = useContext(Ctx.APIUrl);
 
     const [user, setUser] = useStored<number | undefined>("user", undefined);
     const [searchForm, setSearchForm] = useStored<SearchForm>("searchForm", newSearchForm());
-    const [apiURL, setAPIUrl] = useStored<string>("api_url", "");
-    API.setAPIUrl(apiURL);
+
+    useEffect(() => {
+        fetchMetadata()
+    }, [apiURL]);
 
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const selectedMusics = useMusicSelect(metadata, searchForm, list, user);
@@ -90,33 +83,19 @@ function RootNavigator() {
         setList(l);
     }, [metadata]);
 
-    let fetchMetadata = useCallback(() => {
-        return API.getMetadata().then((meta) => {
-            if (meta === null) {
-                return;
-            }
-            setMetadata(meta);
-        })
-    }, []);
-    useEffect(() => {fetchMetadata()}, [apiURL]);
-
     return (
         <Ctx.User.Provider value={[user, setUser]}>
-            <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
-                <Ctx.Tracklist.Provider value={list}>
-                    <Ctx.Controls.Provider value={[doNext, doPrev, doReset]}>
-                        <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
-                            <Ctx.SearchForm.Provider value={[searchForm, setSearchForm]}>
-                                <Ctx.SelectedMusics.Provider value={selectedMusics}>
-                                    <Ctx.APIUrl.Provider value={[apiURL, setAPIUrl]}>
-                                        <MusidexDrawer users={metadata.users} curUser={user} setUser={setUser}/>
-                                    </Ctx.APIUrl.Provider>
-                                </Ctx.SelectedMusics.Provider>
-                            </Ctx.SearchForm.Provider>
-                        </Ctx.Trackplayer.Provider>
-                    </Ctx.Controls.Provider>
-                </Ctx.Tracklist.Provider>
-            </Ctx.Metadata.Provider>
+            <Ctx.Tracklist.Provider value={list}>
+                <Ctx.Controls.Provider value={[doNext, doPrev, doReset]}>
+                    <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
+                        <Ctx.SearchForm.Provider value={[searchForm, setSearchForm]}>
+                            <Ctx.SelectedMusics.Provider value={selectedMusics}>
+                                <MusidexDrawer users={metadata.users} curUser={user} setUser={setUser}/>
+                            </Ctx.SelectedMusics.Provider>
+                        </Ctx.SearchForm.Provider>
+                    </Ctx.Trackplayer.Provider>
+                </Ctx.Controls.Provider>
+            </Ctx.Tracklist.Provider>
         </Ctx.User.Provider>);
 }
 
