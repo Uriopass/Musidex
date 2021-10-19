@@ -1,6 +1,6 @@
 import './explorer.css'
 import API from "../common/api";
-import React, {Fragment, useCallback, useContext, useMemo, useState} from "react";
+import React, {Fragment, useCallback, useContext, useState} from "react";
 import {EditableText, MaterialIcon} from "../components/utils";
 import {canPlay, getTags, Tag} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";

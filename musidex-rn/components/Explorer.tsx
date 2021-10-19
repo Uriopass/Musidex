@@ -1,5 +1,5 @@
 import {Animated, FlatList, Image, StyleSheet, TouchableOpacity, View} from "react-native";
-import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
+import React, {useCallback, useContext, useRef, useState} from "react";
 import {getTags, Tag} from "../common/entity";
 import {TextBg, TextFg, TextFgGray, TextPrimary, TextSecondary} from "./StyledText";
 import Colors from "../domain/colors";
