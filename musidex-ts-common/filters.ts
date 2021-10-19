@@ -51,20 +51,16 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
     const sortBy = search.sort;
     const searchQry = search.filters.searchQry;
     const scoremap = list.score_map;
-    const skind = sortBy.kind.kind;
 
     const seed = useMemo(() => Math.floor(Math.random() * 10000000), []);
 
     const best_tracks = useMemo(() => {
         const l = metadata.musics.slice();
-        if (skind !== "similarity") {
-            return l;
-        }
         l.sort((a, b) => {
             return (scoremap.get(b) || -100000) - (scoremap.get(a) || -100000);
         });
         return l;
-    }, [metadata, scoremap, skind]);
+    }, [metadata, scoremap]);
 
     const fuse = useMemo(() => {
         return new Fuse(metadata.fuse_document, fuseOptions);
