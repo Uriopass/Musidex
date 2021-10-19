@@ -1,5 +1,6 @@
 use super::*;
 use crate::domain::entity::{Music, Tag, TagKey, User};
+use crate::domain::sync::fetch_metadata;
 use anyhow::{Context, Result};
 
 #[test_env_log::test(tokio::test)]
@@ -55,6 +56,26 @@ pub async fn test_delete_userlibrary() -> Result<()> {
     User::delete(&c, u)?;
 
     assert!(Tag::by_key(&c, k)?.is_empty());
+
+    Ok(())
+}
+
+#[test_env_log::test(tokio::test)]
+pub async fn test_sorted_users() -> Result<()> {
+    let db = mk_db().await?;
+    let c = db.get().await;
+    c.execute_batch("DELETE FROM users;")?;
+
+    let u1 = User::create(&c, s!("c"))?;
+    let u2 = User::create(&c, s!("a"))?;
+    let u3 = User::create(&c, s!("b"))?;
+
+    let meta = fetch_metadata(&c)?;
+
+    assert_eq!(
+        meta.users.iter().map(|x| x.id).collect::<Vec<_>>(),
+        vec![u2, u3, u1]
+    );
 
     Ok(())
 }

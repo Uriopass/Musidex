@@ -207,8 +207,10 @@ pub fn fetch_metadata(c: &Connection) -> Result<MusidexMetadata> {
     let musics = collect_rows(musics.map(|x| x.map(|v: Music| v.id)))?;
     let tags = collect_rows(tags)?;
 
-    let users = User::list(c)?;
+    let mut users = User::list(c)?;
     let config = config::get_all(c)?;
+
+    users.sort_by(|a, b| a.name.cmp(&b.name));
 
     Ok(MusidexMetadata {
         musics,
