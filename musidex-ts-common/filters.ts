@@ -89,20 +89,24 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
                         toShow = metadata.musics.slice();
                         toShow.reverse();
                     }
+                    applyFilters(search.filters, toShow, metadata, curUser);
                     break;
                 case "creation_time":
                     toShow = metadata.musics.slice();
+                    applyFilters(search.filters, toShow, metadata, curUser);
                     toShow.reverse();
                     break;
                 case "tag":
                     const v = sortBy.kind.value;
                     toShow = metadata.musics.slice();
+                    applyFilters(search.filters, toShow, metadata, curUser);
                     toShow.sort((a, b) => {
                         return (getTags(metadata, a)?.get(v)?.text || "").localeCompare(getTags(metadata, b)?.get(v)?.text || "");
                     });
                     break;
                 case "random":
                     toShow = metadata.musics.slice();
+                    applyFilters(search.filters, toShow, metadata, curUser);
                     toShow.sort((a, b) => {
                         return prng(seed + a)() - prng(seed + b)();
                     });
@@ -113,7 +117,6 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
             }
         }
 
-        applyFilters(search.filters, toShow, metadata, curUser);
         return toShow;
         /* eslint-disable */
     }, [metadata, search, list, curUser]);
