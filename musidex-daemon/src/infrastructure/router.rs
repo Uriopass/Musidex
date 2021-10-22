@@ -45,6 +45,7 @@ use route_recognizer::Router as InnerRouter;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 use std::pin::Pin;
+use tokio::time::Instant;
 
 #[derive(Default)]
 pub(crate) struct Router {
@@ -314,25 +315,24 @@ impl Service<Request<Body>> for RouterService {
     }
 
     fn call(&mut self, req: Request<Body>) -> Self::Future {
-        log::info!(
-            "seeing req at {} for {}",
-            req.uri(),
-            req.headers()
-                .get(USER_AGENT)
-                .and_then(|x| x.to_str().ok())
-                .unwrap_or("unknown user agent")
-        );
-
+        let t = Instant::now();
         let router = self.0.clone();
+        let uagent = req
+            .headers()
+            .get(USER_AGENT)
+            .and_then(|x| x.to_str().ok())
+            .unwrap_or("unknown user agent")
+            .to_string();
         let nocors = router.nocors;
-        let route = req.uri().to_string();
+        let route = Arc::new(req.uri().to_string());
+        let route2 = route.clone();
         let fut = router.serve(req);
         let fut = async move {
             #[allow(unused_mut)]
             let mut response = match fut.await {
                 Ok(x) => x,
                 Err(e) => {
-                    let e = e.context(format!("got error in request for route {}", route));
+                    let e = e.context(format!("got error in request for route {}", &*route));
                     log::error!("{:?}", e);
                     Response::builder()
                         .status(500)
@@ -345,6 +345,12 @@ impl Service<Request<Body>> for RouterService {
             }
             Ok(response)
         };
+        log::info!(
+            "[{:.2}ms] seeing req at {} for {}",
+            1000.0 * t.elapsed().as_secs_f32(),
+            &*route2,
+            uagent,
+        );
         Box::pin(fut)
     }
 }
