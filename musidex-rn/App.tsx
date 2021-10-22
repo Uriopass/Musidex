@@ -38,6 +38,7 @@ export default function App() {
     let fetchMetadata = useCallback(() => {
         return API.getMetadata().then((meta) => {
             if (meta === null) {
+                console.log("fetched null metadata?");
                 return;
             }
             setMetadata(meta);

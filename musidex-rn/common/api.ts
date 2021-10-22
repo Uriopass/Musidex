@@ -56,11 +56,17 @@ export const API = {
     },
 
     async getMetadata(): Promise<MusidexMetadata | null> {
-        return fetchJson(apiURL + "/api/metadata").then((v: RawMusidexMetadata) => {
-            if (v == null) {
+        return getRaw(apiURL + "/api/metadata/compressed").then((arr: any) => {
+            if (arr === null) {
                 return null;
             }
+            let vv = new Uint8Array(arr);
+            const s = Pako.inflateRaw(vv, {to: 'string'});
+            let v: RawMusidexMetadata = JSON.parse(s);
             return newMetadata(v);
+        }).catch((e) => {
+            console.log(e);
+            return null;
         });
     },
 
@@ -147,6 +153,26 @@ async function fetchJson(url: string): Promise<any | null> {
     } catch (e) {
         return null;
     }
+}
+
+function getRaw(url: string) {
+    return new Promise((accept, reject) => {
+        let req = new XMLHttpRequest();
+        req.open("GET", url, true);
+        req.responseType = "arraybuffer";
+
+        req.onload = () => {
+            let resp = req.response;
+            if(resp) {
+                accept(resp);
+            }
+        };
+        req.onerror = () => {
+            reject(req.status);
+        };
+
+        req.send(null);
+    });
 }
 
 export default API;
