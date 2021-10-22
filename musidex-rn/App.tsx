@@ -31,7 +31,6 @@ export default function App() {
             return newMetadata(obj);
         },
     });
-    console.log(loaded);
 
     const [apiURL, setAPIUrl, loadedAPI] = useStored<string>("api_url", "");
     API.setAPIUrl(apiURL);

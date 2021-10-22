@@ -38,7 +38,6 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
 
     useEffect(() => {
         const v = TrackPlayer.addEventListener(Event.PlaybackQueueEnded, (_) => {
-            console.log("playback ended");
             doNext();
         });
         return () => v.remove();
