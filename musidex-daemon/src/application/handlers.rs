@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
 
 use crate::domain::entity::{Music, MusicID, Tag, TagKey, User};
-use crate::domain::sync::{serve_sync_websocket, SyncBroadcastSubscriber};
+use crate::domain::sync::{compress_meta, serve_sync_websocket, SyncBroadcastSubscriber};
 use crate::domain::{stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
 use crate::utils::res_status;
@@ -18,6 +18,16 @@ pub async fn metadata(req: Request<Body>) -> Result<Response<Body>> {
     let metadata = sync::fetch_metadata(&c).context("failed fetching metadata")?;
 
     Ok(Response::new(Body::from(metadata.serialize_json())))
+}
+
+pub async fn metadata_compressed(req: Request<Body>) -> Result<Response<Body>> {
+    let db = req.state::<Db>();
+    let c = db.get().await;
+
+    let metadata = sync::fetch_metadata(&c).context("failed fetching metadata")?;
+    let compressed = compress_meta(&metadata);
+
+    Ok(Response::new(Body::from(compressed)))
 }
 
 pub async fn ping(_: Request<Body>) -> Result<Response<Body>> {

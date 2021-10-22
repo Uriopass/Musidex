@@ -31,7 +31,7 @@ pub struct SyncBroadcast {
     refresh_rx: mpsc::Receiver<()>,
 }
 
-fn compress(x: &MusidexMetadata) -> Vec<u8> {
+pub fn compress_meta(x: &MusidexMetadata) -> Vec<u8> {
     let json = x.serialize_json();
     miniz_oxide::deflate::compress_to_vec(json.as_bytes(), 5)
 }
@@ -191,7 +191,7 @@ pub async fn serve_sync_websocket(
                     musipatch.as_ref().unwrap_or(&musi)
                 };
 
-                websocket.send(Message::Binary(compress(chosen))).await?;
+                websocket.send(Message::Binary(compress_meta(chosen))).await?;
             }
         }
     }

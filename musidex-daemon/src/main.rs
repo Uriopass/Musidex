@@ -62,6 +62,7 @@ async fn start() -> anyhow::Result<()> {
                 async { Ok(Response::new(Body::empty())) }
             })
             .get("/api/metadata", handlers::metadata)
+            .get("/api/metadata/compressed", handlers::metadata_compressed)
             .get("/api/ping", handlers::ping)
             .get("/api/metadata/ws", handlers::subscribe_sync)
             .post("/api/config/update", handlers::update_config)
