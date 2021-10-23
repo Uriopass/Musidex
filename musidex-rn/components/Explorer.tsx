@@ -1,15 +1,15 @@
-import {Animated, FlatList, Image, StyleSheet, TouchableOpacity, View} from "react-native";
+import {Animated, FlatList, StyleSheet, TouchableOpacity, View} from "react-native";
 import React, {useCallback, useContext, useRef, useState} from "react";
 import {getTags, Tag} from "../common/entity";
 import {TextBg, TextFg, TextFgGray, TextPrimary, TextSecondary} from "./StyledText";
 import Colors from "../domain/colors";
-import API from "../common/api";
 import Ctx from "../domain/ctx";
 import {NextTrackCallback} from "../common/tracklist";
 import {Icon} from "react-native-elements";
 import {SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {Checkbox, SearchInput} from "./Input";
 import Filters from "../../musidex-web/src/common/filters";
+import Thumbnail from "./Thumbnail";
 
 export default function Explorer() {
     const [metadata] = useContext(Ctx.Metadata);
@@ -38,6 +38,7 @@ export default function Explorer() {
         {(curTrack && searchForm.sort.kind.kind === "similarity") &&
         <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
                   isSynced={syncState.downloaded.has(curTrack)}
+                  thumbSynced={syncState.downloaded_thumb.has(curTrack)}
                   progressColor="#1d2f23"/>
         }
     </>
@@ -160,6 +161,7 @@ function SongList(props: {
         }
         return <SongElem musicID={item}
                          isSynced={syncState.downloaded.has(item)}
+                         thumbSynced={syncState.downloaded_thumb.has(item)}
                          tags={getTags(metadata, item) || new Map()}
                          doNext={doNext}
                          progress={progress}
@@ -222,11 +224,10 @@ type SongElemProps = {
     progress: number | undefined;
     progressColor: string;
     isSynced: boolean;
+    thumbSynced: boolean;
 }
 
 const SongElem = React.memo((props: SongElemProps) => {
-    const cover = props.tags?.get("compressed_thumbnail")?.text || (props.tags?.get("thumbnail")?.text || "");
-
     const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = props.tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
 
@@ -242,7 +243,7 @@ const SongElem = React.memo((props: SongElemProps) => {
                 )
             }
             <View style={styles.startElems}>
-                <Image style={styles.itemImage} source={{uri: API.getAPIUrl() + "/storage/" + cover}}/>
+                <Thumbnail tags={props.tags} local={props.thumbSynced}/>
                 <View style={styles.trackInfo}>
                     <TextFg numberOfLines={2}>{title?.text} </TextFg>
                     <TextFgGray numberOfLines={1}>{artist?.text}</TextFgGray>
@@ -250,7 +251,7 @@ const SongElem = React.memo((props: SongElemProps) => {
             </View>
             <View style={styles.trackIcons}>
                 {props.isSynced &&
-                    <Icon name="cloud-done" color={Colors.colorbg} size={11}/>
+                <Icon name="cloud-done" color={Colors.colorbg} size={11}/>
                 }
             </View>
         </TouchableOpacity>
@@ -285,10 +286,6 @@ const styles = StyleSheet.create({
     startElems: {
         flexDirection: "row",
         flexShrink: 1,
-    },
-    itemImage: {
-        height: 60,
-        flexBasis: 60,
     },
     arrowUp: {
         padding: 7,

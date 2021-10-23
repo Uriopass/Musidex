@@ -5,6 +5,7 @@ import {TextBg, TextFg, TextFgGray} from "./StyledText";
 import {Icon} from "react-native-elements";
 import API from "../common/api";
 import {getTags} from "../common/entity";
+import Thumbnail from "./Thumbnail";
 
 interface PlayerProps {
     style: ViewStyle,
@@ -15,11 +16,12 @@ const SmallPlayer = (props: PlayerProps) => {
     const [doNext, doPrev, reset] = useContext(Ctx.Controls);
     const [player, dispatch] = useContext(Ctx.Trackplayer);
     const list = useContext(Ctx.Tracklist);
+    const syncState = useContext(Ctx.SyncState);
 
-    const tags = getTags(metadata, list.last_played[list.last_played.length - 1]);
+    const curTrack = list.last_played[list.last_played.length - 1];
+    const tags = getTags(metadata, curTrack);
     const title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";
     const artist = (tags !== undefined) ? (tags.get("artist")?.text || "Unknown Artist") : "";
-    const thumbnail = tags?.get("compressed_thumbnail")?.text || (tags?.get("thumbnail")?.text || "");
 
     const canPrev = list.last_played.length > 1;
     const canReset = list.last_played.length > 0;
@@ -40,11 +42,7 @@ const SmallPlayer = (props: PlayerProps) => {
     return (
         <View style={[styles.container, props.style]}>
             <View style={styles.currentTrack}>
-                {
-                    (thumbnail !== "") &&
-                    <Image style={styles.currentTrackThumbnail}
-                           source={{uri: API.getAPIUrl() + "/storage/" + thumbnail}} width={60} height={60}/>
-                }
+                <Thumbnail tags={tags} local={syncState.downloaded_thumb.has(curTrack || -1)} />
                 <View style={styles.currentTrackTitle}>
                     <TextFg numberOfLines={2}>{title}</TextFg>
                     <TextFgGray numberOfLines={1}>{artist}</TextFgGray>
@@ -86,10 +84,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         flex: 1,
-    },
-    currentTrackThumbnail: {
-        flexBasis: 60,
-        height: 60,
     },
     currentTrackTitle: {
         padding: 5,

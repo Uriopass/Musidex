@@ -51,11 +51,11 @@ export default function App() {
         let curTimeout: number | undefined = undefined;
         const f = async () => {
             const newSync = await syncIter(metadata, syncState);
-            if (newSync === undefined) {
+            if (newSync === null) {
                 curTimeout = setTimeout(f, 30000);
                 return;
             }
-            curTimeout = setTimeout(f, 1000);
+            curTimeout = setTimeout(f, 500);
         };
         f();
         return () => {
