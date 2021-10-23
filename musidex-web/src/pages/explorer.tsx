@@ -62,7 +62,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
             <div className="explorer color-fg">
                 <div className="explorer-search">
-                    <TextInput onChange={setSearchQry} name="Search"/>
+                    <TextInput startValue={searchForm.filters.searchQry} onChange={setSearchQry} name="Search"/>
                 </div>
                 <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
                               sortBy={searchForm.sort} setSortBy={setSortBy}
