@@ -1104,6 +1104,11 @@
   "resolved" "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.4.tgz"
   "version" "15.7.4"
 
+"@types/react-native-fetch-blob@^0.10.6":
+  "integrity" "sha512-z72VJmddkXXERs/lfkYnTHdK2yezzUfAyA+CyHfFuGo+4ojS/0wUUv3D7i6DOIYxsu2L+z8kgOgd8HlGynPJqA=="
+  "resolved" "https://registry.npmjs.org/@types/react-native-fetch-blob/-/react-native-fetch-blob-0.10.6.tgz"
+  "version" "0.10.6"
+
 "@types/react-native-vector-icons@^6.4.6":
   "integrity" "sha512-hQyAhuGKZtu2Je+K+bAmLw8MGT2TmQ6rVl0fGbM198FdrPDAqb3LMF0gxQOzlBOKJDAZj9MaDyKdPSHCVvJCdw=="
   "resolved" "https://registry.npmjs.org/@types/react-native-vector-icons/-/react-native-vector-icons-6.4.9.tgz"
@@ -1601,6 +1606,11 @@
   "integrity" "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="
   "resolved" "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz"
   "version" "1.0.2"
+
+"base-64@0.1.0":
+  "integrity" "sha1-eAqZyE59YAJgNhURxId2E78k9rs="
+  "resolved" "https://registry.npmjs.org/base-64/-/base-64-0.1.0.tgz"
+  "version" "0.1.0"
 
 "base@^0.11.1":
   "integrity" "sha512-5T6P4xPgpp0YDFvSWwEZ4NoE3aM4QBQXDzmVbraCkFj8zHM+mba8SyqB5DbZWyR7mYHo6Y7BdQo3MoA4m0TeQg=="
@@ -2966,6 +2976,18 @@
     "inflight" "^1.0.4"
     "inherits" "2"
     "minimatch" "^3.0.4"
+    "once" "^1.3.0"
+    "path-is-absolute" "^1.0.0"
+
+"glob@7.0.6":
+  "integrity" "sha1-IRuvr0nlJbjNkyYNFKsTYVKz9Xo="
+  "resolved" "https://registry.npmjs.org/glob/-/glob-7.0.6.tgz"
+  "version" "7.0.6"
+  dependencies:
+    "fs.realpath" "^1.0.0"
+    "inflight" "^1.0.4"
+    "inherits" "2"
+    "minimatch" "^3.0.2"
     "once" "^1.3.0"
     "path-is-absolute" "^1.0.0"
 
@@ -4900,6 +4922,14 @@
     "opencollective-postinstall" "^2.0.3"
     "react-native-ratings" "8.0.4"
     "react-native-size-matters" "^0.3.1"
+
+"react-native-fetch-blob@^0.10.8":
+  "integrity" "sha1-T8JWq64MtfEOfEHyjBGz/zMNcqk="
+  "resolved" "https://registry.npmjs.org/react-native-fetch-blob/-/react-native-fetch-blob-0.10.8.tgz"
+  "version" "0.10.8"
+  dependencies:
+    "base-64" "0.1.0"
+    "glob" "7.0.6"
 
 "react-native-gesture-handler@*", "react-native-gesture-handler@^1.10.3", "react-native-gesture-handler@>= 1.0.0":
   "integrity" "sha512-cBGMi1IEsIVMgoox4RvMx7V2r6bNKw0uR1Mu1o7NbuHS6BRSVLq0dP34l2ecnPlC+jpWd3le6Yg1nrdCjby2Mw=="

@@ -17,6 +17,7 @@ export default function Explorer() {
     const [doNext] = useContext(Ctx.Controls);
     const [searchForm, setSearchForm] = useContext(Ctx.SearchForm);
     const toShow = useContext(Ctx.SelectedMusics);
+    const syncState = useContext(Ctx.SyncState);
 
     //const setFilters = useCallback((f: Filters) => setSearchForm({...searchForm, filters: f}), [setSearchForm, searchForm]);
     const setSortBy = useCallback((s: SortBy) => setSearchForm({...searchForm, sort: s}), [setSearchForm, searchForm]);
@@ -36,6 +37,7 @@ export default function Explorer() {
         <FilterBySelect filters={searchForm.filters} setFilters={setFilters}/>
         {(curTrack && searchForm.sort.kind.kind === "similarity") &&
         <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
+                  isSynced={syncState.downloaded.has(curTrack)}
                   progressColor="#1d2f23"/>
         }
     </>
@@ -136,6 +138,7 @@ function SongList(props: {
     const [doNext] = useContext(Ctx.Controls);
     const tracklist = useContext(Ctx.Tracklist);
     const [searchForm] = useContext(Ctx.SearchForm);
+    const syncState = useContext(Ctx.SyncState);
 
     const [refreshing, setRefreshing] = useState(false);
 
@@ -156,6 +159,7 @@ function SongList(props: {
             progress = 1.0;
         }
         return <SongElem musicID={item}
+                         isSynced={syncState.downloaded.has(item)}
                          tags={getTags(metadata, item) || new Map()}
                          doNext={doNext}
                          progress={progress}
@@ -217,6 +221,7 @@ type SongElemProps = {
     doNext: NextTrackCallback;
     progress: number | undefined;
     progressColor: string;
+    isSynced: boolean;
 }
 
 const SongElem = React.memo((props: SongElemProps) => {
@@ -236,10 +241,15 @@ const SongElem = React.memo((props: SongElemProps) => {
                     }]}/>
                 )
             }
-            <Image style={styles.itemImage} source={{uri: API.getAPIUrl() + "/storage/" + cover}}/>
-            <View style={styles.trackInfo}>
-                <TextFg>{title?.text}</TextFg>
-                <TextFgGray>{artist?.text}</TextFgGray>
+            <View style={styles.startElems}>
+                <Image style={styles.itemImage} source={{uri: API.getAPIUrl() + "/storage/" + cover}}/>
+                <View style={styles.trackInfo}>
+                    <TextFg numberOfLines={2}>{title?.text} </TextFg>
+                    <TextFgGray numberOfLines={1}>{artist?.text}</TextFgGray>
+                </View>
+            </View>
+            <View style={styles.trackIcons}>
+                <Icon name="cloud-done" color={Colors.colorbg} size={11}/>
             </View>
         </TouchableOpacity>
     );
@@ -261,11 +271,22 @@ const styles = StyleSheet.create({
         height: "100%",
     },
     trackInfo: {
-        padding: 10,
+        paddingLeft: 10,
+        justifyContent: "center",
+        flexShrink: 1,
+    },
+    trackIcons: {
+        flexBasis: 20,
+        alignSelf: "center",
+        justifyContent: "center",
+    },
+    startElems: {
+        flexDirection: "row",
+        flexShrink: 1,
     },
     itemImage: {
-        width: 60,
         height: 60,
+        flexBasis: 60,
     },
     arrowUp: {
         padding: 7,
@@ -280,6 +301,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.fg,
         display: "flex",
         flexDirection: "row",
+        justifyContent: "space-between",
         marginVertical: 4,
         marginHorizontal: 5,
         borderRadius: 5,

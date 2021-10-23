@@ -1,7 +1,7 @@
 import {canPlay, getTags, MusidexMetadata, Tags, Vector} from "./entity";
-import {SearchForm} from "../common/filters";
+import {SearchForm} from "./filters";
 import {Dispatch, dot} from "./utils";
-import {useCallback} from "react";
+import {useCallback, useRef} from "react";
 
 export type TrackPlayerAction =
     { action: "play", id: number, tags?: Tags }
@@ -27,7 +27,8 @@ export type NextTrackCallback = (id?: number) => void;
 export type PrevTrackCallback = () => void;
 
 export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Tracklist) => void, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, sform: SearchForm, selectedMusics: number[]): NextTrackCallback {
-    return useCallback((id) => {
+    let f = useRef<NextTrackCallback | null>(null);
+    f.current = (id) => {
         let list = {
             ...curlist,
         };
@@ -65,7 +66,8 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
         }
 
         dispatch({action: "play", id: id, tags: getTags(metadata, id)});
-    }, [curlist, setList, metadata, dispatch, selectedMusics, sform.sort.kind.kind]);
+    };
+    return useCallback((id) => f.current?.(id), [f]);
 }
 
 export function useResetCallback(setList: (newv: Tracklist) => void, metadata: MusidexMetadata): NextTrackCallback {

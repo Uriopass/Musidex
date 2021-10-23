@@ -2,6 +2,8 @@ import {Dispatch, useEffect} from "react";
 import {NextTrackCallback, TrackPlayerAction} from "../common/tracklist";
 import TrackPlayer, {Event, State, Track} from "react-native-track-player";
 import API from "../common/api";
+import RNFetchBlob from "react-native-fetch-blob";
+import {getMusicPath} from "./sync";
 
 type Trackplayer = {
     current: number | undefined,
@@ -82,21 +84,27 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
             const artist = action.tags?.get("artist")?.text;
             const thumbnail = action.tags?.get("compressed_thumbnail")?.text || (action.tags?.get("thumbnail")?.text || "");
 
-            const track: Track = {
-                url: API.getStreamSrc(action.id), // Load media from the network
-                duration: duration,
-            };
-            if (title) {
-                track.title = title;
-            }
-            if (artist) {
-                track.artist = artist;
-            }
-            if (thumbnail) {
-                track.artwork = API.getAPIUrl() + "/storage/" + thumbnail;
-            }
-
             const changeSong = async () => {
+                const has_music_local = await RNFetchBlob.fs.exists(getMusicPath(action.id));
+
+                let url = API.getStreamSrc(action.id);
+                if (has_music_local) {
+                    url = "file://" + getMusicPath(action.id);
+                }
+
+                const track: Track = {
+                    url: url,
+                    duration: duration,
+                };
+                if (title) {
+                    track.title = title;
+                }
+                if (artist) {
+                    track.artist = artist;
+                }
+                if (thumbnail) {
+                    track.artwork = API.getAPIUrl() + "/storage/" + thumbnail;
+                }
                 const q = await TrackPlayer.getQueue();
                 await TrackPlayer.add(track);
                 if (q.length > 0) {
