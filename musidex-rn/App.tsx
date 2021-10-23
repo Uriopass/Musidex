@@ -55,7 +55,7 @@ export default function App() {
                 curTimeout = setTimeout(f, 30000);
                 return;
             }
-            curTimeout = setTimeout(f, 500);
+            setSyncState(newSync);
         };
         f();
         return () => {
