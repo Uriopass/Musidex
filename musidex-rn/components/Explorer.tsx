@@ -249,7 +249,9 @@ const SongElem = React.memo((props: SongElemProps) => {
                 </View>
             </View>
             <View style={styles.trackIcons}>
-                <Icon name="cloud-done" color={Colors.colorbg} size={11}/>
+                {props.isSynced &&
+                    <Icon name="cloud-done" color={Colors.colorbg} size={11}/>
+                }
             </View>
         </TouchableOpacity>
     );

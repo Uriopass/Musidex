@@ -1,4 +1,13 @@
-import {StyleProp, StyleSheet, TextInput, TextInputProps, TextStyle, TouchableOpacity, View} from "react-native";
+import {
+    StyleProp,
+    StyleSheet,
+    TextInput,
+    TextInputProps,
+    TextStyle,
+    TouchableOpacity,
+    View,
+    ViewStyle
+} from "react-native";
 import React, {useState} from "react";
 import Colors from "../domain/colors";
 import {Icon} from "react-native-elements";
@@ -30,14 +39,14 @@ export function SearchInput(props: TextInputProps & { searchStyle?: StyleProp<Te
 type CheckboxProps = {
     checked: boolean,
     onChange: (newv: boolean) => void;
-    style?: StyleProp<TextStyle>,
+    style?: StyleProp<ViewStyle>,
     size?: number,
     children?: JSX.Element;
 }
 
 export function Checkbox(props: CheckboxProps) {
 
-    return <TouchableOpacity style={styles.checkboxContainer} onPress={() => props.onChange(!props.checked)}>
+    return <TouchableOpacity style={[styles.checkboxContainer, props.style]} onPress={() => props.onChange(!props.checked)}>
         <Icon color={props.checked ? Colors.primary : Colors.colorbg}
               size={props.size}
               name={props.checked ? "check-box" : "check-box-outline-blank"}/>

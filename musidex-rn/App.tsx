@@ -20,6 +20,7 @@ import {emptyMetadata, MusidexMetadata, newMetadata} from "./common/entity";
 import API, {RawMusidexMetadata} from "./common/api";
 import Ctx from "./domain/ctx";
 import {newSyncState, syncIter, SyncState} from "./domain/sync";
+import {LocalSettings, newLocalSettings} from "./domain/localsettings";
 
 export default function App() {
     const isLoadingComplete = useCachedResources();
@@ -33,6 +34,8 @@ export default function App() {
         },
     });
 
+    const [localSettings, setLocalSettings, loadedSettings] = useStored<LocalSettings>("local_settings", newLocalSettings());
+
     const [apiURL, setAPIUrl, loadedAPI] = useStored<string>("api_url", "");
     API.setAPIUrl(apiURL);
 
@@ -42,7 +45,7 @@ export default function App() {
     }, [metadata])
 
     useEffect(() => {
-        if (syncState === undefined) {
+        if (syncState === undefined || !localSettings.downloadMusicLocally || apiURL === "") {
             return;
         }
         let curTimeout: number | undefined = undefined;
@@ -60,7 +63,7 @@ export default function App() {
                 clearTimeout(curTimeout);
             }
         }
-    }, [syncState]);
+    }, [syncState, localSettings, apiURL]);
 
     let fetchMetadata = useCallback(() => {
         return API.getMetadata().then((meta) => {
@@ -72,7 +75,7 @@ export default function App() {
         })
     }, [setMetadata]);
 
-    if (!isLoadingComplete || !loaded || !loadedAPI || syncState === undefined) {
+    if (!isLoadingComplete || !loaded || !loadedAPI || !loadedSettings || syncState === undefined) {
         return <View style={{backgroundColor: '#383838', flex: 1, alignItems: "center", justifyContent: "center"}}>
             <Image source={require('./musidex_logo.png')}/>
         </View>;
@@ -83,7 +86,9 @@ export default function App() {
                 <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
                     <Ctx.APIUrl.Provider value={[apiURL, setAPIUrl]}>
                         <Ctx.SyncState.Provider value={syncState}>
-                            <Navigation/>
+                            <Ctx.LocalSettings.Provider value={[localSettings, setLocalSettings]}>
+                                <Navigation/>
+                            </Ctx.LocalSettings.Provider>
                         </Ctx.SyncState.Provider>
                     </Ctx.APIUrl.Provider>
                 </Ctx.Metadata.Provider>

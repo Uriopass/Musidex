@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from "react";
 import {ScrollView, StyleSheet, View} from "react-native";
-import {SearchInput} from "./Input";
+import {Checkbox, SearchInput} from "./Input";
 import Ctx from "../domain/ctx";
 import useStored from "../domain/useStored";
 import {Icon} from "react-native-elements";
@@ -10,6 +10,7 @@ import Colors from "../domain/colors"
 
 function Settings() {
     const [apiUrl, setAPIUrl] = useContext(Ctx.APIUrl);
+    const [localSettings, setLocalSettings] = useContext(Ctx.LocalSettings);
     const [localApiUrl, setLocalAPIUrl] = useStored("local_api_url", apiUrl);
 
     const [connectivity, setConnectivity] = useState("no_url");
@@ -61,6 +62,12 @@ function Settings() {
             }
             <TextFg> {message}</TextFg>
         </View>
+        <Checkbox
+            style={styles.settingItem}
+            checked={localSettings.downloadMusicLocally}
+                  onChange={(newv: boolean) => setLocalSettings({...localSettings, downloadMusicLocally: newv})}>
+            <TextFg> Download music locally for off-line play</TextFg>
+        </Checkbox>
     </ScrollView>
 }
 
@@ -69,6 +76,9 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         paddingLeft: 5,
+    },
+    settingItem: {
+        paddingTop: 10,
     },
     container: {
         flex: 1,
