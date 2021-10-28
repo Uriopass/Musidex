@@ -8,7 +8,16 @@ on:
       - v*  # don't run on tags since release does that
 
 jobs:
-  build:
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Install Docker
+        uses: docker-practice/actions-setup-docker@master
+      - name: Build Image
+        uses: docker build .
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo

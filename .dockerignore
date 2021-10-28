@@ -1,0 +1,8 @@
+.git
+musidex-daemon/target
+musidex-neuralembed/neuralembed-venv
+musidex-rn/node_modules
+musidex-rn/android/app/build
+musidex-web/node_modules
+storage
+web
