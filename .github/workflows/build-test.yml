@@ -16,7 +16,7 @@ jobs:
       - name: Install Docker
         uses: docker-practice/actions-setup-docker@master
       - name: Build Image
-        uses: docker build .
+        run: docker build .
   test:
     runs-on: ubuntu-latest
     steps:
