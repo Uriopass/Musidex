@@ -13,7 +13,7 @@ RUN python3 -m ensurepip
 RUN python3 -m pip install youtube_dl
 
 RUN cd musidex-daemon && cargo build --release --features bundled
-RUN cd musidex-web && npm run build
+RUN cd musidex-web && npm i && npm run build
 
 RUN cp -r musidex-web/build web
 
