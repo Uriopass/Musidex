@@ -38,7 +38,7 @@ pub async fn migrate(pg: &Db, dir: &Dir<'_>) -> Result<()> {
     if migrated.is_empty() {
         log::info!("no migration table, creating it");
 
-        tx.execute(
+        tx.execute_batch(
             r#"
                 CREATE TABLE IF NOT EXISTS sqlx_pg_migrate (
                     id SERIAL PRIMARY KEY,
@@ -46,7 +46,6 @@ pub async fn migrate(pg: &Db, dir: &Dir<'_>) -> Result<()> {
                     created TIMESTAMP NOT NULL DEFAULT current_timestamp
                 );
             "#,
-            [],
         )
         .context("error creating migration table")?;
     }
