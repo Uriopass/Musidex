@@ -2,5 +2,6 @@
 .expo
 web
 storage
+storage2
 mdx-daemon
 *.pyc

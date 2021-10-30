@@ -24,6 +24,7 @@ Choose a starting point and let it choose the next song for you!
 - [x] CI
 - [x] Multiple accounts
 - [x] Android App with local download
+- [x] Docker build
 - [ ] Tag filtering
 - [ ] Playlists through tags/Tag editor
 - [ ] Chrome extension to add YT videos to library
@@ -36,13 +37,23 @@ Choose a starting point and let it choose the next song for you!
 
 # Setting up the server
 
+### Using docker
+
+```bash
+# Build the image, can take up to 20 minutes depending on your CPU and your network bandwidth
+docker build -t musidex .
+
+# Run the container (replace /path/to/musidex with absolute path to Musidex, like $HOME/musidex)
+docker run -d -p 80:3200 -v /path/to/musidex/storage:/storage -t musidex 
+```
+
+All musidex data (musics, thumbnails, db) ends up in the `storage` directory.
+
 ### Linux
 
 Only GNU/Linux distros are supported at the moment.
-Since the project is young, you'll have to build it yourself.
-We will provide prebuilt binaries eventually.
 
-### Dependencies
+#### Dependencies
 
 You can run the `prepare.sh` script after cloning to run all of the following commands,
 or run them yourself with an explanation.
@@ -78,7 +89,7 @@ cd Musidex
 (cd musidex-web && npm install)
 ```
 
-### Building and running
+#### Building and running
 
 ```bash
 # Just run the start script
