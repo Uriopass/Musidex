@@ -38,4 +38,4 @@ COPY --from=web_build /web ./web
 
 EXPOSE 80
 
-CMD ./mdx-daemon
+CMD until ./mdx-daemon; do echo "Try again"; done
