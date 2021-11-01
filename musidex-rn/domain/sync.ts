@@ -7,24 +7,32 @@ export type SyncState = {
     downloaded_thumb: Set<number>,
 }
 
-/// Returns the path to the song after downloading
-export function fetchSong(id: number): Promise<boolean> {
+export async function fetchSong(id: number): Promise<boolean> {
+    const path = getMusicPath(id);
+    if (await RNFetchBlob.fs.exists(path)) {
+        return true;
+    }
     return RNFetchBlob.config({
-        path: getMusicPath(id),
+        path: path+".part",
     }).fetch('GET', API.getStreamSrc(id))
-        .then(() => true)
+        .then(() => {
+            return RNFetchBlob.fs.mv(path+".part", path)
+        })
         .catch((err) => {
             console.log(err);
             return false;
         })
 }
 
-/// Returns the path to the song after downloading
-export function fetchThumbnail(thumbTag: string): Promise<boolean> {
+export async function fetchThumbnail(thumbTag: string): Promise<boolean> {
+    let path = getThumbnailPath(thumbTag);
+    if (await RNFetchBlob.fs.exists(path)) {
+        return true;
+    }
     return RNFetchBlob.config({
-        path: getThumbnailPath(thumbTag),
+        path: path+".part",
     }).fetch('GET', API.getAPIUrl() + "/storage/" + thumbTag)
-        .then(() => true)
+        .then(() => RNFetchBlob.fs.mv(path+".part", path))
         .catch((err) => {
             console.log(err);
             return false;
@@ -34,6 +42,7 @@ export function fetchThumbnail(thumbTag: string): Promise<boolean> {
 export function syncIter(metadata: MusidexMetadata, syncState: SyncState): Promise<SyncState | null> {
     const x = async () => {
         let changed = false;
+        let iter = 10;
         for (const id of metadata.musics) {
             if (!syncState.downloaded.has(id)) {
                 console.log("fetching song...", id);
@@ -43,7 +52,10 @@ export function syncIter(metadata: MusidexMetadata, syncState: SyncState): Promi
                 console.log("fetching song ok");
                 syncState.downloaded.add(id);
                 changed = true;
-                break;
+                iter -= 1;
+                if (iter <= 0) {
+                    break;
+                }
             }
             if (!syncState.downloaded_thumb.has(id)) {
                 const thumb = metadata.music_tags_idx.get(id)?.get("compressed_thumbnail")?.text;
@@ -57,7 +69,10 @@ export function syncIter(metadata: MusidexMetadata, syncState: SyncState): Promi
                 console.log("fetching thumb ok");
                 syncState.downloaded_thumb.add(id);
                 changed = true;
-                break;
+                iter -= 1;
+                if (iter <= 0) {
+                    break;
+                }
             }
         }
 

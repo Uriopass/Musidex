@@ -24,7 +24,7 @@ import {LocalSettings, newLocalSettings} from "./domain/localsettings";
 
 export default function App() {
     const isLoadingComplete = useCachedResources();
-    const [metadata, setMetadata, loaded] = useStored<MusidexMetadata>("metadata", emptyMetadata(), {
+    const [metadata, setMetadata, loadedMeta] = useStored<MusidexMetadata>("metadata", emptyMetadata(), {
         ser: (v: MusidexMetadata): string => {
             return JSON.stringify(v.raw);
         },
@@ -41,8 +41,11 @@ export default function App() {
 
     const [syncState, setSyncState] = useState<SyncState | undefined>(undefined);
     useEffect(() => {
+        if (!loadedMeta || metadata.musics.length === 0) {
+            return;
+        }
         newSyncState(metadata).then((v) => setSyncState(v));
-    }, [metadata])
+    }, [metadata, loadedMeta])
 
     useEffect(() => {
         if (syncState === undefined || !localSettings.downloadMusicLocally || apiURL === "") {
@@ -55,7 +58,7 @@ export default function App() {
                 curTimeout = setTimeout(f, 30000);
                 return;
             }
-            setSyncState(newSync);
+            curTimeout = setTimeout(() => setSyncState(newSync), 50);
         };
         f();
         return () => {
@@ -63,7 +66,7 @@ export default function App() {
                 clearTimeout(curTimeout);
             }
         }
-    }, [syncState, localSettings, apiURL]);
+    }, [syncState, localSettings, apiURL, metadata, setSyncState]);
 
     let fetchMetadata = useCallback(() => {
         return API.getMetadata().then((meta) => {
@@ -75,7 +78,7 @@ export default function App() {
         })
     }, [setMetadata]);
 
-    if (!isLoadingComplete || !loaded || !loadedAPI || !loadedSettings || syncState === undefined) {
+    if (!isLoadingComplete || !loadedMeta || !loadedAPI || !loadedSettings || syncState === undefined) {
         return <View style={{backgroundColor: '#383838', flex: 1, alignItems: "center", justifyContent: "center"}}>
             <Image source={require('./musidex_logo.png')}/>
         </View>;
