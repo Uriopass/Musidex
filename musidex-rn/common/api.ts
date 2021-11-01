@@ -142,19 +142,6 @@ export const API = {
     },
 };
 
-async function fetchJson(url: string): Promise<any | null> {
-    try {
-        let v = await fetch(url);
-        if (!v.ok) {
-            console.log("failed fetching " + url);
-            return null;
-        }
-        return await v.json();
-    } catch (e) {
-        return null;
-    }
-}
-
 function getRaw(url: string) {
     return new Promise((accept, reject) => {
         let req = new XMLHttpRequest();
