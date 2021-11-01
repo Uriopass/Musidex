@@ -94,6 +94,13 @@ export function getThumbnailPath(thumbTag: string): string {
     return RNFetchBlob.fs.dirs.DocumentDir + '/thumbnail_' + thumbTag;
 }
 
+export function emptySyncState(): SyncState {
+    return {
+        downloaded_thumb: new Set(),
+        downloaded: new Set(),
+    }
+}
+
 export function newSyncState(metadata: MusidexMetadata): Promise<SyncState> {
     const x: () => Promise<SyncState> = async () => {
         let musics = new Set<number>();

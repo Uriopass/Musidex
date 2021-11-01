@@ -5,7 +5,7 @@
  */
 import {NavigationContainer} from '@react-navigation/native';
 import * as React from 'react';
-import {useContext, useEffect, useReducer} from 'react';
+import {useContext, useEffect, useReducer, useState} from 'react';
 
 import MainScreen from "./MainScreen";
 import useStored from "../domain/useStored";
@@ -29,6 +29,7 @@ import {
 import {StyleSheet, View} from "react-native";
 import Colors from "../domain/colors";
 import SettingsScreen from "./SettingsScreen";
+import {emptySyncState, newSyncState, syncIter, SyncState} from "../domain/sync";
 
 export default function Navigation() {
     return (
@@ -54,6 +55,7 @@ function RootNavigator() {
     });
     const [metadata, fetchMetadata] = useContext(Ctx.Metadata);
     const [apiURL] = useContext(Ctx.APIUrl);
+    const [localSettings] = useContext(Ctx.LocalSettings);
 
     const [user, setUser] = useStored<number | undefined>("user", firstUser(metadata));
     const [searchForm, setSearchForm] = useStored<SearchForm>("searchForm", newSearchForm());
@@ -83,6 +85,32 @@ function RootNavigator() {
         setList(l);
     }, [metadata]);
 
+    const [syncState, setSyncState] = useState<SyncState>(emptySyncState);
+    useEffect(() => {
+        newSyncState(metadata).then((v) => setSyncState(v));
+    }, [metadata])
+
+    useEffect(() => {
+        if (syncState === undefined || !localSettings.downloadMusicLocally || apiURL === "") {
+            return;
+        }
+        let curTimeout: number | undefined = undefined;
+        const f = async () => {
+            const newSync = await syncIter(metadata, syncState);
+            if (newSync === null) {
+                curTimeout = setTimeout(f, 30000);
+                return;
+            }
+            curTimeout = setTimeout(() => setSyncState(newSync), 50);
+        };
+        f();
+        return () => {
+            if (curTimeout) {
+                clearTimeout(curTimeout);
+            }
+        }
+    }, [syncState, localSettings, apiURL, metadata, setSyncState]);
+
     return (
         <Ctx.User.Provider value={[user, setUser]}>
             <Ctx.Tracklist.Provider value={list}>
@@ -90,7 +118,9 @@ function RootNavigator() {
                     <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
                         <Ctx.SearchForm.Provider value={[searchForm, setSearchForm]}>
                             <Ctx.SelectedMusics.Provider value={selectedMusics}>
-                                <MusidexDrawer users={metadata.users} curUser={user} setUser={setUser}/>
+                                <Ctx.SyncState.Provider value={syncState}>
+                                    <MusidexDrawer users={metadata.users} curUser={user} setUser={setUser}/>
+                                </Ctx.SyncState.Provider>
                             </Ctx.SelectedMusics.Provider>
                         </Ctx.SearchForm.Provider>
                     </Ctx.Trackplayer.Provider>

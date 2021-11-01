@@ -8,7 +8,7 @@
  * @format
  */
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback} from 'react';
 import {Image, StatusBar, View} from 'react-native';
 
 import useCachedResources from "./domain/useCachedResources";
@@ -19,7 +19,6 @@ import useStored from "./domain/useStored";
 import {emptyMetadata, MusidexMetadata, newMetadata} from "./common/entity";
 import API, {RawMusidexMetadata} from "./common/api";
 import Ctx from "./domain/ctx";
-import {newSyncState, syncIter, SyncState} from "./domain/sync";
 import {LocalSettings, newLocalSettings} from "./domain/localsettings";
 
 export default function App() {
@@ -39,35 +38,6 @@ export default function App() {
     const [apiURL, setAPIUrl, loadedAPI] = useStored<string>("api_url", "");
     API.setAPIUrl(apiURL);
 
-    const [syncState, setSyncState] = useState<SyncState | undefined>(undefined);
-    useEffect(() => {
-        if (!loadedMeta || metadata.musics.length === 0) {
-            return;
-        }
-        newSyncState(metadata).then((v) => setSyncState(v));
-    }, [metadata, loadedMeta])
-
-    useEffect(() => {
-        if (syncState === undefined || !localSettings.downloadMusicLocally || apiURL === "") {
-            return;
-        }
-        let curTimeout: number | undefined = undefined;
-        const f = async () => {
-            const newSync = await syncIter(metadata, syncState);
-            if (newSync === null) {
-                curTimeout = setTimeout(f, 30000);
-                return;
-            }
-            curTimeout = setTimeout(() => setSyncState(newSync), 50);
-        };
-        f();
-        return () => {
-            if(curTimeout) {
-                clearTimeout(curTimeout);
-            }
-        }
-    }, [syncState, localSettings, apiURL, metadata, setSyncState]);
-
     let fetchMetadata = useCallback(() => {
         return API.getMetadata().then((meta) => {
             if (meta === null) {
@@ -78,7 +48,7 @@ export default function App() {
         })
     }, [setMetadata]);
 
-    if (!isLoadingComplete || !loadedMeta || !loadedAPI || !loadedSettings || syncState === undefined) {
+    if (!isLoadingComplete || !loadedMeta || !loadedAPI || !loadedSettings) {
         return <View style={{backgroundColor: '#383838', flex: 1, alignItems: "center", justifyContent: "center"}}>
             <Image source={require('./musidex_logo.png')}/>
         </View>;
@@ -88,11 +58,9 @@ export default function App() {
                 <StatusBar backgroundColor={Colors.bg}/>
                 <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
                     <Ctx.APIUrl.Provider value={[apiURL, setAPIUrl]}>
-                        <Ctx.SyncState.Provider value={syncState}>
-                            <Ctx.LocalSettings.Provider value={[localSettings, setLocalSettings]}>
-                                <Navigation/>
-                            </Ctx.LocalSettings.Provider>
-                        </Ctx.SyncState.Provider>
+                        <Ctx.LocalSettings.Provider value={[localSettings, setLocalSettings]}>
+                            <Navigation/>
+                        </Ctx.LocalSettings.Provider>
                     </Ctx.APIUrl.Provider>
                 </Ctx.Metadata.Provider>
             </SafeAreaProvider>
