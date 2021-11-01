@@ -55,7 +55,7 @@ function RootNavigator() {
     const [metadata, fetchMetadata] = useContext(Ctx.Metadata);
     const [apiURL] = useContext(Ctx.APIUrl);
 
-    const [user, setUser] = useStored<number | undefined>("user", undefined);
+    const [user, setUser] = useStored<number | undefined>("user", firstUser(metadata));
     const [searchForm, setSearchForm] = useStored<SearchForm>("searchForm", newSearchForm());
 
     useEffect(() => {
