@@ -257,7 +257,7 @@ const SongElem = React.memo((props: SongElemProps) => {
                                   onRename={(v) => API.insertTag({...artist, text: v})}/>
                 </span>
             </div>
-            <div className={`${playable ? "song-elem-playable": ""}`} style={{flexBasis: 0, flexGrow: 1, flexShrink: 1, height: "100%"}} onClick={onNext} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+            <div className={`${playable ? "song-elem-playable": ""}`} style={{flexBasis: 0, flexGrow: 1, flexShrink: 1, height: "100%", minHeight: 60}} onClick={onNext} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
             </div>
             <div className="song-elem-buttons">
                 {
