@@ -28,7 +28,9 @@ use include_dir::{include_dir, Dir};
 pub static MIGRATIONS: Dir = include_dir!("migrations");
 
 async fn start() -> anyhow::Result<()> {
-    std::env::set_var("RUST_LOG", "info");
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "info");
+    }
     env_logger::init();
     log::info!("initializing musidex");
     std::fs::create_dir_all("./storage/").context("could not create storage")?;
