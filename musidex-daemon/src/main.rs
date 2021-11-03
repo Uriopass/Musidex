@@ -18,8 +18,7 @@ use crate::domain::worker_thumbnail_resize::SmallThumbnailWorker;
 use crate::domain::worker_youtube_dl::YoutubeDLWorker;
 use crate::infrastructure::db::Db;
 use crate::infrastructure::migrate::migrate;
-use crate::infrastructure::router::{RedirectHTTPSService, Router};
-use crate::infrastructure::tls::TlsConfigBuilder;
+use crate::infrastructure::router::Router;
 use crate::utils::env_or;
 use anyhow::Context;
 use hyper::server::conn::AddrIncoming;
@@ -79,10 +78,8 @@ async fn start() -> anyhow::Result<()> {
 
     let port = env_or("PORT", 3200);
     let addr = ([0, 0, 0, 0], port).into();
-    let incoming = AddrIncoming::bind(&addr).unwrap_or_else(|e| {
-        panic!("error binding to {}: {}", addr, e);
-    });
-
+    let incoming =
+        AddrIncoming::bind(&addr).with_context(|| format!("error binding to {}", addr))?;
     let service = router.into_service();
 
     ytdl_worker.start();
@@ -90,38 +87,6 @@ async fn start() -> anyhow::Result<()> {
     small_thumbnail_worker.start();
     broadcast.start_workers();
 
-    // Run
-    if env_or("USE_HTTPS", false) {
-        let tls_accept = infrastructure::tls::TlsAcceptor::new(
-            TlsConfigBuilder::new()
-                .cert_path(env_or("CERT_PATH", s!("./cert.pem")))
-                .key_path(env_or("CERT_KEY_PATH", s!("./cert.rsa")))
-                .build()
-                .context("error building certificates, are you authorized to read them?")?,
-            incoming,
-        );
-        let server = Server::builder(tls_accept).serve(service);
-        println!("Listening on https://{}", addr);
-        if port != 443 {
-            log::warn!("not using port 443 for HTTPS");
-        }
-
-        if env_or("DONT_REDIRECT_HTTP", false) {
-            server.await?;
-            return Ok(());
-        }
-
-        let incoming_http = AddrIncoming::bind(&([0, 0, 0, 0], 80).into()).unwrap_or_else(|e| {
-            panic!("error binding to {}: {}", addr, e);
-        });
-        let red_server = Server::builder(incoming_http).serve(RedirectHTTPSService.into_service());
-
-        let (v1, v2) = futures::join!(red_server, server);
-        v1?;
-        v2?;
-
-        return Ok(());
-    }
     let server = Server::builder(incoming).serve(service);
     println!("Listening on http://{}", addr);
     server.await?;

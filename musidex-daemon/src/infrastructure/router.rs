@@ -35,8 +35,7 @@ use futures::FutureExt;
 use hyper::body::Bytes;
 use hyper::header::{
     HeaderValue, ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS,
-    ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_ENCODING, COOKIE, HOST, LOCATION,
-    USER_AGENT,
+    ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_ENCODING, COOKIE, USER_AGENT,
 };
 use hyper::http::Extensions;
 use hyper::service::Service;
@@ -369,47 +368,6 @@ fn set_nocors(req: &mut Response<Body>) {
 impl RouterService {
     pub(crate) fn new(router: Router) -> Self {
         Self(Arc::new(router))
-    }
-}
-
-#[derive(Clone)]
-pub struct RedirectHTTPSService;
-
-impl Service<Request<Body>> for RedirectHTTPSService {
-    type Response = Response<Body>;
-    type Error = anyhow::Error;
-    #[allow(clippy::type_complexity)]
-    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
-
-    fn poll_ready(&mut self, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
-    }
-
-    fn call(&mut self, req: Request<Body>) -> Self::Future {
-        Box::pin(async move {
-            let h = req.headers();
-            let host = match h.get(HOST).and_then(|x| x.to_str().ok()) {
-                Some(x) => x,
-                None => {
-                    log::error!("no host header or invalid host header while redirecting to https");
-                    return Ok(res_status(StatusCode::NOT_FOUND));
-                }
-            };
-
-            let redirect_url = format!("https://{}{}", host, req.uri());
-
-            Response::builder()
-                .status(StatusCode::TEMPORARY_REDIRECT)
-                .header(LOCATION, redirect_url)
-                .body(Body::empty())
-                .map_err(Into::into)
-        })
-    }
-}
-
-impl RedirectHTTPSService {
-    pub(crate) fn into_service(self) -> MakeRouterService<RedirectHTTPSService> {
-        MakeRouterService { inner: self }
     }
 }
 
