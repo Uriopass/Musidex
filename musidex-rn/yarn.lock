@@ -1504,6 +1504,13 @@
     "semver" "^5.3.0"
     "shimmer" "^1.1.0"
 
+"async-mutex@^0.3.2":
+  "integrity" "sha512-HuTK7E7MT7jZEh1P9GtRW9+aTWiDWWi9InbZ5hjxrnRa39KS4BW04+xLBhYNS2aXhHUIKZSw3gj4Pn1pj+qGAA=="
+  "resolved" "https://registry.npmjs.org/async-mutex/-/async-mutex-0.3.2.tgz"
+  "version" "0.3.2"
+  dependencies:
+    "tslib" "^2.3.1"
+
 "async@^2.4.0":
   "integrity" "sha512-zflvls11DCy+dQWzTW2dzuilv8Z5X/pjfmZOWba6TNIVDm+2UDaJmXSOXlasHKfNBs8oo3M0aT50fDEWfKZjXg=="
   "resolved" "https://registry.npmjs.org/async/-/async-2.6.3.tgz"
@@ -4923,14 +4930,6 @@
     "react-native-ratings" "8.0.4"
     "react-native-size-matters" "^0.3.1"
 
-"react-native-fetch-blob@^0.10.8":
-  "integrity" "sha1-T8JWq64MtfEOfEHyjBGz/zMNcqk="
-  "resolved" "https://registry.npmjs.org/react-native-fetch-blob/-/react-native-fetch-blob-0.10.8.tgz"
-  "version" "0.10.8"
-  dependencies:
-    "base-64" "0.1.0"
-    "glob" "7.0.6"
-
 "react-native-gesture-handler@*", "react-native-gesture-handler@^1.10.3", "react-native-gesture-handler@>= 1.0.0":
   "integrity" "sha512-cBGMi1IEsIVMgoox4RvMx7V2r6bNKw0uR1Mu1o7NbuHS6BRSVLq0dP34l2ecnPlC+jpWd3le6Yg1nrdCjby2Mw=="
   "resolved" "https://registry.npmjs.org/react-native-gesture-handler/-/react-native-gesture-handler-1.10.3.tgz"
@@ -5270,6 +5269,14 @@
   "version" "2.6.3"
   dependencies:
     "glob" "^7.1.3"
+
+"rn-fetch-blob@^0.12.0":
+  "integrity" "sha512-+QnR7AsJ14zqpVVUbzbtAjq0iI8c9tCg49tIoKO2ezjzRunN7YL6zFSFSWZm6d+mE/l9r+OeDM3jmb2tBb2WbA=="
+  "resolved" "https://registry.npmjs.org/rn-fetch-blob/-/rn-fetch-blob-0.12.0.tgz"
+  "version" "0.12.0"
+  dependencies:
+    "base-64" "0.1.0"
+    "glob" "7.0.6"
 
 "rsvp@^4.8.4":
   "integrity" "sha512-nfMOlASu9OnRJo1mbEk2cz0D56a1MBNrJ7orjRZQG10XDyuvwksKbuXNp6qa+kbn839HwjwhBzhFmdsaEAfauA=="
@@ -5953,7 +5960,7 @@
   "resolved" "https://registry.npmjs.org/tslib/-/tslib-1.14.1.tgz"
   "version" "1.14.1"
 
-"tslib@^2.0.1":
+"tslib@^2.0.1", "tslib@^2.3.1":
   "integrity" "sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw=="
   "resolved" "https://registry.npmjs.org/tslib/-/tslib-2.3.1.tgz"
   "version" "2.3.1"

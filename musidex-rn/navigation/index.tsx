@@ -30,6 +30,7 @@ import {StyleSheet, View} from "react-native";
 import Colors from "../domain/colors";
 import SettingsScreen from "./SettingsScreen";
 import {emptySyncState, newSyncState, syncIter, SyncState} from "../domain/sync";
+import { Mutex } from 'async-mutex';
 
 export default function Navigation() {
     return (
@@ -40,6 +41,9 @@ export default function Navigation() {
 }
 
 const Drawer = createDrawerNavigator();
+
+let loll = 0;
+let fetchMutex = new Mutex();
 
 function RootNavigator() {
     const [list, setList] = useStored<Tracklist>("tracklist", emptyTracklist(), {
@@ -87,21 +91,32 @@ function RootNavigator() {
 
     const [syncState, setSyncState] = useState<SyncState>(emptySyncState);
     useEffect(() => {
-        newSyncState(metadata).then((v) => setSyncState(v));
-    }, [metadata])
+        newSyncState().then((v) => setSyncState(v));
+    }, [])
 
     useEffect(() => {
-        if (syncState === undefined || !localSettings.downloadMusicLocally || apiURL === "") {
+        loll += 1;
+        if (syncState === undefined || !syncState.loaded || !localSettings.downloadMusicLocally || apiURL === "") {
             return;
         }
+        let cpy = loll;
         let curTimeout: number | undefined = undefined;
         const f = async () => {
-            const newSync = await syncIter(metadata, syncState);
-            if (newSync === null) {
+            const release = await fetchMutex.acquire();
+            if (cpy != loll) {
+                release();
+                return;
+            }
+            const changed = await syncIter(metadata, syncState);
+            release();
+            if (cpy != loll) {
+                return;
+            }
+            if (!changed) {
                 curTimeout = setTimeout(f, 30000);
                 return;
             }
-            curTimeout = setTimeout(() => setSyncState(newSync), 50);
+            curTimeout = setTimeout(f, 50);
         };
         f();
         return () => {

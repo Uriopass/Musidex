@@ -6,6 +6,7 @@ import {Icon} from "react-native-elements";
 import API from "../common/api";
 import {getTags} from "../common/entity";
 import Thumbnail from "./Thumbnail";
+import {isThumbSynced} from "../domain/sync";
 
 interface PlayerProps {
     style: ViewStyle,
@@ -42,7 +43,7 @@ const SmallPlayer = (props: PlayerProps) => {
     return (
         <View style={[styles.container, props.style]}>
             <View style={styles.currentTrack}>
-                <Thumbnail tags={tags} local={syncState.downloaded_thumb.has(curTrack || -1)} />
+                <Thumbnail tags={tags} local={isThumbSynced(syncState, metadata, curTrack)} />
                 <View style={styles.currentTrackTitle}>
                     <TextFg numberOfLines={2}>{title}</TextFg>
                     <TextFgGray numberOfLines={1}>{artist}</TextFgGray>

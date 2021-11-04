@@ -2,8 +2,8 @@ import {Dispatch, useEffect} from "react";
 import {NextTrackCallback, TrackPlayerAction} from "../common/tracklist";
 import TrackPlayer, {Event, State, Track} from "react-native-track-player";
 import API from "../common/api";
-import RNFetchBlob from "react-native-fetch-blob";
-import {getMusicPath} from "./sync";
+import RNFetchBlob from "rn-fetch-blob";
+import {getMusicPath, getThumbnailPath} from "./sync";
 
 type Trackplayer = {
     current: number | undefined,
@@ -85,11 +85,10 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
             const thumbnail = action.tags?.get("compressed_thumbnail")?.text || (action.tags?.get("thumbnail")?.text || "");
 
             const changeSong = async () => {
-                const has_music_local = await RNFetchBlob.fs.exists(getMusicPath(action.id));
-
+                const fn = getMusicPath(action.tags);
                 let url = API.getStreamSrc(action.id);
-                if (has_music_local) {
-                    url = "file://" + getMusicPath(action.id);
+                if (fn && await RNFetchBlob.fs.exists(fn)) {
+                    url = "file://" + fn;
                 }
 
                 const track: Track = {
@@ -104,6 +103,10 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                 }
                 if (thumbnail) {
                     track.artwork = API.getAPIUrl() + "/storage/" + thumbnail;
+                    const p = getThumbnailPath(thumbnail);
+                    if (await RNFetchBlob.fs.exists(p)) {
+                        track.artwork = "file://" + p;
+                    }
                 }
                 const q = await TrackPlayer.getQueue();
                 await TrackPlayer.add(track);

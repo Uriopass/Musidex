@@ -1,25 +1,32 @@
-import RNFetchBlob from "react-native-fetch-blob"
+import RNFetchBlob from "rn-fetch-blob"
 import API from "../common/api";
-import {MusidexMetadata} from "../common/entity";
+import {MusidexMetadata, Tags} from "../common/entity";
 
 export type SyncState = {
-    downloaded: Set<number>,
-    downloaded_thumb: Set<number>,
+    files: Set<String>,
+    loaded: boolean,
 }
 
-export async function fetchSong(id: number): Promise<boolean> {
-    const path = getMusicPath(id);
+export async function fetchSong(metadata: MusidexMetadata, id: number): Promise<boolean> {
+    const path = getMusicPath(metadata.music_tags_idx.get(id));
+    if (!path) {
+        console.log("couldn't get path");
+        return false;
+    }
     if (await RNFetchBlob.fs.exists(path)) {
         return true;
     }
     return RNFetchBlob.config({
         path: path+".part",
     }).fetch('GET', API.getStreamSrc(id))
-        .then(() => {
-            return RNFetchBlob.fs.mv(path+".part", path)
-        })
         .catch((err) => {
-            console.log(err);
+            console.log("error fetching", err);
+            return false;
+        })
+        .then(() => RNFetchBlob.fs.mv(path+".part", path))
+        .then(() => true)
+        .catch((err) => {
+            console.log("error mving", err);
             return false;
         })
 }
@@ -33,96 +40,97 @@ export async function fetchThumbnail(thumbTag: string): Promise<boolean> {
         path: path+".part",
     }).fetch('GET', API.getAPIUrl() + "/storage/" + thumbTag)
         .then(() => RNFetchBlob.fs.mv(path+".part", path))
+        .then(() => true)
         .catch((err) => {
             console.log(err);
             return false;
         })
 }
 
-export function syncIter(metadata: MusidexMetadata, syncState: SyncState): Promise<SyncState | null> {
+export function syncIter(metadata: MusidexMetadata, syncState: SyncState): Promise<boolean> {
     const x = async () => {
         let changed = false;
-        let iter = 10;
         for (const id of metadata.musics) {
-            if (!syncState.downloaded.has(id)) {
+            const fn = getMusicFilename(metadata.music_tags_idx.get(id));
+            if (fn && !syncState.files.has(fn)) {
                 console.log("fetching song...", id);
-                if (!await fetchSong(id)) {
-                    break
+                if (!await fetchSong(metadata, id)) {
+                    continue
                 }
                 console.log("fetching song ok");
-                syncState.downloaded.add(id);
+                syncState.files.add(fn);
                 changed = true;
-                iter -= 1;
-                if (iter <= 0) {
-                    break;
-                }
-            }
-            if (!syncState.downloaded_thumb.has(id)) {
-                const thumb = metadata.music_tags_idx.get(id)?.get("compressed_thumbnail")?.text;
-                if (thumb === undefined || thumb === "") {
-                    continue;
-                }
-                console.log("fetching thumb...", thumb);
-                if (!await fetchThumbnail(thumb)) {
-                    break
-                }
-                console.log("fetching thumb ok");
-                syncState.downloaded_thumb.add(id);
-                changed = true;
-                iter -= 1;
-                if (iter <= 0) {
-                    break;
-                }
-            }
-        }
-
-        if (changed) {
-            return {
-                ...syncState
-            }
-        }
-        return null;
-    };
-    return x();
-}
-
-export function getMusicPath(id: number): string {
-    return RNFetchBlob.fs.dirs.DocumentDir + '/music_' + id + '.mp3';
-}
-
-export function getThumbnailPath(thumbTag: string): string {
-    return RNFetchBlob.fs.dirs.DocumentDir + '/thumbnail_' + thumbTag;
-}
-
-export function emptySyncState(): SyncState {
-    return {
-        downloaded_thumb: new Set(),
-        downloaded: new Set(),
-    }
-}
-
-export function newSyncState(metadata: MusidexMetadata): Promise<SyncState> {
-    const x: () => Promise<SyncState> = async () => {
-        let musics = new Set<number>();
-        let thumbs = new Set<number>();
-        for (const id of metadata.musics) {
-            const hasMusic = await RNFetchBlob.fs.exists(getMusicPath(id));
-            if (hasMusic) {
-                musics.add(id);
+                break;
             }
             const thumb = metadata.music_tags_idx.get(id)?.get("compressed_thumbnail")?.text;
             if (thumb === undefined || thumb === "") {
                 continue;
             }
-            const hasThumb = await RNFetchBlob.fs.exists(getThumbnailPath(thumb));
-            if (hasThumb) {
-                thumbs.add(id);
+            const fnt = getThumbnailFilename(thumb);
+            if (!syncState.files.has(fnt)) {
+                console.log("fetching thumb...", thumb);
+                if (!await fetchThumbnail(thumb)) {
+                    break
+                }
+                console.log("fetching thumb ok");
+                syncState.files.add(fnt);
+                changed = true;
+                break;
             }
         }
+        return changed;
+    };
+    return x();
+}
 
+export function getMusicFilename(tags: Tags | undefined): string | undefined {
+    const tag = tags?.get("youtube_video_id")?.text;
+    if (tag && tag !== "") {
+        return 'music_' + tag + '.mp3';
+    }
+    return undefined;
+}
+
+export function getMusicPath(tags: Tags | undefined): string | undefined {
+    const fn = getMusicFilename(tags);
+    if (fn) {
+        return RNFetchBlob.fs.dirs.DocumentDir + '/' + fn;
+    }
+    return undefined;
+}
+
+export function getThumbnailFilename(thumbTag: string): string {
+    return 'thumbnail_' + thumbTag;
+}
+
+export function getThumbnailPath(thumbTag: string): string {
+    return RNFetchBlob.fs.dirs.DocumentDir + '/' + getThumbnailFilename(thumbTag);
+}
+
+export function isMusicSynced(syncState: SyncState, metadata: MusidexMetadata, id: number): boolean {
+    const v = getMusicFilename(metadata.music_tags_idx.get(id));
+    if (!v) {
+        return false;
+    }
+    return syncState.files.has(v);
+}
+
+export function isThumbSynced(syncState: SyncState, metadata: MusidexMetadata, id: number): boolean {
+    return syncState.files.has(getThumbnailFilename(metadata.music_tags_idx.get(id)?.get("compressed_thumbnail")?.text || "grrrr") || "grrr");
+}
+
+export function emptySyncState(): SyncState {
+    return {
+        files: new Set(),
+        loaded: false,
+    }
+}
+
+export function newSyncState(): Promise<SyncState> {
+    const x: () => Promise<SyncState> = async () => {
         return {
-            downloaded: musics,
-            downloaded_thumb: thumbs,
+            files: new Set(await RNFetchBlob.fs.ls(RNFetchBlob.fs.dirs.DocumentDir)),
+            loaded: true,
         }
     };
     return x();

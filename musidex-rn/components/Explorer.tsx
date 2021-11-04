@@ -10,6 +10,7 @@ import {SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {Checkbox, SearchInput} from "./Input";
 import Filters from "../../musidex-web/src/common/filters";
 import Thumbnail from "./Thumbnail";
+import {isMusicSynced, isThumbSynced} from "../domain/sync";
 
 export default function Explorer() {
     const [metadata] = useContext(Ctx.Metadata);
@@ -19,7 +20,6 @@ export default function Explorer() {
     const toShow = useContext(Ctx.SelectedMusics);
     const syncState = useContext(Ctx.SyncState);
 
-    //const setFilters = useCallback((f: Filters) => setSearchForm({...searchForm, filters: f}), [setSearchForm, searchForm]);
     const setSortBy = useCallback((s: SortBy) => setSearchForm({...searchForm, sort: s}), [setSearchForm, searchForm]);
     const setSearchQry = useCallback((s: string) => setSearchForm({
         ...searchForm,
@@ -37,8 +37,8 @@ export default function Explorer() {
         <FilterBySelect filters={searchForm.filters} setFilters={setFilters}/>
         {(curTrack && searchForm.sort.kind.kind === "similarity") &&
         <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
-                  isSynced={syncState.downloaded.has(curTrack)}
-                  thumbSynced={syncState.downloaded_thumb.has(curTrack)}
+                  isSynced={isMusicSynced(syncState, metadata, curTrack)}
+                  thumbSynced={isThumbSynced(syncState, metadata, curTrack)}
                   progressColor="#1d2f23"/>
         }
     </>
@@ -160,8 +160,8 @@ function SongList(props: {
             progress = 1.0;
         }
         return <SongElem musicID={item}
-                         isSynced={syncState.downloaded.has(item)}
-                         thumbSynced={syncState.downloaded_thumb.has(item)}
+                         isSynced={isMusicSynced(syncState, metadata, item)}
+                         thumbSynced={isThumbSynced(syncState, metadata, item)}
                          tags={getTags(metadata, item) || new Map()}
                          doNext={doNext}
                          progress={progress}
