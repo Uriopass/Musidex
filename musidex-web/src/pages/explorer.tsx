@@ -56,8 +56,6 @@ const Explorer = React.memo((props: ExplorerProps) => {
             </>;
     }
 
-    console.log(searchForm, toShow);
-
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
             <div className="explorer color-fg">
