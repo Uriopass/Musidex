@@ -1,5 +1,5 @@
 import {canPlay, getTags, MusidexMetadata, Tags, Vector} from "./entity";
-import {SearchForm} from "./filters";
+import {isSimilarity, SearchForm} from "./filters";
 import {Dispatch, dot} from "./utils";
 import {useCallback, useRef} from "react";
 
@@ -43,7 +43,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
                 }
             }
 
-            if (sform.sort.kind.kind === "similarity" && sform.filters.searchQry === "") {
+            if (isSimilarity(sform)) {
                 best_id = selectedMusics[0];
                 const score = list.score_map.get(best_id || -1);
                 if (score === undefined) {

@@ -6,7 +6,7 @@ import Colors from "../domain/colors";
 import Ctx from "../domain/ctx";
 import {NextTrackCallback} from "../common/tracklist";
 import {Icon} from "react-native-elements";
-import {SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
+import {isSimilarity, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {Checkbox, SearchInput} from "./Input";
 import Filters from "../../musidex-web/src/common/filters";
 import Thumbnail from "./Thumbnail";
@@ -35,7 +35,7 @@ export default function Explorer() {
                       sortBy={searchForm.sort} setSortBy={setSortBy}
                       hasSimilarity={curTrack !== undefined}/>
         <FilterBySelect filters={searchForm.filters} setFilters={setFilters}/>
-        {(curTrack && searchForm.sort.kind.kind === "similarity") &&
+        {(curTrack && isSimilarity(searchForm)) &&
         <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
                   isSynced={isMusicSynced(syncState, metadata, curTrack)}
                   thumbSynced={isThumbSynced(syncState, metadata, curTrack)}
@@ -153,7 +153,7 @@ function SongList(props: {
         let color = "#28222f";
         let progress = tracklist.score_map.get(item);
         if (item === curTrack) {
-            if (searchForm.sort.kind.kind === "similarity") {
+            if (isSimilarity(searchForm)) {
                 return <></>;
             }
             color = "#1d2f23";
@@ -166,7 +166,7 @@ function SongList(props: {
                          doNext={doNext}
                          progress={progress}
                          progressColor={color}/>;
-    }, [metadata, doNext, tracklist, curTrack, searchForm.sort.kind.kind]);
+    }, [metadata, doNext, tracklist, curTrack, searchForm.sort.kind.kind, searchForm.filters.searchQry]);
 
     const onScroll = (ev: any) => {
         if (ev.nativeEvent.contentOffset.y <= 0.0) {

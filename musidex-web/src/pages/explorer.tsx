@@ -6,7 +6,7 @@ import {canPlay, getTags, Tag} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";
 import TextInput from "../components/input";
 import {PageProps} from "./navigator";
-import Filters, {SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
+import Filters, {isSimilarity, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {MetadataCtx} from "../domain/metadata";
 import {SearchFormCtx, SelectedMusicsCtx, TracklistCtx} from "../App";
 import {clamp} from "../common/utils";
@@ -77,7 +77,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
                         let progress = list.score_map.get(id);
                         let progressColor = colorSongs;
                         if (id === curTrack) {
-                            if (searchForm.sort.kind.kind === "similarity") {
+                            if (isSimilarity(searchForm)) {
                                 return <Fragment key={id}/>;
                             }
                             progress = 1.0;

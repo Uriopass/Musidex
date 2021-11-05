@@ -7,6 +7,11 @@ import Fuse from "fuse.js";
 export type SearchForm = {
     filters: Filters;
     sort: SortBy;
+    similarityParams: SimilarityParams,
+}
+
+export type SimilarityParams = {
+    temperature: number,
 }
 
 export type Filters = {
@@ -26,6 +31,9 @@ export function newSearchForm(): SearchForm {
         sort: {
             kind: {kind: "similarity"},
             descending: true
+        },
+        similarityParams: {
+            temperature: 1.0,
         }
     };
 }
@@ -117,6 +125,10 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
         /* eslint-disable */
     }, [metadata, search, list, curUser]);
     /* eslint-enable */
+}
+
+export function isSimilarity(sf: SearchForm): boolean {
+    return sf.sort.kind.kind === "similarity" && sf.filters.searchQry === ""
 }
 
 export function sortby_kind_eq(a: SortByKind, b: SortByKind) {
