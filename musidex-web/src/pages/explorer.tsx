@@ -42,7 +42,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
     const colorCur = "#1d2f23";
     const colorSongs = "#28222f";
     let curPlaying = <></>;
-    if (curTrack && searchForm.sort.kind.kind === "similarity") {
+    if (curTrack && searchForm.sort.kind.kind === "similarity" && searchForm.filters.searchQry === "") {
         const tags = getTags(metadata, curTrack) || new Map();
         curPlaying =
             <>
