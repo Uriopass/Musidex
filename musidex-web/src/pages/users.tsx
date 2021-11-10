@@ -74,10 +74,12 @@ const UserCard = (props: UserCardProps) => {
     return <div className={"user-card " + (props.isCurrent ? " user-card-current" : "")}
                 onClick={() => props.onSelect(props.user.id)}
     >
+        <div className="user-card-name">
+            <EditableText text={props.user.name} onRename={(v) => props.onRename(props.user.id, v)}/>
+        </div>
         <div className="user-card-delete" onClick={() => props.onDelete(props.user.id)}>
             <MaterialIcon name="delete" size={20}/>
         </div>
-        <EditableText text={props.user.name} onRename={(v) => props.onRename(props.user.id, v)}/>
     </div>;
 }
 
