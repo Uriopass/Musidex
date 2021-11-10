@@ -18,11 +18,9 @@ const Navbar = React.memo((props: NavbarProps) => {
                 <div style={{display: "flex"}}>
                     <button className="navbar-button" onClick={() => props.setCurPage("explorer")} title="Home">
                         <MaterialIcon name="home"/>
-                        &nbsp;Home
                     </button>
                     <button className="navbar-button" onClick={() => props.setCurPage("submit")} title="Add musics to the library">
                         <MaterialIcon name="file_upload" size={25}/>
-                        &nbsp;Upload
                     </button>
                     {
                         props.syncProblem &&
