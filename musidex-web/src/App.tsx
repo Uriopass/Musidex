@@ -11,7 +11,7 @@ import Tracklist, {
     useNextTrackCallback,
     usePrevTrackCallback
 } from "./common/tracklist";
-import {useCookie} from "./components/utils";
+import {EditableCtx, useCookie} from "./components/utils";
 import {newSearchForm, SearchForm, useMusicSelect} from "./common/filters";
 import {MetadataCtx, useMetadata} from "./domain/metadata";
 import {Setter} from "./common/utils";
@@ -32,7 +32,8 @@ const App = () => {
     const [volume, setVolume] = useLocalStorage("volume", 1);
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
-    const [list, setList] = useState<Tracklist>(emptyTracklist())
+    const [list, setList] = useState<Tracklist>(emptyTracklist());
+    const editableSt = useState(false);
     const selectedMusics = useMusicSelect(metadata, sform, list, user);
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, sform, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
@@ -81,18 +82,21 @@ const App = () => {
         <>
             <Navbar syncProblem={syncProblem} setCurPage={setCurPage}
                     curUser={metadata.users.find((x) => x.id === user)}/>
-            <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
-                <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
-                    <TracklistCtx.Provider value={list}>
-                        <SearchFormCtx.Provider value={[sform, setSform]}>
-                            <SelectedMusicsCtx.Provider value={selectedMusics}>
-                                <PageNavigator page={curPage} doNext={doNext} onSetUser={setUser} curUser={user} setCurPage={setCurPage}/>
-                                <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev}/>
-                            </SelectedMusicsCtx.Provider>
-                        </SearchFormCtx.Provider>
-                    </TracklistCtx.Provider>
-                </TrackplayerCtx.Provider>
-            </MetadataCtx.Provider>
+            <EditableCtx.Provider value={editableSt}>
+                <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
+                    <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
+                        <TracklistCtx.Provider value={list}>
+                            <SearchFormCtx.Provider value={[sform, setSform]}>
+                                <SelectedMusicsCtx.Provider value={selectedMusics}>
+                                    <PageNavigator page={curPage} doNext={doNext} onSetUser={setUser} curUser={user}
+                                                   setCurPage={setCurPage}/>
+                                    <Player onVolumeChange={setVolume} doNext={doNext} onPrev={doPrev}/>
+                                </SelectedMusicsCtx.Provider>
+                            </SearchFormCtx.Provider>
+                        </TracklistCtx.Provider>
+                    </TrackplayerCtx.Provider>
+                </MetadataCtx.Provider>
+            </EditableCtx.Provider>
         </>
     );
 }

@@ -1,5 +1,6 @@
 import './utils.css'
-import React, {FormEvent, useState} from "react";
+import React, {createContext, FormEvent, useContext, useState} from "react";
+import {Setter} from "../common/utils";
 
 export const MaterialIcon = React.memo((props: any) => {
     let size = props.size || 20;
@@ -47,7 +48,15 @@ export type EditableTextProps = {
     text: string;
 }
 
+export const EditableCtx = createContext<[boolean, Setter<boolean>]>([false, _ => _]);
+
 export const EditableText = (props: EditableTextProps) => {
+    const [editable] = useContext(EditableCtx);
+
+    if (!editable) {
+        return <span>{props.text}</span>;
+    }
+
     return <span contentEditable={true}
                 onBlur={(v: FormEvent<HTMLSpanElement>) => {
                     if (v.currentTarget.innerText !== props.text) {

@@ -4,12 +4,13 @@ import React, {useContext, useState} from "react";
 import TextInput from "../components/input";
 import API from "../common/api";
 import {MetadataCtx} from "../domain/metadata";
-import {MaterialIcon} from "../components/utils";
+import {EditableCtx, MaterialIcon} from "../components/utils";
 import {useDebouncedEffect} from "../common/utils";
 
 const SettingsPage = (props: PageProps) => {
-    let [metadata, metadataSync] = useContext(MetadataCtx);
-    let [restartStatus, setRestartStatus] = useState("restart_alt");
+    const [metadata, metadataSync] = useContext(MetadataCtx);
+    const [restartStatus, setRestartStatus] = useState("restart_alt");
+    const [, setEditable] = useContext(EditableCtx);
 
     useDebouncedEffect(() => {
         if (restartStatus !== "pending") {
@@ -35,12 +36,16 @@ const SettingsPage = (props: PageProps) => {
                 <div className="title">
                     Settings
                 </div>
-                <div style={{marginTop: 10}}>
+                <div className="settings-item">
                     <button className="navbar-button" onClick={onRestartServer}>
                         <MaterialIcon name={restartStatus}
                                       size={25}/>&nbsp;Restart
                         server
                     </button>
+                </div>
+                <div className="settings-item">
+                    <input id="settings-editable" className="checkbox" type="checkbox"/>
+                    <label htmlFor="settings-editable" style={{paddingLeft: 5}}>Enable click-to-edit</label>
                 </div>
                 {
                     metadata.settings_l.slice(0, 0).map(([key, value]) => {

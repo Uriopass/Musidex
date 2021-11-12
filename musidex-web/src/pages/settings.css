@@ -4,3 +4,8 @@
     text-align: left;
     max-width: 980px;
 }
+
+.settings-item {
+    margin-top: 10px;
+    padding-left: 10px;
+}
