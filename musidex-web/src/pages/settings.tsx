@@ -10,7 +10,7 @@ import {useDebouncedEffect} from "../common/utils";
 const SettingsPage = (props: PageProps) => {
     const [metadata, metadataSync] = useContext(MetadataCtx);
     const [restartStatus, setRestartStatus] = useState("restart_alt");
-    const [, setEditable] = useContext(EditableCtx);
+    const [editable, setEditable] = useContext(EditableCtx);
 
     useDebouncedEffect(() => {
         if (restartStatus !== "pending") {
@@ -44,7 +44,8 @@ const SettingsPage = (props: PageProps) => {
                     </button>
                 </div>
                 <div className="settings-item">
-                    <input id="settings-editable" className="checkbox" type="checkbox"/>
+                    <input id="settings-editable" className="checkbox" type="checkbox" checked={editable}
+                           onChange={(x) => setEditable(x.currentTarget.checked)}/>
                     <label htmlFor="settings-editable" style={{paddingLeft: 5}}>Enable click-to-edit</label>
                 </div>
                 {
