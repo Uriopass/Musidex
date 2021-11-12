@@ -16,6 +16,7 @@ type TrackPlayer = {
 export function newTrackPlayer(): TrackPlayer {
     let audio = new Audio();
     audio.preload = "auto";
+    audio.autoplay = true;
     return {
         current: undefined,
         audio: audio,
@@ -31,6 +32,12 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
     trackplayer.audio.onpause = () => dispatch({action: "audioTick"});
     trackplayer.audio.onended = () => doNext();
     trackplayer.audio.oncanplay = () => {
+        trackplayer.loading = false;
+        if (!trackplayer.paused) {
+            trackplayer.audio.play()?.catch((e) => console.log(e));
+        }
+    }
+    trackplayer.audio.onloadedmetadata = () => {
         trackplayer.loading = false;
         if (!trackplayer.paused) {
             trackplayer.audio.play()?.catch((e) => console.log(e));
