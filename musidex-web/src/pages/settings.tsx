@@ -65,10 +65,12 @@ type SettingsElemProps = {
 }
 
 const SettingsElem = React.memo((props: SettingsElemProps) => {
+    const [v, setV] = useState(props.value);
     return <div className="settings-elem">
         <TextInput name={props.setting_key}
                    withLabel={true}
-                   startValue={props.value}
+                   value={v}
+                   onChange={setV}
                    onBlur={(v) => {
                        API.updateSettings(props.setting_key, v).then(() => props.sync());
                    }}/>

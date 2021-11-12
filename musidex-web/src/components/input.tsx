@@ -1,29 +1,25 @@
 import './input.css'
-import React, {useState} from "react";
+import React from "react";
 
 type TextInputProps = {
     name: string;
+    onChange: (value: string) => void;
+    value: string;
     minWidth?: string;
-    onChange?: (value: string) => void;
     onBlur?: (value: string) => void;
     withLabel?: boolean;
     pattern?: string;
     title?: string;
-    startValue?: string;
 }
 
 const TextInput = React.memo((props: TextInputProps) => {
         let id = "form_id_" + props.name.toLowerCase();
         const showl = props.withLabel === true;
-        let [v, setV] = useState(props.startValue || "");
         return <div className={"form_group field " + (showl ? " form_show_label" : "")}
                     style={{minWidth: props.minWidth || 0}}>
             <input type="search"
                    onChange={(ev) => {
-                       if (props.onChange) {
-                           props.onChange(ev.target.value);
-                       }
-                       setV(ev.target.value);
+                       props.onChange(ev.target.value);
                    }}
                    onBlur={(ev) => {
                        if (props.onBlur) {
@@ -37,7 +33,7 @@ const TextInput = React.memo((props: TextInputProps) => {
                    title={props.title}
                    pattern={props.pattern}
                    autoComplete="off"
-                   value={v}/>
+                   value={props.value}/>
             {showl &&
             <label htmlFor={id} className="form_label">{props.name}</label>
             }

@@ -55,7 +55,7 @@ const Users = (props: UsersProps) => {
             </div>
             <div className="user-add">
                 <b>Create user</b>
-                <TextInput onChange={setNewName} withLabel={true} name="User Name" title="User Name"/>
+                <TextInput onChange={setNewName} value={newName} withLabel={true} name="User Name" title="User Name"/>
                 <div className="user-add-submit" onClick={onNewSubmit}>Submit</div>
             </div>
         </div>

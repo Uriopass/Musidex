@@ -42,14 +42,17 @@ type YTSubmitProps = {
 
 const YTSubmit = (props: YTSubmitProps) => {
     const [sendState, setSendState] = useState({type: "waiting_for_url"} as YTSendState);
+    const [url, setURL] = useState("");
 
     const onYTInputChange = (v: string) => {
+        setURL(v);
         if (v === "") {
             setSendState({type: "waiting_for_url"});
             return;
         }
         setSendState({type: "sending"});
         props.uploadAPI(v).then((res: Response) => {
+            setURL("");
             if (res.ok) {
                 setSendState({type: "accepted"});
                 return;
@@ -97,7 +100,8 @@ const YTSubmit = (props: YTSubmitProps) => {
             <br/>
             {props.description}
             <form>
-                <TextInput onChange={onYTInputChange}
+                <TextInput value={url}
+                           onChange={onYTInputChange}
                            name={props.placeholder}
                            title="Input is not a valid youtube URL"
                            withLabel={true}/>
