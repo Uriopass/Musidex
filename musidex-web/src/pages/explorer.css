@@ -32,7 +32,7 @@
 }
 
 .song-elem-buttons {
-    flex: 2 0 100px;
+    flex: 2 1 100px;
     max-width: 100px;
     display: flex;
     justify-content: space-evenly;
