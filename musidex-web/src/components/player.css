@@ -117,3 +117,12 @@
     border-color: gray;
     color: gray;
 }
+
+@media screen and (orientation:portrait) {
+    .player-global-controls {
+        display: none;
+    }
+    .player-current-track {
+        display: none;
+    }
+}
