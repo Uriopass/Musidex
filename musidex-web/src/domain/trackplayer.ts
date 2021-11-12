@@ -14,9 +14,11 @@ type TrackPlayer = {
 
 
 export function newTrackPlayer(): TrackPlayer {
+    let audio = new Audio();
+    audio.preload = "auto";
     return {
         current: undefined,
-        audio: new Audio(),
+        audio: audio,
         duration: 0,
         paused: true,
         loading: false,
@@ -31,7 +33,13 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
     trackplayer.audio.oncanplay = () => {
         trackplayer.loading = false;
         if (!trackplayer.paused) {
-            trackplayer.audio.play().catch((e) => console.log(e));
+            trackplayer.audio.play()?.catch((e) => console.log(e));
+        }
+    }
+    trackplayer.audio.oncanplaythrough = () => {
+        trackplayer.loading = false;
+        if (!trackplayer.paused) {
+            trackplayer.audio.play()?.catch((e) => console.log(e));
         }
     }
     if ('mediaSession' in navigator) {
@@ -126,9 +134,6 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
             if (trackplayer.current === undefined) return trackplayer;
             if (trackplayer.audio.ended) {
                 trackplayer.paused = true;
-            }
-            if (!trackplayer.audio.paused) {
-                trackplayer.loading = false;
             }
             if (trackplayer.audio.duration) {
                 trackplayer.duration = trackplayer.audio.duration;
