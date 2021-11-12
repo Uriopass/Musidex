@@ -55,7 +55,7 @@ export default function App() {
     } else {
         return (
             <SafeAreaProvider>
-                <StatusBar backgroundColor={Colors.bg}/>
+                <StatusBar barStyle="dark-content" backgroundColor={Colors.bg}/>
                 <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
                     <Ctx.APIUrl.Provider value={[apiURL, setAPIUrl]}>
                         <Ctx.LocalSettings.Provider value={[localSettings, setLocalSettings]}>
