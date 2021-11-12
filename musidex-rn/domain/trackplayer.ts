@@ -40,6 +40,7 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
 
     useEffect(() => {
         const v = TrackPlayer.addEventListener(Event.PlaybackQueueEnded, (_) => {
+            console.log("playback ended");
             doNext();
         });
         return () => v.remove();
@@ -47,6 +48,7 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
 
     useEffect(() => {
         const v = TrackPlayer.addEventListener(Event.RemoteNext, (_) => {
+            console.log("remote next");
             doNext();
         });
         return () => v.remove();
@@ -68,8 +70,10 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
             }
             if (trackplayer.current === action.id) {
                 if (trackplayer.paused) {
+                    console.log("playing");
                     TrackPlayer.play();
                 } else {
+                    console.log("pausing");
                     TrackPlayer.pause();
                 }
                 return {
@@ -114,6 +118,7 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                     await TrackPlayer.skipToNext();
                 }
                 await TrackPlayer.play();
+                console.log("changed song ok");
             };
             changeSong();
 
