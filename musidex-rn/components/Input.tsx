@@ -26,6 +26,7 @@ export function SearchInput(props: TextInputProps & { searchStyle?: StyleProp<Te
                        setActive(false);
                        props.onBlur?.(e);
                    }}
+                   autoCorrect={false}
                    placeholderTextColor={Colors.colorbg}
                    placeholder="Search" style={[styles.searchInput, searchStyle]} {...textprops}/>
         {(props.value?.length || 0) > 0 && (
