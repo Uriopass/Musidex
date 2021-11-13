@@ -6,7 +6,7 @@ import {canPlay, getTags, Tag} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";
 import TextInput from "../components/input";
 import {PageProps} from "./navigator";
-import Filters, {isSimilarity, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
+import Filters, {isSimilarity, SimilarityParams, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {MetadataCtx} from "../domain/metadata";
 import {SearchFormCtx, SelectedMusicsCtx, TracklistCtx} from "../App";
 import {clamp} from "../common/utils";
@@ -25,9 +25,19 @@ const Explorer = React.memo((props: ExplorerProps) => {
     const list = useContext(TracklistCtx);
     const [shown, setShown] = useState(40);
 
-    const setFilters = useCallback((f: Filters) => setSearchForm({...searchForm, filters: f}), [setSearchForm, searchForm]);
+    const setFilters = useCallback((f: Filters) => setSearchForm({
+        ...searchForm,
+        filters: f
+    }), [setSearchForm, searchForm]);
     const setSortBy = useCallback((s: SortBy) => setSearchForm({...searchForm, sort: s}), [setSearchForm, searchForm]);
-    const setSearchQry = useCallback((s: string) => setSearchForm({...searchForm, filters: {...searchForm.filters, searchQry: s}}), [setSearchForm, searchForm]);
+    const setSearchQry = useCallback((s: string) => setSearchForm({
+        ...searchForm,
+        filters: {...searchForm.filters, searchQry: s}
+    }), [setSearchForm, searchForm]);
+    const setSimilarityParam = useCallback((s: SimilarityParams) => setSearchForm({
+        ...searchForm,
+        similarityParams: s
+    }), [setSearchForm, searchForm]);
 
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
     const onScroll = (e: any) => {
@@ -67,6 +77,17 @@ const Explorer = React.memo((props: ExplorerProps) => {
                               hasSimilarity={curTrack !== undefined}/>
                 <FilterBySelect filters={searchForm.filters}
                                 setFilters={setFilters}/>
+                {isSimilarity(searchForm) &&
+                <div className="temperature-pick">
+                    <span className="temperature-pick-text">
+                        Temperature:&nbsp;
+                    </span>
+                    <input className="temperature-pick-range" type="range" value={searchForm.similarityParams.temperature * 100} min={0} max={100}
+                           onChange={(e) => {
+                               setSimilarityParam({temperature: parseInt(e.currentTarget.value) / 100})
+                           }}/>
+                </div>
+                }
                 {curPlaying}
                 {
                     toShow.slice(0, shown).map((id) => {
@@ -235,9 +256,11 @@ const SongElem = React.memo((props: SongElemProps) => {
     }
 
     return (
-        <div className={`song-elem ${playable ? "" : "song-elem-disabled"} ${(hovered && playable) ? "song-elem-hovered": ""}`}
-             style={{background: grad}}>
-            <div className={`cover-image-container ${playable ? "song-elem-playable": ""}`} onClick={onNext} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+        <div
+            className={`song-elem ${playable ? "" : "song-elem-disabled"} ${(hovered && playable) ? "song-elem-hovered" : ""}`}
+            style={{background: grad}}>
+            <div className={`cover-image-container ${playable ? "song-elem-playable" : ""}`} onClick={onNext}
+                 onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
                 {
                     (cover) ?
                         <img src={"storage/" + cover} alt="album or video cover" loading="lazy"/> :
@@ -255,7 +278,9 @@ const SongElem = React.memo((props: SongElemProps) => {
                                   onRename={(v) => API.insertTag({...artist, text: v})}/>
                 </span>
             </div>
-            <div className={`${playable ? "song-elem-playable": ""}`} style={{flexBasis: 0, flexGrow: 1, flexShrink: 1, height: "100%", minHeight: 60}} onClick={onNext} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+            <div className={`${playable ? "song-elem-playable" : ""}`}
+                 style={{flexBasis: 0, flexGrow: 1, flexShrink: 1, height: "100%", minHeight: 60}} onClick={onNext}
+                 onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
             </div>
             <div className="song-elem-buttons">
                 {

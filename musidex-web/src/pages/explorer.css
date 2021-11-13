@@ -96,6 +96,21 @@
     margin: 0 5px;
 }
 
+.temperature-pick {
+    display: flex;
+    width: calc(100% - 20px);
+    color: var(--color-bg);
+}
+
+.temperature-pick-text {
+    flex: 0 1;
+}
+
+.temperature-pick-range {
+    flex: 1 0;
+    max-width: 200px;
+}
+
 .explorer-search {
     width: calc(100% - 20px);
     flex: 0 0 auto;

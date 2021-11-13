@@ -11,11 +11,11 @@ import Tracklist, {
     useNextTrackCallback,
     usePrevTrackCallback
 } from "./common/tracklist";
-import {EditableCtx, useCookie} from "./components/utils";
+import {EditableCtx, useCookie, useLocalStorageVersion} from "./components/utils";
 import {newSearchForm, SearchForm, useMusicSelect} from "./common/filters";
 import {MetadataCtx, useMetadata} from "./domain/metadata";
 import {Setter} from "./common/utils";
-import {firstUser} from "./common/entity";
+import {firstUser, MusidexMetadata} from "./common/entity";
 
 export const SearchFormCtx = React.createContext<[SearchForm, Setter<SearchForm>]>([newSearchForm(), _ => _]);
 export const SelectedMusicsCtx = React.createContext<number[]>([]);
@@ -27,10 +27,12 @@ const App = () => {
     const [userStr, setUserStr] = useCookie("cur_user", undefined);
     const user = parseInt(userStr || "undefined") || undefined;
     const setUser = useCallback((v: number) => setUserStr(v.toString()), [setUserStr]);
-    const [sform, setSform] = useLocalStorage<SearchForm>("searchform", newSearchForm());
+    const _sform = useLocalStorageVersion<SearchForm>("searchform", 1, newSearchForm());
+    const [sform] = _sform;
     const [syncProblem, setSyncProblem] = useState(false);
     const [volume, setVolume] = useLocalStorage("volume", 1);
-    const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
+    const tp = useReducer(applyTrackPlayer, newTrackPlayer());
+    const [trackplayer, dispatchPlayer] = tp;
     const [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
     const [list, setList] = useState<Tracklist>(emptyTracklist());
     const editableSt = useState(false);
@@ -78,15 +80,16 @@ const App = () => {
     trackplayer.audio.volume = volume;
     useMemo(() => setupListeners(trackplayer, metadata, doNext, doPrev, dispatchPlayer), [trackplayer, metadata, doNext, doPrev, dispatchPlayer]);
 
+    const metap = useMemo<[MusidexMetadata, () => void]>(() => [metadata, fetchMetadata], [metadata, fetchMetadata]);
     return (
         <>
             <Navbar syncProblem={syncProblem} setCurPage={setCurPage}
                     curUser={metadata.users.find((x) => x.id === user)}/>
             <EditableCtx.Provider value={editableSt}>
-                <MetadataCtx.Provider value={[metadata, fetchMetadata]}>
-                    <TrackplayerCtx.Provider value={[trackplayer, dispatchPlayer]}>
+                <MetadataCtx.Provider value={metap}>
+                    <TrackplayerCtx.Provider value={tp}>
                         <TracklistCtx.Provider value={list}>
-                            <SearchFormCtx.Provider value={[sform, setSform]}>
+                            <SearchFormCtx.Provider value={_sform}>
                                 <SelectedMusicsCtx.Provider value={selectedMusics}>
                                     <PageNavigator page={curPage} doNext={doNext} onSetUser={setUser} curUser={user}
                                                    setCurPage={setCurPage}/>
