@@ -1,16 +1,17 @@
 import {Animated, FlatList, StyleSheet, TouchableOpacity, View} from "react-native";
-import React, {useCallback, useContext, useRef, useState} from "react";
+import React, {useCallback, useContext, useMemo, useRef, useState} from "react";
 import {getTags, Tag} from "../common/entity";
 import {TextBg, TextFg, TextFgGray, TextPrimary, TextSecondary} from "./StyledText";
 import Colors from "../domain/colors";
 import Ctx from "../domain/ctx";
 import {NextTrackCallback} from "../common/tracklist";
-import {Icon} from "react-native-elements";
+import Slider from "@react-native-community/slider";
 import {isSimilarity, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {Checkbox, SearchInput} from "./Input";
-import Filters from "../../musidex-web/src/common/filters";
+import Filters, {SimilarityParams} from "../../musidex-web/src/common/filters";
 import Thumbnail from "./Thumbnail";
 import {isMusicSynced, isThumbSynced} from "../domain/sync";
+import {Icon} from "react-native-elements";
 
 export default function Explorer() {
     const [metadata] = useContext(Ctx.Metadata);
@@ -27,14 +28,34 @@ export default function Explorer() {
     }), [setSearchForm, searchForm]);
 
     const setFilters = useCallback((f) => setSearchForm({...searchForm, filters: f}), [setSearchForm, searchForm]);
+    const setSimilarityParam = useCallback((s: SimilarityParams) => setSearchForm({
+        ...searchForm,
+        similarityParams: s
+    }), [setSearchForm, searchForm]);
 
     const curTrack: number | undefined = tracklist.last_played[tracklist.last_played.length - 1];
+    const vChange = useCallback((value) => {
+        setSimilarityParam({temperature: value / 100})
+    }, [setSimilarityParam]);
+
+    const firstV = useMemo(() => searchForm.similarityParams.temperature * 100, []);
+
     const TopComp = <>
         <SearchInput value={searchForm.filters.searchQry} onChangeText={(text => setSearchQry(text))}/>
         <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
                       sortBy={searchForm.sort} setSortBy={setSortBy}
                       hasSimilarity={curTrack !== undefined}/>
         <FilterBySelect filters={searchForm.filters} setFilters={setFilters}/>
+        <View style={styles.temperatureView}>
+            <Icon style={styles.temperatureIcon} color={Colors.colorbg} size={20} name="casino"/>
+            <Slider style={styles.temperatureSlider}
+                    minimumTrackTintColor={Colors.primary}
+                    thumbTintColor={Colors.colorfg}
+                    tapToSeek={true}
+                    maximumTrackTintColor={Colors.colorbg}
+                    value={firstV} minimumValue={0} maximumValue={100}
+                    onValueChange={vChange}/>
+        </View>
         {(curTrack && isSimilarity(searchForm)) &&
         <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
                   isSynced={isMusicSynced(syncState, metadata, curTrack)}
@@ -286,6 +307,18 @@ const styles = StyleSheet.create({
     startElems: {
         flexDirection: "row",
         flexShrink: 1,
+    },
+    temperatureView: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 10,
+    },
+    temperatureIcon: {
+        paddingLeft: 10,
+    },
+    temperatureSlider: {
+        flexGrow: 1,
+        paddingHorizontal: 10,
     },
     arrowUp: {
         padding: 7,

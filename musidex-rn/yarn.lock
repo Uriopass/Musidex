@@ -946,6 +946,11 @@
   "resolved" "https://registry.npmjs.org/@react-native-community/eslint-plugin/-/eslint-plugin-1.1.0.tgz"
   "version" "1.1.0"
 
+"@react-native-community/slider@^4.1.12":
+  "integrity" "sha512-CiuLZ2orueBiWHYxfaJF57jQY6HY2Q3z5pdAE4MKH8EqIImr/jgDJrJ/UxOVZHK1Ng9P+XlGIKfVIcuWZ6guuA=="
+  "resolved" "https://registry.npmjs.org/@react-native-community/slider/-/slider-4.1.12.tgz"
+  "version" "4.1.12"
+
 "@react-native-windows/cli@0.66.0":
   "integrity" "sha512-+mzm3k+X1AXQe+OqYZxPPeoY4r/plaPKXe+P7y3tjWZN77ia+pdrKShJuQaAYRG3MhkEtNQpXRoJqb35AM7xrA=="
   "resolved" "https://registry.npmjs.org/@react-native-windows/cli/-/cli-0.66.0.tgz"

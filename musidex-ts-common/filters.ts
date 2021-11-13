@@ -72,7 +72,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
             return (scoremap.get(b) || -100000) - (scoremap.get(a) || -100000) + vc;
         });
         return l;
-    }, [metadata, scoremap, seed, temp]);
+    }, [metadata, scoremap, temp]);
 
     const fuse = useMemo(() => {
         return new Fuse(metadata.fuse_document, fuseOptions);

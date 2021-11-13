@@ -33,7 +33,7 @@ export function newSearchForm(): SearchForm {
             descending: true
         },
         similarityParams: {
-            temperature: 1.0,
+            temperature: 0.0,
         }
     };
 }
@@ -54,21 +54,25 @@ const fuseOptions = {
     threshold: 0.4,
 };
 
+export const seed = Math.floor(Math.random() * 10000000);
+
 export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, list: Tracklist, curUser: number | undefined): number[] {
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
     const sortBy = search.sort;
     const searchQry = search.filters.searchQry;
     const scoremap = list.score_map;
 
-    const seed = useMemo(() => Math.floor(Math.random() * 10000000), []);
-
+    const temp = search.similarityParams.temperature;
     const best_tracks = useMemo(() => {
         const l = metadata.musics.slice();
         l.sort((a, b) => {
-            return (scoremap.get(b) || -100000) - (scoremap.get(a) || -100000);
+            const va = prng(seed + a)();
+            const vb = prng(seed + b)();
+            const vc = (va - vb) * temp;
+            return (scoremap.get(b) || -100000) - (scoremap.get(a) || -100000) + vc;
         });
         return l;
-    }, [metadata, scoremap]);
+    }, [metadata, scoremap, temp]);
 
     const fuse = useMemo(() => {
         return new Fuse(metadata.fuse_document, fuseOptions);

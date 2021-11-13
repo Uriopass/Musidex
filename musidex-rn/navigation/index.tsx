@@ -160,7 +160,7 @@ const MusidexDrawer = React.memo((props: MusidexDrawerProps) => {
                     headerShown: false,
                     drawerType: "front",
                     overlayColor: Colors.bg,
-                    swipeEdgeWidth: 500,
+                    swipeEdgeWidth: 75,
                 }
             }} initialRouteName={props.curUser === undefined ? "Settings" : "Home"}>
             <Drawer.Screen name="Home" component={MainScreen}/>
