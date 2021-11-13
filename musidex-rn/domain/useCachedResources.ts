@@ -1,5 +1,10 @@
 import * as React from 'react';
-import TrackPlayer, {Capability, IOSCategory} from 'react-native-track-player';
+import TrackPlayer, {
+    CAPABILITY_JUMP_FORWARD,
+    CAPABILITY_PAUSE,
+    CAPABILITY_PLAY,
+    CAPABILITY_SKIP_TO_NEXT, CAPABILITY_SKIP_TO_PREVIOUS
+} from 'react-native-track-player';
 
 export default function useCachedResources() {
     const [isLoadingComplete, setLoadingComplete] = React.useState(false);
@@ -8,21 +13,21 @@ export default function useCachedResources() {
     React.useEffect(() => {
         async function loadResourcesAndDataAsync() {
             try {
-                await TrackPlayer.setupPlayer({iosCategory: IOSCategory.Playback, waitForBuffer: true, minBuffer: 5});
+                await TrackPlayer.setupPlayer({iosCategory: 'playback', waitForBuffer: true, minBuffer: 5});
 
                 await TrackPlayer.updateOptions({
                     stopWithApp: true,
                     // Media controls capabilities
                     capabilities: [
-                        Capability.Play,
-                        Capability.Pause,
-                        Capability.SkipToNext,
-                        Capability.SkipToPrevious,
-                        Capability.JumpForward,
+                        CAPABILITY_PLAY,
+                        CAPABILITY_PAUSE,
+                        CAPABILITY_SKIP_TO_NEXT,
+                        CAPABILITY_SKIP_TO_PREVIOUS,
+                        CAPABILITY_JUMP_FORWARD,
                     ],
 
                     // Capabilities that will show up when the notification is in the compact form on Android
-                    compactCapabilities: [Capability.Play, Capability.Pause, Capability.SkipToNext],
+                    compactCapabilities: [CAPABILITY_PLAY, CAPABILITY_PAUSE, CAPABILITY_SKIP_TO_NEXT],
                 });
             } catch (e) {
                 // We might want to provide this error information to an error reporting service

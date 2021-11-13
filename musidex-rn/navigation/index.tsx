@@ -74,7 +74,7 @@ function RootNavigator() {
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const doReset = useResetCallback(setList, metadata);
 
-    useSetupListeners(trackplayer, dispatchPlayer, doNext);
+    useSetupListeners(trackplayer, dispatchPlayer, doNext, doPrev);
 
     useEffect(() => {
         if (user === undefined || !metadata.users.some((u) => u.id === user)) {

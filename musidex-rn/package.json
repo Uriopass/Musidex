@@ -25,7 +25,7 @@
     "react-native-reanimated": "^2.2.3",
     "react-native-safe-area-context": "^3.3.2",
     "react-native-screens": "^3.8.0",
-    "react-native-track-player": "^2.1.2",
+    "react-native-track-player": "^1.2.7",
     "react-native-windows": "^0.66.3",
     "reconnecting-websocket": "^4.4.0",
     "rn-fetch-blob": "^0.12.0"

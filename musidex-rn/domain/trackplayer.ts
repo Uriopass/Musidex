@@ -1,6 +1,6 @@
 import {Dispatch, useEffect} from "react";
-import {NextTrackCallback, TrackPlayerAction} from "../common/tracklist";
-import TrackPlayer, {Event, State, Track} from "react-native-track-player";
+import {NextTrackCallback, PrevTrackCallback, TrackPlayerAction} from "../common/tracklist";
+import TrackPlayer, {State, STATE_PAUSED, STATE_PLAYING, STATE_READY, Track} from "react-native-track-player";
 import API from "../common/api";
 import RNFetchBlob from "rn-fetch-blob";
 import {getMusicPath, getThumbnailPath} from "./sync";
@@ -21,11 +21,11 @@ export function newTrackPlayer(): Trackplayer {
     };
 }
 
-export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<TrackPlayerAction>, doNext: NextTrackCallback) {
+export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<TrackPlayerAction>, doNext: NextTrackCallback, doPrev: PrevTrackCallback) {
     useEffect(() => {
-        const v = TrackPlayer.addEventListener(Event.PlaybackState, (data) => {
+        const v = TrackPlayer.addEventListener("playback-state", (data) => {
             let state: State = data.state;
-            let loaded = state === State.Paused || state === State.Playing || state === State.Ready;
+            let loaded = state === STATE_PAUSED || state === STATE_PLAYING || state === STATE_READY;
             if (trackplayer.loading !== loaded) {
                 trackplayer.loading = loaded;
                 dispatch({action: "audioTick"});
@@ -39,7 +39,7 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
     }, [trackplayer, dispatch]);
 
     useEffect(() => {
-        const v = TrackPlayer.addEventListener(Event.PlaybackQueueEnded, (_) => {
+        const v = TrackPlayer.addEventListener("playback-queue-ended", (_) => {
             console.log("playback ended");
             doNext();
         });
@@ -47,7 +47,7 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
     }, [doNext]);
 
     useEffect(() => {
-        const v = TrackPlayer.addEventListener(Event.RemoteNext, (_) => {
+        const v = TrackPlayer.addEventListener("remote-next", (_) => {
             console.log("remote next");
             doNext();
         });
@@ -55,7 +55,15 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
     }, [doNext]);
 
     useEffect(() => {
-        const v = TrackPlayer.addEventListener(Event.PlaybackError, (data) => {
+        const v = TrackPlayer.addEventListener("remote-previous", (_) => {
+            console.log("remote previous");
+            doPrev();
+        });
+        return () => v.remove();
+    }, [doPrev]);
+
+    useEffect(() => {
+        const v = TrackPlayer.addEventListener("playback-error", (data) => {
             console.log(data);
         });
         return () => v.remove();
@@ -96,15 +104,12 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                 }
 
                 const track: Track = {
+                    id: url,
                     url: url,
+                    artist: artist || "Unknown Artist",
+                    title: title || "Unknown Title",
                     duration: duration,
                 };
-                if (title) {
-                    track.title = title;
-                }
-                if (artist) {
-                    track.artist = artist;
-                }
                 if (thumbnail) {
                     track.artwork = API.getAPIUrl() + "/storage/" + thumbnail;
                     const p = getThumbnailPath(thumbnail);
