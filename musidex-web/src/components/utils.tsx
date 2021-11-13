@@ -1,6 +1,7 @@
 import './utils.css'
 import React, {createContext, FormEvent, useContext, useState} from "react";
 import {Setter} from "../common/utils";
+import useLocalStorage from "use-local-storage";
 
 export const MaterialIcon = React.memo((props: any) => {
     let size = props.size || 20;
@@ -78,6 +79,20 @@ export const EditableText = (props: EditableTextProps) => {
     >
         {props.text}
     </span>;
+}
+
+export function useLocalStorageVersion<T>(key: string, version: number, defaultValue: T, options?: any): [T, Setter<T>] {
+    const [storedVer, setStoredVer] = useLocalStorage<number | null>(key+"__version", null);
+    const param = useLocalStorage(key, defaultValue, options);
+
+    if (storedVer === version) {
+        return param;
+    }
+
+    param[1](defaultValue);
+    setStoredVer(version);
+
+    return [defaultValue, param[1]];
 }
 
 const isBrowser = typeof window !== 'undefined';
