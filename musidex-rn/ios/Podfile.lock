@@ -274,9 +274,9 @@ PODS:
     - glog
   - react-native-safe-area-context (3.3.2):
     - React-Core
-  - react-native-track-player (2.1.2):
+  - react-native-track-player (2.0.3):
     - React-Core
-    - SwiftAudioEx (= 0.14.5)
+    - SwiftAudioEx (= 0.13.2)
   - React-perflogger (0.66.3)
   - React-RCTActionSheet (0.66.3):
     - React-Core/RCTActionSheetHeaders (= 0.66.3)
@@ -380,7 +380,7 @@ PODS:
   - RNScreens (3.8.0):
     - React-Core
     - React-RCTImage
-  - SwiftAudioEx (0.14.5)
+  - SwiftAudioEx (0.13.2)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
@@ -573,7 +573,7 @@ SPEC CHECKSUMS:
   React-jsinspector: d9c8eb0b53f0da206fed56612b289fec84991157
   React-logger: e522e76fa3e9ec3e7d7115b49485cc065cf4ae06
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
-  react-native-track-player: 23dd515aacf1d36a0e522ef7fdbc55f13f26d4fb
+  react-native-track-player: f113b91163057c3aac972538e6aaca168f7e1205
   React-perflogger: 73732888d37d4f5065198727b167846743232882
   React-RCTActionSheet: 96c6d774fa89b1f7c59fc460adc3245ba2d7fd79
   React-RCTAnimation: 8940cfd3a8640bd6f6372150dbdb83a79bcbae6c
@@ -591,10 +591,10 @@ SPEC CHECKSUMS:
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNReanimated: b04ef2a4f0cb61b062bbcf033f84a9e470f4f60b
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
-  SwiftAudioEx: bfaff9894c885aded7edfb0793e25165d55053d4
+  SwiftAudioEx: 036eb73a95be3050b73c47b0919146224537f611
   Yoga: 32a18c0e845e185f4a2a66ec76e1fd1f958f22fa
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: bf21f87824b34a710acbecf2b9c595b9a4ed65ad
+PODFILE CHECKSUM: 2e99062ea427e2e1574300ca94840214dd1a1d79
 
 COCOAPODS: 1.11.2

@@ -2796,6 +2796,11 @@
   "resolved" "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
   "version" "1.0.0"
 
+"fsevents@^2.1.2":
+  "integrity" "sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA=="
+  "resolved" "https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz"
+  "version" "2.3.2"
+
 "function-bind@^1.1.1":
   "integrity" "sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A=="
   "resolved" "https://registry.npmjs.org/function-bind/-/function-bind-1.1.1.tgz"
@@ -4803,10 +4808,10 @@
   "resolved" "https://registry.npmjs.org/react-native-size-matters/-/react-native-size-matters-0.3.1.tgz"
   "version" "0.3.1"
 
-"react-native-track-player@^2.1.2":
-  "integrity" "sha512-tZw9/4Ft7EtKtWDZuregBEXjXv++7WT7BvaXDk+lKCL/e3FQI5zyiwECfM18sk6raeMs7ItBxNsDKryCf9mMUA=="
-  "resolved" "https://registry.npmjs.org/react-native-track-player/-/react-native-track-player-2.1.2.tgz"
-  "version" "2.1.2"
+"react-native-track-player@=2.0.3":
+  "integrity" "sha512-XV+92szbnf4FcByzfT62fN+iT9o0WhoMgDFl63Jf4gk6vw6VOFchPOoHKHW0XqgnO4vIit8CFc8u945l8vSSuQ=="
+  "resolved" "https://registry.npmjs.org/react-native-track-player/-/react-native-track-player-2.0.3.tgz"
+  "version" "2.0.3"
 
 "react-native-vector-icons@>7.0.0":
   "integrity" "sha512-sHIdBB6Y0dHaot2fMXgy5J/hhCn5YuyN7SKDNFgPzL8KA1oF2/v7mgYMavnK7LIIs2dJoGnDANKf61dsU+TZlg=="
