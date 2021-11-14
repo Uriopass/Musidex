@@ -12,14 +12,14 @@ import useStored from "../domain/useStored";
 import {firstUser, User} from "../common/entity";
 import Ctx from "../domain/ctx";
 import Tracklist, {
-    emptyTracklist,
+    emptyTracklist, NextTrackCallback, PrevTrackCallback,
     updateScoreCache,
     useNextTrackCallback,
     usePrevTrackCallback,
     useResetCallback,
 } from "../common/tracklist";
 import {newSearchForm, SearchForm, useMusicSelect} from "../common/filters";
-import {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
+import Trackplayer, {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
 import {
     createDrawerNavigator,
     DrawerContentComponentProps,
@@ -31,6 +31,8 @@ import Colors from "../domain/colors";
 import SettingsScreen from "./SettingsScreen";
 import {emptySyncState, newSyncState, syncIter, SyncState} from "../domain/sync";
 import {Mutex} from 'async-mutex';
+import {useMemoProv} from "../common/utils";
+import TrackPlayer from "react-native-track-player";
 
 export default function Navigation() {
     return (
@@ -148,6 +150,9 @@ function RootNavigator() {
         }
     }, [syncState, localSettings, apiURL, metadata, setSyncState]);
 
+    const controls = useMemoProv<[NextTrackCallback, PrevTrackCallback, () => void]>([doNext, doPrev, doReset]);
+    const playerr = useMemoProv<[Trackplayer, any]>([trackplayer, dispatchPlayer]);
+
     if (!loaded) {
         return <></>;
     }
@@ -155,8 +160,8 @@ function RootNavigator() {
     return (
         <Ctx.User.Provider value={[user, setUser]}>
             <Ctx.Tracklist.Provider value={list}>
-                <Ctx.Controls.Provider value={[doNext, doPrev, doReset]}>
-                    <Ctx.Trackplayer.Provider value={[trackplayer, dispatchPlayer]}>
+                <Ctx.Controls.Provider value={controls}>
+                    <Ctx.Trackplayer.Provider value={playerr}>
                         <Ctx.SearchForm.Provider value={[searchForm, setSearchForm]}>
                             <Ctx.SelectedMusics.Provider value={selectedMusics}>
                                 <Ctx.SyncState.Provider value={syncState}>

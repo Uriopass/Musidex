@@ -20,6 +20,7 @@
     import API, {RawMusidexMetadata} from "./common/api";
     import Ctx from "./domain/ctx";
     import {LocalSettings, newLocalSettings} from "./domain/localsettings";
+    import {useMemoProv} from "./common/utils";
 
     export default function App() {
         const isLoadingComplete = useCachedResources();
@@ -48,6 +49,8 @@
             })
         }, [setMetadata]);
 
+        const metaa: [MusidexMetadata, any] = useMemoProv([metadata, fetchMetadata]);
+
         if (!isLoadingComplete || !loadedMeta || !loadedAPI || !loadedSettings) {
             return <View style={{backgroundColor: '#383838', flex: 1, alignItems: "center", justifyContent: "center"}}>
                 <Image source={require('./musidex_logo.png')}/>
@@ -56,7 +59,7 @@
             return (
                 <SafeAreaProvider>
                     <StatusBar barStyle="light-content" backgroundColor={Colors.bg}/>
-                <Ctx.Metadata.Provider value={[metadata, fetchMetadata]}>
+                <Ctx.Metadata.Provider value={metaa}>
                     <Ctx.APIUrl.Provider value={[apiURL, setAPIUrl]}>
                         <Ctx.LocalSettings.Provider value={[localSettings, setLocalSettings]}>
                             <Navigation/>
