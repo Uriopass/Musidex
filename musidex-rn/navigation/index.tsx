@@ -30,7 +30,7 @@ import {StyleSheet, View} from "react-native";
 import Colors from "../domain/colors";
 import SettingsScreen from "./SettingsScreen";
 import {emptySyncState, newSyncState, syncIter, SyncState} from "../domain/sync";
-import { Mutex } from 'async-mutex';
+import {Mutex} from 'async-mutex';
 
 export default function Navigation() {
     return (
@@ -46,7 +46,11 @@ let loll = 0;
 let fetchMutex = new Mutex();
 
 function RootNavigator() {
-    const [list, setList] = useStored<Tracklist>("tracklist", 0, emptyTracklist(), {
+    const [metadata, fetchMetadata] = useContext(Ctx.Metadata);
+    const [apiURL] = useContext(Ctx.APIUrl);
+    const [localSettings] = useContext(Ctx.LocalSettings);
+
+    const [list, setList, loadedListe] = useStored<Tracklist>("tracklist", 0, emptyTracklist(), {
         ser: v => {
             let lol = {...v, score_map: [...v.score_map]};
             return JSON.stringify(lol);
@@ -57,12 +61,10 @@ function RootNavigator() {
             return obj as Tracklist;
         },
     });
-    const [metadata, fetchMetadata] = useContext(Ctx.Metadata);
-    const [apiURL] = useContext(Ctx.APIUrl);
-    const [localSettings] = useContext(Ctx.LocalSettings);
+    const [user, setUser, loadedUser] = useStored<number | undefined>("user", 0, firstUser(metadata));
+    const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm", 1, newSearchForm());
 
-    const [user, setUser] = useStored<number | undefined>("user", 0, firstUser(metadata));
-    const [searchForm, setSearchForm] = useStored<SearchForm>("searchForm", 1, newSearchForm());
+    const loaded = loadedListe && loadedUser && loadedSF;
 
     useEffect(() => {
         fetchMetadata()
@@ -77,6 +79,9 @@ function RootNavigator() {
     useSetupListeners(trackplayer, dispatchPlayer, doNext, doPrev);
 
     useEffect(() => {
+        if (!loaded) {
+            return
+        }
         if (user === undefined || !metadata.users.some((u) => u.id === user)) {
             const u = firstUser(metadata);
             if (u !== undefined) {
@@ -87,7 +92,7 @@ function RootNavigator() {
         let l = {...list};
         l = updateScoreCache(l, metadata);
         setList(l);
-    }, [metadata]);
+    }, [metadata, loaded]);
 
     const [syncState, setSyncState] = useState<SyncState>(emptySyncState);
     useEffect(() => {
@@ -125,6 +130,10 @@ function RootNavigator() {
             }
         }
     }, [syncState, localSettings, apiURL, metadata, setSyncState]);
+
+    if (!loaded) {
+        return <></>;
+    }
 
     return (
         <Ctx.User.Provider value={[user, setUser]}>
