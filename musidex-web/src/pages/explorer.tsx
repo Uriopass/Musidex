@@ -66,6 +66,15 @@ const Explorer = React.memo((props: ExplorerProps) => {
             </>;
     }
 
+    let isRegexpInvalid = false;
+    try {
+        if (searchForm.filters.searchQry.charAt(0) === "/") {
+            new RegExp(searchForm.filters.searchQry.substr(1));
+        }
+    } catch (e) {
+        isRegexpInvalid = e;
+    }
+
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
             <div className="explorer color-fg">
@@ -82,12 +91,15 @@ const Explorer = React.memo((props: ExplorerProps) => {
                     <span className="temperature-pick-text">
                         Temperature:&nbsp;
                     </span>
-                    <input className="temperature-pick-range" type="range" value={searchForm.similarityParams.temperature * 100} min={0} max={100}
+                    <input className="temperature-pick-range" type="range"
+                           value={searchForm.similarityParams.temperature * 100} min={0} max={100}
                            onChange={(e) => {
                                setSimilarityParam({temperature: parseInt(e.currentTarget.value) / 100})
                            }}/>
                 </div>
                 }
+                {isRegexpInvalid &&
+                <span>Regex is invalid: {""+isRegexpInvalid}</span>}
                 {curPlaying}
                 {
                     toShow.slice(0, shown).map((id) => {

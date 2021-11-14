@@ -95,12 +95,14 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
             return [];
         }
         const matches = [];
-        const regex = new RegExp(searchQry.substr(1), 'i');
-        for (let v of metadata.fuse_document) {
-            if (regex.test(v.artist) || regex.test(v.title)) {
-                matches.push(v.id);
+        try {
+            const regex = new RegExp(searchQry.substr(1), 'i');
+            for (let v of metadata.fuse_document) {
+                if (regex.test(v.artist) || regex.test(v.title)) {
+                    matches.push(v.id);
+                }
             }
-        }
+        } catch {}
         return matches;
     }, [isRegex, searchQry, metadata])
 
