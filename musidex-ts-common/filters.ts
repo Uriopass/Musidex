@@ -19,7 +19,11 @@ export type Filters = {
     searchQry: string;
 }
 
-export type SortByKind = { kind: "similarity" } | { kind: "creation_time" } | { kind: "tag", value: string } | { kind: "random" }
+export type SortByKind =
+    { kind: "similarity" }
+    | { kind: "creation_time" }
+    | { kind: "tag", value: string }
+    | { kind: "random" }
 export type SortBy = { kind: SortByKind, descending: boolean }
 
 export function newSearchForm(): SearchForm {
@@ -60,6 +64,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
     const sortBy = search.sort;
     const searchQry = search.filters.searchQry;
+    const isRegex = searchQry.charAt(0) === '/';
     const scoremap = list.score_map;
 
     const temp = search.similarityParams.temperature;
@@ -79,16 +84,30 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
     }, [metadata]);
 
     const qryFilter = useMemo(() => {
-        if (searchQry === "") {
+        if (searchQry === "" || fuse === undefined || isRegex) {
             return [];
         }
-        return fuse.search(searchQry);
-    }, [searchQry, fuse]);
+        return fuse.search(searchQry).map((v: any) => v.item.id);
+    }, [searchQry, fuse, isRegex]);
+
+    const regexFilter = useMemo(() => {
+        if (searchQry === "" || !isRegex) {
+            return [];
+        }
+        const matches = [];
+        const regex = new RegExp(searchQry.substr(1), 'i');
+        for (let v of metadata.fuse_document) {
+            if (regex.test(v.artist) || regex.test(v.title)) {
+                matches.push(v.id);
+            }
+        }
+        return matches;
+    }, [isRegex, searchQry, metadata])
 
     return useMemo(() => {
         let toShow: number[];
-        if (searchQry !== "" && fuse !== undefined) {
-            toShow = qryFilter.map((v: any) => v.item.id);
+        if (searchQry !== "") {
+            toShow = isRegex ? regexFilter : qryFilter
         } else {
             switch (sortBy.kind.kind) {
                 case "similarity":
