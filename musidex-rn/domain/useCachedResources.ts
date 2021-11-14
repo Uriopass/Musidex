@@ -2,7 +2,7 @@ import * as React from 'react';
 import TrackPlayer, {
     CAPABILITY_JUMP_FORWARD,
     CAPABILITY_PAUSE,
-    CAPABILITY_PLAY,
+    CAPABILITY_PLAY, CAPABILITY_SEEK_TO,
     CAPABILITY_SKIP_TO_NEXT, CAPABILITY_SKIP_TO_PREVIOUS
 } from 'react-native-track-player';
 
@@ -21,9 +21,9 @@ export default function useCachedResources() {
                     capabilities: [
                         CAPABILITY_PLAY,
                         CAPABILITY_PAUSE,
+                        CAPABILITY_SEEK_TO,
                         CAPABILITY_SKIP_TO_NEXT,
                         CAPABILITY_SKIP_TO_PREVIOUS,
-                        CAPABILITY_JUMP_FORWARD,
                     ],
 
                     // Capabilities that will show up when the notification is in the compact form on Android
