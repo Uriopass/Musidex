@@ -1,10 +1,22 @@
 import {useAsyncStorage} from "@react-native-async-storage/async-storage";
 import {useCallback, useEffect, useState} from "react";
 
-export default function useStored<T>(key: string, initialV: T, opts?: { ser: (v: T) => string, deser: (v: string) => T }): [T, (newv: T) => void, boolean] {
+export default function useStored<T>(key: string, curVersion: number, initialV: T, opts?: { ser: (v: T) => string, deser: (v: string) => T }): [T, (newv: T) => void, boolean] {
     const [[v, initialLoad], setV] = useState([initialV, false]);
+    const [version, setVersion] = useState<number | undefined>(undefined);
     // todo make saving classes work ?
     const {getItem, setItem, removeItem} = useAsyncStorage(key);
+    const {getItem: getItemVersion, setItem: setItemVersion} = useAsyncStorage(key + "__version_inner");
+
+    useEffect(() => {
+        getItemVersion().then((v) => {
+            if (v === null) {
+                setVersion(-1);
+                return;
+            }
+            setVersion(parseInt(v));
+        })
+    }, [])
 
     const setValue = useCallback((newv: T) => {
         setV([newv, initialLoad]);
@@ -24,22 +36,20 @@ export default function useStored<T>(key: string, initialV: T, opts?: { ser: (v:
     }, [setItem, removeItem, opts, initialLoad]);
 
     useEffect(() => {
+        if (version === undefined) {
+            return;
+        }
+        if (version !== curVersion) {
+            setV([initialV, true]);
+            removeItem().then(() => setItemVersion("" + curVersion)).then(() => setVersion(curVersion));
+            return;
+        }
+        if(initialLoad) {
+            return;
+        }
         getItem().then((vStr) => {
             if (vStr === null) {
                 setV([initialV, true]);
-                if (initialV === undefined) {
-                    removeItem();
-                    return;
-                }
-                if (opts) {
-                    setItem(opts.ser(initialV));
-                    return;
-                }
-                if (typeof (initialV) === "string") {
-                    setItem(initialV);
-                    return;
-                }
-                setItem(JSON.stringify(initialV));
                 return;
             }
             if (opts) {
@@ -52,7 +62,7 @@ export default function useStored<T>(key: string, initialV: T, opts?: { ser: (v:
             }
             setV([JSON.parse(vStr), true]);
         });
-    }, []);
+    }, [version]);
 
-    return [v, setValue, initialLoad];
+    return [v, setValue, initialLoad && version === curVersion];
 }

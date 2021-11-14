@@ -46,7 +46,7 @@ let loll = 0;
 let fetchMutex = new Mutex();
 
 function RootNavigator() {
-    const [list, setList] = useStored<Tracklist>("tracklist", emptyTracklist(), {
+    const [list, setList] = useStored<Tracklist>("tracklist", 0, emptyTracklist(), {
         ser: v => {
             let lol = {...v, score_map: [...v.score_map]};
             return JSON.stringify(lol);
@@ -61,8 +61,8 @@ function RootNavigator() {
     const [apiURL] = useContext(Ctx.APIUrl);
     const [localSettings] = useContext(Ctx.LocalSettings);
 
-    const [user, setUser] = useStored<number | undefined>("user", firstUser(metadata));
-    const [searchForm, setSearchForm] = useStored<SearchForm>("searchForm", newSearchForm());
+    const [user, setUser] = useStored<number | undefined>("user", 0, firstUser(metadata));
+    const [searchForm, setSearchForm] = useStored<SearchForm>("searchForm", 1, newSearchForm());
 
     useEffect(() => {
         fetchMetadata()

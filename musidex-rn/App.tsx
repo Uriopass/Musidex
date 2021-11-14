@@ -23,7 +23,7 @@
 
     export default function App() {
         const isLoadingComplete = useCachedResources();
-        const [metadata, setMetadata, loadedMeta] = useStored<MusidexMetadata>("metadata", emptyMetadata(), {
+        const [metadata, setMetadata, loadedMeta] = useStored<MusidexMetadata>("metadata", 0, emptyMetadata(), {
             ser: (v: MusidexMetadata): string => {
                 return JSON.stringify(v.raw);
             },
@@ -33,9 +33,9 @@
             },
         });
 
-        const [localSettings, setLocalSettings, loadedSettings] = useStored<LocalSettings>("local_settings", newLocalSettings());
+        const [localSettings, setLocalSettings, loadedSettings] = useStored<LocalSettings>("local_settings", 0, newLocalSettings());
 
-        const [apiURL, setAPIUrl, loadedAPI] = useStored<string>("api_url", "");
+        const [apiURL, setAPIUrl, loadedAPI] = useStored<string>("api_url", 0, "");
         API.setAPIUrl(apiURL);
 
         let fetchMetadata = useCallback(() => {
