@@ -5,7 +5,7 @@
  */
 import {NavigationContainer} from '@react-navigation/native';
 import * as React from 'react';
-import {useContext, useEffect, useReducer, useState} from 'react';
+import {useContext, useEffect, useMemo, useReducer, useState} from 'react';
 
 import MainScreen from "./MainScreen";
 import useStored from "../domain/useStored";
@@ -99,6 +99,23 @@ function RootNavigator() {
         newSyncState().then((v) => setSyncState(v));
     }, [])
 
+    const musicsToDownload: number[] = useMemo(() => {
+        if(!localSettings.downloadMusicLocally) {
+            return [];
+        }
+        const uSet = new Set<number>(localSettings.downloadUsers);
+        let mSet = new Set<number>();
+        for (let tag of metadata.tags) {
+            if (tag.key.startsWith("user_library:")) {
+                let uId = parseInt(tag.key.substring("user_library:".length));
+                if (uSet.has(uId)) {
+                    mSet.add(tag.music_id);
+                }
+            }
+        }
+        return [...mSet];
+    }, [localSettings, metadata]);
+
     useEffect(() => {
         loll += 1;
         if (syncState === undefined || !syncState.loaded || !localSettings.downloadMusicLocally || apiURL === "") {
@@ -112,7 +129,7 @@ function RootNavigator() {
                 release();
                 return;
             }
-            const changed = await syncIter(metadata, syncState);
+            const changed = await syncIter(metadata, syncState, musicsToDownload);
             release();
             if (cpy != loll) {
                 return;

@@ -1,6 +1,7 @@
 import RNFetchBlob from "rn-fetch-blob"
 import API from "../common/api";
 import {MusidexMetadata, Tags} from "../common/entity";
+import {LocalSettings} from "./localsettings";
 
 export type SyncState = {
     files: Set<String>,
@@ -47,10 +48,10 @@ export async function fetchThumbnail(thumbTag: string): Promise<boolean> {
         })
 }
 
-export function syncIter(metadata: MusidexMetadata, syncState: SyncState): Promise<boolean> {
+export function syncIter(metadata: MusidexMetadata, syncState: SyncState, musicsToDownload: number[]): Promise<boolean> {
     const x = async () => {
         let changed = false;
-        for (const id of metadata.musics) {
+        for (const id of musicsToDownload) {
             const fn = getMusicFilename(metadata.music_tags_idx.get(id));
             if (fn && !syncState.files.has(fn)) {
                 console.log("fetching song...", id);

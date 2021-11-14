@@ -4,11 +4,14 @@ import {Checkbox, SearchInput} from "./Input";
 import Ctx from "../domain/ctx";
 import useStored from "../domain/useStored";
 import {Icon} from "react-native-elements";
-import {TextFg} from "./StyledText";
+import {TextBg, TextFg} from "./StyledText";
 import API from "../common/api";
 import Colors from "../domain/colors"
+import {LocalSettings} from "../domain/localsettings";
+import {MusidexMetadata} from "../common/entity";
 
 function Settings() {
+    const [metadata] = useContext(Ctx.Metadata);
     const [apiUrl, setAPIUrl] = useContext(Ctx.APIUrl);
     const [localSettings, setLocalSettings] = useContext(Ctx.LocalSettings);
     const [localApiUrl, setLocalAPIUrl] = useStored("local_api_url", 0, apiUrl);
@@ -68,7 +71,41 @@ function Settings() {
                   onChange={(newv: boolean) => setLocalSettings({...localSettings, downloadMusicLocally: newv})}>
             <TextFg> Download music locally for off-line play</TextFg>
         </Checkbox>
+        {
+            localSettings.downloadMusicLocally && <DownloadUsersList settings={localSettings} setLocalSettings={setLocalSettings} metadata={metadata} />
+        }
     </ScrollView>
+}
+
+export type DownloadUsersListProps = {
+    settings: LocalSettings,
+    setLocalSettings: (newv: LocalSettings) => void,
+    metadata: MusidexMetadata,
+}
+
+function DownloadUsersList(props: DownloadUsersListProps): JSX.Element {
+    return <>
+    <TextBg style={{paddingTop: 10, paddingLeft: 3}}>Users to download:</TextBg>
+    {
+        props.metadata.users.map((v) => {
+            const checkedIdx = props.settings.downloadUsers.indexOf(v.id);
+            return <Checkbox
+                key={v.id}
+                style={styles.settingItem2}
+                checked={checkedIdx !== -1}
+                onChange={(newv: boolean) => {
+                    if(newv) {
+                        props.settings.downloadUsers.push(v.id);
+                    } else {
+                        props.settings.downloadUsers.splice(checkedIdx, 1);
+                    }
+                    props.setLocalSettings({...props.settings})
+                }}>
+                <TextFg> {v.name}</TextFg>
+            </Checkbox>;
+        })
+    }
+    </>;
 }
 
 const styles = StyleSheet.create({
@@ -79,6 +116,9 @@ const styles = StyleSheet.create({
     },
     settingItem: {
         paddingTop: 10,
+    },
+    settingItem2: {
+        paddingBottom: 10,
     },
     container: {
         flex: 1,
