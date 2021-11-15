@@ -8,10 +8,10 @@
  * @format
  */
 
-import React, {useCallback} from 'react';
-import {Image, StatusBar, View} from 'react-native';
+import React, {useCallback, useEffect} from 'react';
+import {Image, Platform, StatusBar, View} from 'react-native';
 
-import useCachedResources from "./domain/useCachedResources";
+import useCachedResources, {DEFAULT_CAPABILITIES} from "./domain/useCachedResources";
 import Navigation from "./navigation";
 import {SafeAreaProvider} from "react-native-safe-area-context";
 import Colors from "./domain/colors";
@@ -21,6 +21,7 @@ import API, {RawMusidexMetadata} from "./common/api";
 import Ctx from "./domain/ctx";
 import {LocalSettings, newLocalSettings} from "./domain/localsettings";
 import {useMemoProv} from "./common/utils";
+import TrackPlayer, {CAPABILITY_JUMP_FORWARD} from "react-native-track-player";
 
 export default function App() {
     const isLoadingComplete = useCachedResources();
@@ -34,7 +35,7 @@ export default function App() {
         },
     });
 
-    const [localSettings, setLocalSettings, loadedSettings] = useStored<LocalSettings>("local_settings", 1, newLocalSettings());
+    const [localSettings, setLocalSettings, loadedSettings] = useStored<LocalSettings>("local_settings", 2, newLocalSettings());
 
     const [apiURL, setAPIUrl, loadedAPI] = useStored<string>("api_url", 0, "");
     API.setAPIUrl(apiURL);
@@ -50,6 +51,19 @@ export default function App() {
     }, [setMetadata]);
 
     const metaa: [MusidexMetadata, any] = useMemoProv([metadata, fetchMetadata]);
+
+    useEffect(() => {
+        if (!loadedSettings || !isLoadingComplete || Platform.OS === "android") {
+            return;
+        }
+        let cap = DEFAULT_CAPABILITIES;
+        if (localSettings.iosEnableJumpForward) {
+            cap = cap.concat([CAPABILITY_JUMP_FORWARD]);
+        }
+        TrackPlayer.updateOptions({
+            capabilities: cap,
+        });
+    }, [localSettings, loadedSettings, isLoadingComplete])
 
     if (!isLoadingComplete || !loadedMeta || !loadedAPI || !loadedSettings) {
         return <View style={{backgroundColor: '#383838', flex: 1, alignItems: "center", justifyContent: "center"}}>

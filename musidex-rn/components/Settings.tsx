@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from "react";
-import {ScrollView, StyleSheet, View} from "react-native";
+import {Platform, ScrollView, StyleSheet, View} from "react-native";
 import {Checkbox, SearchInput} from "./Input";
 import Ctx from "../domain/ctx";
 import useStored from "../domain/useStored";
@@ -65,14 +65,23 @@ function Settings() {
             }
             <TextFg> {message}</TextFg>
         </View>
+        {(Platform.OS !== "android") &&
+        <Checkbox
+            style={styles.settingItem}
+            checked={localSettings.iosEnableJumpForward}
+            onChange={(newv: boolean) => setLocalSettings({...localSettings, iosEnableJumpForward: newv})}>
+            <TextFg> Enable jump forward in locked controls</TextFg>
+        </Checkbox>
+        }
         <Checkbox
             style={styles.settingItem}
             checked={localSettings.downloadMusicLocally}
-                  onChange={(newv: boolean) => setLocalSettings({...localSettings, downloadMusicLocally: newv})}>
+            onChange={(newv: boolean) => setLocalSettings({...localSettings, downloadMusicLocally: newv})}>
             <TextFg> Download music locally for off-line play</TextFg>
         </Checkbox>
         {
-            localSettings.downloadMusicLocally && <DownloadUsersList settings={localSettings} setLocalSettings={setLocalSettings} metadata={metadata} />
+            localSettings.downloadMusicLocally &&
+            <DownloadUsersList settings={localSettings} setLocalSettings={setLocalSettings} metadata={metadata}/>
         }
     </ScrollView>
 }
@@ -85,26 +94,26 @@ export type DownloadUsersListProps = {
 
 function DownloadUsersList(props: DownloadUsersListProps): JSX.Element {
     return <>
-    <TextBg style={{paddingTop: 10, paddingLeft: 3}}>Users to download:</TextBg>
-    {
-        props.metadata.users.map((v) => {
-            const checkedIdx = props.settings.downloadUsers.indexOf(v.id);
-            return <Checkbox
-                key={v.id}
-                style={styles.settingItem2}
-                checked={checkedIdx !== -1}
-                onChange={(newv: boolean) => {
-                    if(newv) {
-                        props.settings.downloadUsers.push(v.id);
-                    } else {
-                        props.settings.downloadUsers.splice(checkedIdx, 1);
-                    }
-                    props.setLocalSettings({...props.settings})
-                }}>
-                <TextFg> {v.name}</TextFg>
-            </Checkbox>;
-        })
-    }
+        <TextBg style={{paddingTop: 10, paddingLeft: 3}}>Users to download:</TextBg>
+        {
+            props.metadata.users.map((v) => {
+                const checkedIdx = props.settings.downloadUsers.indexOf(v.id);
+                return <Checkbox
+                    key={v.id}
+                    style={styles.settingItem2}
+                    checked={checkedIdx !== -1}
+                    onChange={(newv: boolean) => {
+                        if (newv) {
+                            props.settings.downloadUsers.push(v.id);
+                        } else {
+                            props.settings.downloadUsers.splice(checkedIdx, 1);
+                        }
+                        props.setLocalSettings({...props.settings})
+                    }}>
+                    <TextFg> {v.name}</TextFg>
+                </Checkbox>;
+            })
+        }
     </>;
 }
 

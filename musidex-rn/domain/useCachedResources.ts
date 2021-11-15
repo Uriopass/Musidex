@@ -9,6 +9,14 @@ import TrackPlayer, {
 } from 'react-native-track-player';
 import {Platform} from "react-native";
 
+export const DEFAULT_CAPABILITIES = [
+    CAPABILITY_PLAY,
+    CAPABILITY_PAUSE,
+    CAPABILITY_SEEK_TO,
+    CAPABILITY_SKIP_TO_NEXT,
+    CAPABILITY_SKIP_TO_PREVIOUS,
+];
+
 export default function useCachedResources() {
     const [isLoadingComplete, setLoadingComplete] = React.useState(false);
 
@@ -18,16 +26,10 @@ export default function useCachedResources() {
             try {
                 await TrackPlayer.setupPlayer({iosCategory: 'playback', waitForBuffer: true, minBuffer: 5});
 
-                let cap = [
-                    CAPABILITY_PLAY,
-                    CAPABILITY_PAUSE,
-                    CAPABILITY_SEEK_TO,
-                    CAPABILITY_SKIP_TO_NEXT,
-                    CAPABILITY_SKIP_TO_PREVIOUS,
-                ];
+                let cap = DEFAULT_CAPABILITIES;
 
                 if (Platform.OS === "android") {
-                    cap.push(CAPABILITY_JUMP_FORWARD);
+                    cap = cap.concat([CAPABILITY_JUMP_FORWARD]);
                 }
 
                 await TrackPlayer.updateOptions({
