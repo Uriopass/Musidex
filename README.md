@@ -34,6 +34,7 @@ Choose a starting point and let it choose the next song for you!
 - [ ] MP3 import
 - [ ] Ogg import
 - [ ] FLAC import
+- [ ] Podcast detection
 
 # Setting up the server
 
