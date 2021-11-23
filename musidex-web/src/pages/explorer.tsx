@@ -162,7 +162,7 @@ const FilterBySelect = React.memo((props: FilterBySelectProps) => {
     };
 
     return <div className="sortfilter-select">
-        <MaterialIcon name="filter_list"/>
+        <MaterialIcon name="filter_alt"/>
         <div className="filter-elem">
             <label className="filter-elem-label">
                 <MaterialIcon name="person"/>
