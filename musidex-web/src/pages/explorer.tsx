@@ -173,7 +173,6 @@ const FilterBySelect = React.memo((props: FilterBySelectProps) => {
                             return <option key={v.id} value={v.id}>{v.name}</option>
                         })
                     }
-                    <option>lol</option>
                 </select>
             </label>
         </div>
