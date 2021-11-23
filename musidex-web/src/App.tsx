@@ -63,7 +63,7 @@ const App = () => {
         let l = {...list};
         l = updateScoreCache(l, meta);
         setList(l);
-    }, [metadata, setMetadata, sform, list, setList, trackplayer, doNext, user, setUser]);
+    }, [metadata, setMetadata, sform, list, setList, trackplayer, doNext, user, setUser, setSform]);
 
     useEffect(() => {
         if (ws.current === undefined) {

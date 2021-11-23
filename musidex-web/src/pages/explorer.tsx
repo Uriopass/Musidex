@@ -9,7 +9,7 @@ import {PageProps} from "./navigator";
 import Filters, {isSimilarity, SimilarityParams, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {MetadataCtx} from "../domain/metadata";
 import {SearchFormCtx, SelectedMusicsCtx, TracklistCtx} from "../App";
-import {clamp} from "../common/utils";
+import {clamp, useDebouncedEffect} from "../common/utils";
 import noCoverImg from "../no_cover.jpg";
 
 export interface ExplorerProps extends PageProps {
@@ -38,6 +38,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
         ...searchForm,
         similarityParams: s
     }), [setSearchForm, searchForm]);
+    const [localTemp, setLocalTemp] = useState(searchForm.similarityParams.temperature * 100);
 
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
     const onScroll = (e: any) => {
@@ -75,6 +76,13 @@ const Explorer = React.memo((props: ExplorerProps) => {
         isRegexpInvalid = e;
     }
 
+    useDebouncedEffect(() => {
+        if (searchForm.similarityParams.temperature !== localTemp / 100) {
+            console.log("set");
+            setSimilarityParam({temperature: localTemp / 100})
+        }
+    }, [searchForm, setSimilarityParam, localTemp], 50);
+
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
             <div className="explorer color-fg">
@@ -90,14 +98,10 @@ const Explorer = React.memo((props: ExplorerProps) => {
                     setFilters={setFilters}/>
                 {isSimilarity(searchForm) &&
                 <div className="temperature-pick">
-                    <span className="temperature-pick-text">
-                        Temperature:&nbsp;
-                    </span>
+                    <MaterialIcon name="casino" style={{paddingLeft: 1}}/>
                     <input className="temperature-pick-range" type="range"
-                           value={searchForm.similarityParams.temperature * 100} min={0} max={100}
-                           onChange={(e) => {
-                               setSimilarityParam({temperature: parseInt(e.currentTarget.value) / 100})
-                           }}/>
+                           value={localTemp} min={0} max={100}
+                           onChange={(v) => setLocalTemp(parseInt(v.currentTarget.value))}/>
                 </div>
                 }
                 {isRegexpInvalid &&

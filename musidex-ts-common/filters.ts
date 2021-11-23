@@ -148,7 +148,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
 
         return toShow;
         /* eslint-disable */
-    }, [metadata, search.filters, sortBy, list]);
+    }, [metadata, search, sortBy, list, best_tracks]);
     /* eslint-enable */
 }
 

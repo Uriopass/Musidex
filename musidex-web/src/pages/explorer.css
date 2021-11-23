@@ -114,6 +114,7 @@
 .temperature-pick-range {
     flex: 1 0;
     max-width: 200px;
+    margin-left: 10px;
 }
 
 .explorer-search {
