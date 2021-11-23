@@ -92,6 +92,11 @@
     align-items: center;
 }
 
+.filter-elem-label {
+    display: flex;
+    align-items: center;
+}
+
 .filter-elem input {
     margin: 0 5px;
 }

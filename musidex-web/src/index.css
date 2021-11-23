@@ -18,6 +18,19 @@ body {
     --thumb-bg: var(--color-bg);
 }
 
+select {
+    margin-left: 5px;
+    margin-right: 5px;
+    background-color: var(--bg);
+    color: var(--color-bg);
+    border-radius: 4px;
+    padding: 3px;
+    max-width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border: 1px solid var(--color-bg);
+}
+
 #root {
     background-image: url(./splash.png);
     background-repeat: repeat-x;

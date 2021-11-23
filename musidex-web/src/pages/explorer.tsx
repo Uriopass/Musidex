@@ -2,7 +2,7 @@ import './explorer.css'
 import API from "../common/api";
 import React, {Fragment, useCallback, useContext, useState} from "react";
 import {EditableText, MaterialIcon} from "../components/utils";
-import {canPlay, getTags, Tag} from "../common/entity";
+import {canPlay, getTags, Tag, User} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";
 import TextInput from "../components/input";
 import {PageProps} from "./navigator";
@@ -84,8 +84,10 @@ const Explorer = React.memo((props: ExplorerProps) => {
                 <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
                               sortBy={searchForm.sort} setSortBy={setSortBy}
                               hasSimilarity={curTrack !== undefined}/>
-                <FilterBySelect filters={searchForm.filters}
-                                setFilters={setFilters}/>
+                <FilterBySelect
+                    users={metadata.users}
+                    filters={searchForm.filters}
+                    setFilters={setFilters}/>
                 {isSimilarity(searchForm) &&
                 <div className="temperature-pick">
                     <span className="temperature-pick-text">
@@ -99,7 +101,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
                 </div>
                 }
                 {isRegexpInvalid &&
-                <span>Regex is invalid: {""+isRegexpInvalid}</span>}
+                <span>Regex is invalid: {"" + isRegexpInvalid}</span>}
                 {curPlaying}
                 {
                     toShow.slice(0, shown).map((id) => {
@@ -143,24 +145,33 @@ const Explorer = React.memo((props: ExplorerProps) => {
 type FilterBySelectProps = {
     filters: Filters,
     setFilters: (newv: Filters) => void,
+    users: User[],
 }
 
 const FilterBySelect = React.memo((props: FilterBySelectProps) => {
     let onMySongsChange = (x: any) => {
+        const v = parseInt(x.target.value);
         props.setFilters({
             ...props.filters,
-            user_only: x.target.checked,
+            user: isNaN(v) ? undefined : v,
         });
     };
 
     return <div className="sortfilter-select">
-        Filter by:
+        <MaterialIcon name="filter_list"/>
         <div className="filter-elem">
-            <input id="filterBy"
-                   checked={props.filters.user_only}
-                   type={"checkbox"}
-                   onChange={onMySongsChange}/>
-            <label htmlFor="filterBy">My Songs</label>
+            <label className="filter-elem-label">
+                <MaterialIcon name="person"/>
+                <select onChange={onMySongsChange} value={props.filters.user}>
+                    <option/>
+                    {
+                        props.users.map((v) => {
+                            return <option key={v.id} value={v.id}>{v.name}</option>
+                        })
+                    }
+                    <option>lol</option>
+                </select>
+            </label>
         </div>
     </div>
 })
@@ -199,7 +210,7 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
 
     if (props.forced !== undefined) {
         return <div className="sortfilter-select">
-            Sort By:
+            <MaterialIcon name="sort"/>
             <span className="sort-by-forced">
                 {props.forced}
             </span>
@@ -207,7 +218,7 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
     }
 
     return <div className="sortfilter-select">
-        Sort By:
+        <MaterialIcon name="sort"/>
         {props.hasSimilarity &&
         <SortByElem sort={{kind: "similarity"}} name="Similarity"/>
         }

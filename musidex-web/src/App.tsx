@@ -17,7 +17,7 @@ import {MetadataCtx, useMetadata} from "./domain/metadata";
 import {Setter} from "./common/utils";
 import {firstUser, MusidexMetadata} from "./common/entity";
 
-export const SearchFormCtx = React.createContext<[SearchForm, Setter<SearchForm>]>([newSearchForm(), _ => _]);
+export const SearchFormCtx = React.createContext<[SearchForm, Setter<SearchForm>]>([newSearchForm(undefined), _ => _]);
 export const SelectedMusicsCtx = React.createContext<number[]>([]);
 export const TracklistCtx = React.createContext<Tracklist>(emptyTracklist());
 
@@ -27,8 +27,8 @@ const App = () => {
     const [userStr, setUserStr] = useCookie("cur_user", undefined);
     const user = parseInt(userStr || "undefined") || undefined;
     const setUser = useCallback((v: number) => setUserStr(v.toString()), [setUserStr]);
-    const _sform = useLocalStorageVersion<SearchForm>("searchform", 1, newSearchForm());
-    const [sform] = _sform;
+    const _sform = useLocalStorageVersion<SearchForm>("searchform", 2, newSearchForm(user));
+    const [sform, setSform] = _sform;
     const [syncProblem, setSyncProblem] = useState(false);
     const [volume, setVolume] = useLocalStorage("volume", 1);
     const tp = useReducer(applyTrackPlayer, newTrackPlayer());
@@ -36,7 +36,7 @@ const App = () => {
     const [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
     const [list, setList] = useState<Tracklist>(emptyTracklist());
     const editableSt = useState(false);
-    const selectedMusics = useMusicSelect(metadata, sform, list, user);
+    const selectedMusics = useMusicSelect(metadata, sform, list);
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, sform, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const ws = useRef<any>();
@@ -51,12 +51,19 @@ const App = () => {
             const u = firstUser(meta);
             if (u !== undefined) {
                 setUser(u);
+                setSform({
+                    ...sform,
+                    filters: {
+                        ...sform.filters,
+                        user: u,
+                    }
+                });
             }
         }
         let l = {...list};
         l = updateScoreCache(l, meta);
         setList(l);
-    }, [metadata, setMetadata, list, setList, trackplayer, doNext, user, setUser]);
+    }, [metadata, setMetadata, sform, list, setList, trackplayer, doNext, user, setUser]);
 
     useEffect(() => {
         if (ws.current === undefined) {

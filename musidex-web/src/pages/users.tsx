@@ -7,6 +7,7 @@ import TextInput from "../components/input";
 import API from "../common/api";
 import {MetadataCtx} from "../domain/metadata";
 import {Setter} from "../../../musidex-ts-common/utils";
+import {SearchFormCtx} from "../App";
 
 export interface UsersProps extends PageProps {
     onSetUser: (id: number) => void;
@@ -16,6 +17,7 @@ export interface UsersProps extends PageProps {
 
 const Users = (props: UsersProps) => {
     const [meta, metaSync] = useContext(MetadataCtx);
+    const [sform, setSform] = useContext(SearchFormCtx);
     const [newName, setNewName] = useState("");
 
     const onDelete = (id: number) => {
@@ -37,6 +39,13 @@ const Users = (props: UsersProps) => {
     const onSelectUser = (user: number) => {
         props.onSetUser(user);
         props.setCurPage("explorer");
+        setSform({
+            ...sform,
+            filters: {
+                ...sform.filters,
+                user: user,
+            }
+        })
     };
 
     return (
