@@ -60,8 +60,8 @@ const SmallPlayer = (_: PlayerProps) => {
     let [position, duration] = useTrackProgress(1000);
 
     const onPlay = () => {
-        if (player.current) {
-            dispatch({action: "play", id: player.current});
+        if (list.last_played.length > 0) {
+            doNext(curTrack);
             return;
         }
         setTimeout(() => doNext(), 0);

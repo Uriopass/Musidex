@@ -122,6 +122,9 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                 if (q.length > 0) {
                     await TrackPlayer.skipToNext();
                 }
+                if (action.seekAt !== undefined) {
+                    await TrackPlayer.seekTo(action.seekAt);
+                }
                 await TrackPlayer.play();
                 console.log("changed song ok");
             };

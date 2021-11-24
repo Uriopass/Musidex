@@ -34,6 +34,7 @@ import SettingsScreen from "./SettingsScreen";
 import {emptySyncState, newSyncState, syncIter, SyncState} from "../domain/sync";
 import {Mutex} from 'async-mutex';
 import {useMemoProv} from "../common/utils";
+import TrackPlayer from "react-native-track-player";
 
 export default function Navigation() {
     return (
@@ -66,8 +67,9 @@ function RootNavigator() {
     });
     const [user, setUser, loadedUser] = useStored<number | undefined>("user", 0, firstUser(metadata));
     const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm", 2, newSearchForm(user));
+    const [lastPosition, setLastPosition, loadedPosition] = useStored<[number, number] | undefined>("last_position", 0, undefined);
 
-    const loaded = loadedListe && loadedUser && loadedSF;
+    const loaded = loadedListe && loadedUser && loadedSF && loadedPosition;
 
     useEffect(() => {
         fetchMetadata()
@@ -75,7 +77,7 @@ function RootNavigator() {
 
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const selectedMusics = useMusicSelect(metadata, searchForm, list);
-    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, searchForm, selectedMusics);
+    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, searchForm, selectedMusics, lastPosition, setLastPosition, TrackPlayer.getPosition);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const doReset = useResetCallback(setList, metadata);
 

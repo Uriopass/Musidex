@@ -37,7 +37,7 @@ const App = () => {
     const [list, setList] = useState<Tracklist>(emptyTracklist());
     const editableSt = useState(false);
     const selectedMusics = useMusicSelect(metadata, sform, list);
-    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, sform, selectedMusics);
+    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, sform, selectedMusics, undefined, () => {}, async () => 0);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const ws = useRef<any>();
 
