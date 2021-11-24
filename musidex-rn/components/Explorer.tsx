@@ -48,6 +48,7 @@ export default function Explorer() {
                       sortBy={searchForm.sort} setSortBy={setSortBy}
                       hasSimilarity={curTrack !== undefined}/>
         <FilterBySelect user={user} filters={searchForm.filters} setFilters={setFilters}/>
+        {isSimilarity(searchForm) &&
         <View style={styles.temperatureView}>
             <Icon style={styles.temperatureIcon} color={Colors.colorbg} size={20} name="casino"/>
             <Slider style={styles.temperatureSlider}
@@ -57,7 +58,7 @@ export default function Explorer() {
                     maximumTrackTintColor={Colors.colorbg}
                     value={firstV} minimumValue={0} maximumValue={100}
                     onValueChange={vChange}/>
-        </View>
+        </View>}
         {(curTrack && isSimilarity(searchForm)) &&
         <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
                   isSynced={isMusicSynced(syncState, metadata, curTrack)}
