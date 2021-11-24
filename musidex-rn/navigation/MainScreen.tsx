@@ -16,7 +16,7 @@ function Root() {
     return (<SafeAreaView style={styles.container}>
         <Header title={metadata.users.find((x) => x.id === user)?.name || "Home"}/>
         <Explorer/>
-        <SmallPlayer style={styles.player}/>
+        <SmallPlayer/>
     </SafeAreaView>)
 }
 
@@ -30,9 +30,5 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.bg,
-    },
-    player: {
-        flexBasis: 60,
-        flexGrow: 0,
     },
 });

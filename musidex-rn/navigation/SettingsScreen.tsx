@@ -9,7 +9,7 @@ function SettingsScreen() {
     return (<SafeAreaView style={styles.container}>
         <Header title="Settings"/>
         <Settings/>
-        <SmallPlayer style={styles.player}/>
+        <SmallPlayer/>
     </SafeAreaView>)
 }
 
@@ -18,10 +18,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.bg,
-    },
-    player: {
-        flexBasis: 60,
-        flexGrow: 0,
     },
 });
 
