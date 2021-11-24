@@ -5,14 +5,16 @@
  */
 import {NavigationContainer} from '@react-navigation/native';
 import * as React from 'react';
-import {useContext, useEffect, useMemo, useReducer, useState} from 'react';
+import {useCallback, useContext, useEffect, useMemo, useReducer, useState} from 'react';
 
 import MainScreen from "./MainScreen";
 import useStored from "../domain/useStored";
 import {firstUser, User} from "../common/entity";
 import Ctx from "../domain/ctx";
 import Tracklist, {
-    emptyTracklist, NextTrackCallback, PrevTrackCallback,
+    emptyTracklist,
+    NextTrackCallback,
+    PrevTrackCallback,
     updateScoreCache,
     useNextTrackCallback,
     usePrevTrackCallback,
@@ -32,7 +34,6 @@ import SettingsScreen from "./SettingsScreen";
 import {emptySyncState, newSyncState, syncIter, SyncState} from "../domain/sync";
 import {Mutex} from 'async-mutex';
 import {useMemoProv} from "../common/utils";
-import TrackPlayer from "react-native-track-player";
 
 export default function Navigation() {
     return (
@@ -64,7 +65,7 @@ function RootNavigator() {
         },
     });
     const [user, setUser, loadedUser] = useStored<number | undefined>("user", 0, firstUser(metadata));
-    const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm", 1, newSearchForm());
+    const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm", 2, newSearchForm(user));
 
     const loaded = loadedListe && loadedUser && loadedSF;
 
@@ -73,12 +74,27 @@ function RootNavigator() {
     }, [apiURL]);
 
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
-    const selectedMusics = useMusicSelect(metadata, searchForm, list, user);
+    const selectedMusics = useMusicSelect(metadata, searchForm, list);
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, searchForm, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const doReset = useResetCallback(setList, metadata);
 
     useSetupListeners(trackplayer, dispatchPlayer, doNext, doPrev);
+
+    useEffect(() => {
+        if (!loaded) {
+            return
+        }
+        if (searchForm.filters.user === undefined) {
+            setSearchForm({
+                ...searchForm,
+                filters: {
+                    ...searchForm.filters,
+                    user: user,
+                }
+            })
+        }
+    }, [loaded]);
 
     useEffect(() => {
         if (!loaded) {
@@ -102,7 +118,7 @@ function RootNavigator() {
     }, [])
 
     const musicsToDownload: number[] = useMemo(() => {
-        if(!localSettings.downloadMusicLocally) {
+        if (!localSettings.downloadMusicLocally) {
             return [];
         }
         const uSet = new Set<number>(localSettings.downloadUsers);
@@ -150,22 +166,34 @@ function RootNavigator() {
         }
     }, [syncState, localSettings, apiURL, metadata, setSyncState]);
 
+    const setUserDrawer = useCallback((u: number | undefined) => {
+        setUser(u);
+        setSearchForm({
+            ...searchForm,
+            filters: {
+                ...searchForm.filters,
+                user: u,
+            }
+        })
+    }, [setUser, setSearchForm, searchForm])
+
     const controls = useMemoProv<[NextTrackCallback, PrevTrackCallback, () => void]>([doNext, doPrev, doReset]);
     const playerr = useMemoProv<[Trackplayer, any]>([trackplayer, dispatchPlayer]);
+    const userr = useMemoProv<[number | undefined, any]>([user, setUser]);
 
     if (!loaded) {
         return <></>;
     }
 
     return (
-        <Ctx.User.Provider value={[user, setUser]}>
+        <Ctx.User.Provider value={userr}>
             <Ctx.Tracklist.Provider value={list}>
                 <Ctx.Controls.Provider value={controls}>
                     <Ctx.Trackplayer.Provider value={playerr}>
                         <Ctx.SearchForm.Provider value={[searchForm, setSearchForm]}>
                             <Ctx.SelectedMusics.Provider value={selectedMusics}>
                                 <Ctx.SyncState.Provider value={syncState}>
-                                    <MusidexDrawer users={metadata.users} curUser={user} setUser={setUser}/>
+                                    <MusidexDrawer users={metadata.users} curUser={user} setUser={setUserDrawer}/>
                                 </Ctx.SyncState.Provider>
                             </Ctx.SelectedMusics.Provider>
                         </Ctx.SearchForm.Provider>

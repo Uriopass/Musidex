@@ -15,7 +15,7 @@ export type SimilarityParams = {
 }
 
 export type Filters = {
-    user_only: boolean;
+    user: number | undefined;
     searchQry: string;
 }
 
@@ -26,10 +26,10 @@ export type SortByKind =
     | { kind: "random" }
 export type SortBy = { kind: SortByKind, descending: boolean }
 
-export function newSearchForm(): SearchForm {
+export function newSearchForm(user: number | undefined): SearchForm {
     return {
         filters: {
-            user_only: true,
+            user: user,
             searchQry: "",
         },
         sort: {
@@ -43,9 +43,9 @@ export function newSearchForm(): SearchForm {
 }
 
 // in place
-export function applyFilters(filters: Filters, list: number[], metadata: MusidexMetadata, curUser?: number) {
-    let k = "user_library:" + curUser;
-    if (filters.user_only) {
+export function applyFilters(filters: Filters, list: number[], metadata: MusidexMetadata) {
+    if (filters.user !== undefined) {
+        let k = "user_library:" + filters.user;
         retain(list, (id) => {
             return getTags(metadata, id)?.has(k) || false;
         });
@@ -60,7 +60,7 @@ const fuseOptions = {
 
 export const seed = Math.floor(Math.random() * 10000000);
 
-export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, list: Tracklist, curUser: number | undefined): number[] {
+export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, list: Tracklist): number[] {
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
     const sortBy = search.sort;
     const searchQry = search.filters.searchQry;
@@ -118,24 +118,24 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
                         toShow = metadata.musics.slice();
                         toShow.reverse();
                     }
-                    applyFilters(search.filters, toShow, metadata, curUser);
+                    applyFilters(search.filters, toShow, metadata);
                     break;
                 case "creation_time":
                     toShow = metadata.musics.slice();
-                    applyFilters(search.filters, toShow, metadata, curUser);
+                    applyFilters(search.filters, toShow, metadata);
                     toShow.reverse();
                     break;
                 case "tag":
                     const v = sortBy.kind.value;
                     toShow = metadata.musics.slice();
-                    applyFilters(search.filters, toShow, metadata, curUser);
+                    applyFilters(search.filters, toShow, metadata);
                     toShow.sort((a, b) => {
                         return (getTags(metadata, a)?.get(v)?.text || "").localeCompare(getTags(metadata, b)?.get(v)?.text || "");
                     });
                     break;
                 case "random":
                     toShow = metadata.musics.slice();
-                    applyFilters(search.filters, toShow, metadata, curUser);
+                    applyFilters(search.filters, toShow, metadata);
                     toShow.sort((a, b) => {
                         return prng(seed + a)() - prng(seed + b)();
                     });
@@ -148,7 +148,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
 
         return toShow;
         /* eslint-disable */
-    }, [metadata, search, list, curUser]);
+    }, [metadata, search, sortBy, list, best_tracks]);
     /* eslint-enable */
 }
 

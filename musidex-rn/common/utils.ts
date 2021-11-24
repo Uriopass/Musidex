@@ -1,5 +1,5 @@
 import {Vector} from "./entity";
-import React, {DependencyList, useCallback, useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 
 export function retain<T>(a: T[], condition: (x: T) => boolean): T[] {
     let i = a.length;
@@ -53,11 +53,11 @@ export function prng(seed: number): () => number {
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     }
 }
-
+/* eslint-disable */
 export function useMemoProv<T>(v: T): T {
     return useMemo(() => v, v as any);
 }
-
+/* eslint-enable */
 export function useUpdate(): [number, () => void] {
     const [v, setV] = useState(0);
     const update = useCallback(() => setV((oldv) => oldv + 1), [setV]);

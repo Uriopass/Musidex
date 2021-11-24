@@ -12,7 +12,7 @@ export default {
     SyncState: React.createContext<SyncState>(emptySyncState()),
     Trackplayer: React.createContext<[TrackPlayer, Dispatch<TrackPlayerAction>]>([newTrackPlayer(), _ => _]),
     Controls: React.createContext<[NextTrackCallback, PrevTrackCallback, () => void]>([_ => {}, () => {}, () => {}]),
-    SearchForm: React.createContext<[SearchForm, (newv: SearchForm) => void]>([newSearchForm(), _ => _]),
+    SearchForm: React.createContext<[SearchForm, (newv: SearchForm) => void]>([newSearchForm(undefined), _ => _]),
     LocalSettings: React.createContext<[LocalSettings, (newv: LocalSettings) => void]>([newLocalSettings(), _ => _]),
     SelectedMusics: React.createContext<number[]>([]),
     Tracklist: React.createContext<Tracklist>(emptyTracklist()),

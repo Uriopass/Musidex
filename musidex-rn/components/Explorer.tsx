@@ -15,6 +15,7 @@ import {Icon} from "react-native-elements";
 
 export default function Explorer() {
     const [metadata] = useContext(Ctx.Metadata);
+    const [user] = useContext(Ctx.User);
     const tracklist = useContext(Ctx.Tracklist);
     const [doNext] = useContext(Ctx.Controls);
     const [searchForm, setSearchForm] = useContext(Ctx.SearchForm);
@@ -45,7 +46,7 @@ export default function Explorer() {
         <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
                       sortBy={searchForm.sort} setSortBy={setSortBy}
                       hasSimilarity={curTrack !== undefined}/>
-        <FilterBySelect filters={searchForm.filters} setFilters={setFilters}/>
+        <FilterBySelect user={user} filters={searchForm.filters} setFilters={setFilters}/>
         <View style={styles.temperatureView}>
             <Icon style={styles.temperatureIcon} color={Colors.colorbg} size={20} name="casino"/>
             <Slider style={styles.temperatureSlider}
@@ -125,6 +126,7 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
 })
 
 type FilterBySelectProps = {
+    user: number | undefined,
     filters: Filters,
     setFilters: (newv: Filters) => void,
 }
@@ -133,7 +135,7 @@ const FilterBySelect = React.memo((props: FilterBySelectProps) => {
     let onMySongsChange = (v: boolean) => {
         props.setFilters({
             ...props.filters,
-            user_only: v,
+            user: v ? props.user : undefined,
         });
     };
 
@@ -141,7 +143,7 @@ const FilterBySelect = React.memo((props: FilterBySelectProps) => {
         <Icon size={20} name="filter-alt" color={Colors.colorbg}/>
         <View style={styles.sortByElem}>
             <Checkbox
-                checked={props.filters.user_only}
+                checked={props.filters.user !== undefined}
                 onChange={onMySongsChange}>
                 <TextBg> My Songs</TextBg>
             </Checkbox>
