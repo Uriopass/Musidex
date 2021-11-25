@@ -1,15 +1,15 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import Ctx from "../domain/ctx";
-import {StyleSheet, TouchableOpacity, View} from "react-native";
+import {Animated, StyleSheet, TouchableOpacity, View} from "react-native";
 import {TextBg, TextFg, TextFgGray} from "./StyledText";
 import {Icon} from "react-native-elements";
 import {getTags} from "../common/entity";
 import Thumbnail from "./Thumbnail";
 import {isThumbSynced} from "../domain/sync";
-import TrackPlayer, {useTrackPlayerProgress} from "react-native-track-player";
+import TrackPlayer, {play} from "react-native-track-player";
 import Colors from "../domain/colors";
 import Slider from "@react-native-community/slider";
-import {timeFormat, useUpdate} from "../common/utils";
+import {timeFormat} from "../common/utils";
 
 interface PlayerProps {
 }
@@ -30,7 +30,7 @@ function useTrackProgress(interval: number): [number, number] {
         };
         f();
         return () => {
-            if(timeout) {
+            if (timeout) {
                 clearTimeout(timeout);
             }
         }
@@ -93,12 +93,45 @@ const SmallPlayer = (_: PlayerProps) => {
             }
         }, 300);
     };
+    const rotateAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        if(player.paused) {
+            return;
+        }
+        rotateAnim.setValue(0);
+        const loop = Animated.loop(
+            Animated.timing(
+            rotateAnim,
+            {
+                toValue: 1,
+                duration: 10000,
+                easing: (v) => v,
+                useNativeDriver: true,
+            })
+        );
+        loop.start();
+        return () => {
+            loop.stop();
+        };
+    }, [player.paused]);
+
+    const spin = rotateAnim.interpolate({
+        inputRange: [0, 1, 2],
+        outputRange: ["0deg", "360deg", "720deg"]
+    });
 
     return (
         <View style={[styles.container]}>
             <View style={styles.upperControl}>
                 <View style={styles.currentTrack}>
-                    <Thumbnail tags={tags} local={isThumbSynced(syncState, metadata, curTrack)}/>
+                    <Thumbnail tags={tags} local={isThumbSynced(syncState, metadata, curTrack)} style={{
+                        borderRadius: 50,
+                        transform: [
+                            {rotate: spin},
+                            {perspective: 1000},
+                        ],
+                    }}/>
                     <View style={styles.currentTrackTitle}>
                         <TextFg numberOfLines={2}>{title}</TextFg>
                         <TextFgGray numberOfLines={1}>{artist}</TextFgGray>

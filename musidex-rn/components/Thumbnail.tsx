@@ -1,10 +1,10 @@
-import {Image, StyleSheet} from "react-native";
+import {ImageStyle, StyleProp, StyleSheet, Animated} from "react-native";
 import API from "../common/api";
 import React from "react";
 import {getThumbnailPath} from "../domain/sync";
 import {Tags} from "../common/entity";
 
-export default function Thumbnail(props: { tags: Tags | undefined, local: boolean }) {
+export default function Thumbnail(props: { tags: Tags | undefined, local: boolean, style?: Animated.WithAnimatedObject<ImageStyle>}) {
     if (!props.tags) {
         return <></>;
     }
@@ -19,7 +19,7 @@ export default function Thumbnail(props: { tags: Tags | undefined, local: boolea
         }
         uri = API.getAPIUrl() + "/storage/" + thumbnail;
     }
-    return <Image style={styles.thumbnail}
+    return <Animated.Image style={[styles.thumbnail, props.style]}
                   source={{uri: uri}}
                   width={60} height={60}/>;
 }
