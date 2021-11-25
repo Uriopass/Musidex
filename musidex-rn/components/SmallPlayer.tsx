@@ -1,12 +1,12 @@
 import React, {useContext, useEffect, useRef, useState} from "react";
 import Ctx from "../domain/ctx";
-import {Animated, StyleSheet, TouchableOpacity, View} from "react-native";
+import {Animated, Easing, StyleSheet, TouchableOpacity, View} from "react-native";
 import {TextBg, TextFg, TextFgGray} from "./StyledText";
 import {Icon} from "react-native-elements";
 import {getTags} from "../common/entity";
 import Thumbnail from "./Thumbnail";
 import {isThumbSynced} from "../domain/sync";
-import TrackPlayer, {play} from "react-native-track-player";
+import TrackPlayer from "react-native-track-player";
 import Colors from "../domain/colors";
 import Slider from "@react-native-community/slider";
 import {timeFormat} from "../common/utils";
@@ -96,19 +96,19 @@ const SmallPlayer = (_: PlayerProps) => {
     const rotateAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        if(player.paused) {
+        if (player.paused) {
             return;
         }
         rotateAnim.setValue(0);
         const loop = Animated.loop(
             Animated.timing(
-            rotateAnim,
-            {
-                toValue: 1,
-                duration: 10000,
-                easing: (v) => v,
-                useNativeDriver: true,
-            })
+                rotateAnim,
+                {
+                    toValue: 1,
+                    duration: 10000,
+                    easing: Easing.linear,
+                    useNativeDriver: true,
+                })
         );
         loop.start();
         return () => {
