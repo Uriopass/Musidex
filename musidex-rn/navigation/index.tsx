@@ -22,19 +22,15 @@ import Tracklist, {
 } from "../common/tracklist";
 import {newSearchForm, SearchForm, useMusicSelect} from "../common/filters";
 import Trackplayer, {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
-import {
-    createDrawerNavigator,
-    DrawerContentComponentProps,
-    DrawerContentScrollView,
-    DrawerItem,
-} from '@react-navigation/drawer';
-import {StyleSheet, View} from "react-native";
+import {createDrawerNavigator, DrawerContentComponentProps, DrawerContentScrollView,} from '@react-navigation/drawer';
+import {Pressable, StyleSheet, View} from "react-native";
 import Colors from "../domain/colors";
 import SettingsScreen from "./SettingsScreen";
 import {emptySyncState, newSyncState, syncIter, SyncState} from "../domain/sync";
 import {Mutex} from 'async-mutex';
 import {useMemoProv} from "../common/utils";
 import TrackPlayer from "react-native-track-player";
+import {TextFg} from "../components/StyledText";
 
 export default function Navigation() {
     return (
@@ -233,18 +229,15 @@ const MusidexDrawer = React.memo((props: MusidexDrawerProps) => {
 function CustomDrawerContent(d: MusidexDrawerProps): (props: DrawerContentComponentProps) => any {
     return (props) => {
         const DrawerItemLink = (lprops: any) => {
-            return <DrawerItem style={styles.drawerItem}
-                               labelStyle={styles.drawerItemLabel}
-                               activeBackgroundColor={Colors.primaryDarker}
-                               activeTintColor={Colors.colorfg}
-                               inactiveBackgroundColor={Colors.bg}
-                               focused={lprops.focused}
-                               inactiveTintColor={Colors.colorfg}
-                               label={lprops.label}
-                               onPress={() => {
-                                   lprops.onPress?.();
-                                   props.navigation.jumpTo(lprops.link);
-                               }}/>
+            return <Pressable
+                style={[styles.drawerItem, lprops.focused && styles.drawItemFocused]}
+                android_ripple={{color: Colors.primary}}
+                onPress={() => {
+                    lprops.onPress?.();
+                    props.navigation.jumpTo(lprops.link);
+                }}>
+                <TextFg>{lprops.label}</TextFg>
+            </Pressable>
         }
 
         const focusedRoute = props.state.routes[props.state.index];
@@ -273,8 +266,17 @@ function CustomDrawerContent(d: MusidexDrawerProps): (props: DrawerContentCompon
 }
 
 const styles = StyleSheet.create({
-    drawerItem: {},
-    drawerItemLabel: {},
+    drawerItem: {
+        paddingHorizontal: 12,
+        paddingVertical: 13,
+        borderRadius: 5,
+        backgroundColor: Colors.bg,
+        marginHorizontal: 10,
+        marginVertical: 4,
+    },
+    drawItemFocused: {
+        backgroundColor: Colors.primaryDarker,
+    },
     drawer: {
         backgroundColor: Colors.fg,
     }
