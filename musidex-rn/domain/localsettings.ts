@@ -2,6 +2,7 @@ export type LocalSettings = {
     downloadMusicLocally: boolean,
     downloadUsers: number[],
     iosEnableJumpForward: boolean,
+    favorites: number[],
 }
 
 export function newLocalSettings(): LocalSettings {
@@ -9,5 +10,6 @@ export function newLocalSettings(): LocalSettings {
         downloadMusicLocally: false,
         downloadUsers: [],
         iosEnableJumpForward: false,
+        favorites: [],
     }
 }

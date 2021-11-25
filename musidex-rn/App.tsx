@@ -35,7 +35,7 @@ export default function App() {
         },
     });
 
-    const [localSettings, setLocalSettings, loadedSettings] = useStored<LocalSettings>("local_settings", 2, newLocalSettings());
+    const [localSettings, setLocalSettings, loadedSettings] = useStored<LocalSettings>("local_settings", 3, newLocalSettings());
 
     const [apiURL, setAPIUrl, loadedAPI] = useStored<string>("api_url", 0, "");
     API.setAPIUrl(apiURL);

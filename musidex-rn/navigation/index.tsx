@@ -23,7 +23,7 @@ import Tracklist, {
 import {newSearchForm, SearchForm, useMusicSelect} from "../common/filters";
 import Trackplayer, {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
 import {createDrawerNavigator, DrawerContentComponentProps, DrawerContentScrollView,} from '@react-navigation/drawer';
-import {Pressable, StyleSheet, View} from "react-native";
+import {Pressable, StyleSheet, TouchableOpacity, View} from "react-native";
 import Colors from "../domain/colors";
 import SettingsScreen from "./SettingsScreen";
 import {emptySyncState, newSyncState, syncIter, SyncState} from "../domain/sync";
@@ -31,6 +31,8 @@ import {Mutex} from 'async-mutex';
 import {useMemoProv} from "../common/utils";
 import TrackPlayer from "react-native-track-player";
 import {TextFg} from "../components/StyledText";
+import {Icon} from "react-native-elements";
+import {LocalSettings} from "../domain/localsettings";
 
 export default function Navigation() {
     return (
@@ -208,9 +210,12 @@ type MusidexDrawerProps = {
 }
 
 const MusidexDrawer = React.memo((props: MusidexDrawerProps) => {
+    const [settings, setSettings] = useContext(Ctx.LocalSettings);
+    const favorites = useMemo(() => new Set(settings.favorites), [settings.favorites]);
+
     return (
         <Drawer.Navigator
-            drawerContent={CustomDrawerContent(props)}
+            drawerContent={CustomDrawerContent(props, favorites, settings, setSettings)}
             screenOptions={() => {
                 return {
                     drawerStyle: styles.drawer,
@@ -226,7 +231,7 @@ const MusidexDrawer = React.memo((props: MusidexDrawerProps) => {
     )
 })
 
-function CustomDrawerContent(d: MusidexDrawerProps): (props: DrawerContentComponentProps) => any {
+function CustomDrawerContent(d: MusidexDrawerProps, favorites: Set<number>, settings: LocalSettings, setSettings: (newv: LocalSettings) => void): (props: DrawerContentComponentProps) => any {
     return (props) => {
         const DrawerItemLink = (lprops: any) => {
             return <Pressable
@@ -236,25 +241,62 @@ function CustomDrawerContent(d: MusidexDrawerProps): (props: DrawerContentCompon
                     lprops.onPress?.();
                     props.navigation.jumpTo(lprops.link);
                 }}>
-                <TextFg>{lprops.label}</TextFg>
+                <TextFg style={styles.drawerText}>{lprops.label}</TextFg>
+                {(lprops.isFavorite !== undefined) &&
+                <TouchableOpacity onPress={lprops.onFavoriteToggle}>
+                    <Icon
+
+                        style={styles.drawerFavorite}
+                        size={20}
+                        name={lprops.isFavorite ? "favorite" : "favorite-outline"}
+                        color={lprops.isFavorite && Colors.danger}
+                    />
+                </TouchableOpacity>}
             </Pressable>
         }
 
         const focusedRoute = props.state.routes[props.state.index];
 
+        const renderDrawerUser = (user: User) => {
+            return <DrawerItemLink
+                key={user.id}
+                label={user.name}
+                link="Home"
+                isFavorite={favorites.has(user.id)}
+                onFavoriteToggle={() => {
+                    if (favorites.has(user.id)) {
+                        const cp = [...settings.favorites];
+                        cp.splice(cp.indexOf(user.id), 1);
+                        setSettings({
+                            ...settings,
+                            favorites: cp,
+                        });
+                    } else {
+                        setSettings({
+                            ...settings,
+                            favorites: settings.favorites.concat([user.id])
+                        });
+                    }
+                }}
+                focused={focusedRoute.name === "Home" && user.id === d.curUser}
+                onPress={() => {
+                    if (user.id !== d.curUser) {
+                        d.setUser(user.id);
+                    }
+                }}/>
+        };
+
         return (
             <DrawerContentScrollView {...props}>
-                {d.users.map((user) => {
-                    return <DrawerItemLink
-                        key={user.id}
-                        label={user.name}
-                        link="Home"
-                        focused={focusedRoute.name === "Home" && user.id === d.curUser}
-                        onPress={() => {
-                            if (user.id !== d.curUser) {
-                                d.setUser(user.id);
-                            }
-                        }}/>
+                {d.users.map((u) => {
+                    if (favorites.has(u.id)) {
+                        return renderDrawerUser(u);
+                    }
+                })}
+                {d.users.map((u) => {
+                    if (!favorites.has(u.id)) {
+                        return renderDrawerUser(u);
+                    }
                 })}
                 <View style={{height: 20}}/>
                 <DrawerItemLink label="Settings"
@@ -267,12 +309,22 @@ function CustomDrawerContent(d: MusidexDrawerProps): (props: DrawerContentCompon
 
 const styles = StyleSheet.create({
     drawerItem: {
-        paddingHorizontal: 12,
-        paddingVertical: 13,
+        paddingLeft: 12,
         borderRadius: 5,
         backgroundColor: Colors.bg,
         marginHorizontal: 10,
         marginVertical: 4,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    drawerText: {
+        paddingVertical: 13,
+    },
+    drawerFavorite: {
+        paddingVertical: 13,
+        paddingHorizontal: 10,
     },
     drawItemFocused: {
         backgroundColor: Colors.primaryDarker,
