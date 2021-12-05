@@ -13,9 +13,9 @@ interface NavbarProps {
 }
 
 const Navbar = React.memo((props: NavbarProps) => {
-    const setPath = useCallback((path) => {
+    const setPath = (path: any) => {
         props.setCurPage({...props.page, path: path});
-    }, [props.page, props.setCurPage]);
+    };
     return (
         <ul className="navbar color-fg">
             <div className="navbar-elems">
