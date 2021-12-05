@@ -117,7 +117,7 @@ pub async fn youtube_upload_playlist(
             if p.entries.as_ref().map(|x| x.is_empty()).unwrap_or(true) {
                 log::warn!("no entries in playlist");
             }
-            for mut entry in p.entries.into_iter().flatten() {
+            for mut entry in p.entries.into_iter().flatten().rev() {
                 if entry.ie_key.as_deref() != Some("Youtube") {
                     bail!("only yt playlist are supported at the moment");
                 }
