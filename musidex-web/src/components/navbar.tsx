@@ -1,6 +1,6 @@
 import './navbar.css'
 import {MaterialIcon} from "./utils";
-import React, {useCallback} from "react";
+import React from "react";
 import {User} from "../common/entity";
 import {Page} from "../pages/navigator";
 import {Setter} from "../common/utils";
