@@ -3,25 +3,20 @@ import TextInput from "../components/input";
 import {useState} from "react";
 import {MaterialIcon} from "../components/utils";
 import API from "../common/api";
-import {PageProps} from "./navigator";
 
-const Submit = (props: PageProps) => {
+const Submit = () => {
     return (
-        <div className={"scrollable-element content"  + (props.hidden ? " hidden" : "")}>
-            <div className="submit color-fg ">
-                <YTSubmit
-                    description="Paste a valid Youtube URL to add the music to your library."
-                    uploadAPI={API.youtubeUpload}
-                    title="YT Music"
-                    titleColor="#fb0e0f"
-                    placeholder="Youtube URL"/>
-                <YTSubmit
-                    description="Paste a valid Youtube Playlist URL to add all of its musics to your library."
-                    uploadAPI={API.youtubeUploadPlaylist}
-                    title="YT Playlist"
-                    titleColor="#fb0e0f"
-                    placeholder="Youtube Playlist URL"/>
-            </div>
+        <div className="submit color-fg ">
+            <YTSubmit
+                uploadAPI={API.youtubeUpload}
+                title="Upload YT Music"
+                titleColor="#fb0e0f"
+                placeholder="Youtube URL"/>
+            <YTSubmit
+                uploadAPI={API.youtubeUploadPlaylist}
+                title="Upload YT Playlist"
+                titleColor="#fb0e0f"
+                placeholder="Youtube Playlist URL"/>
         </div>
     )
 }
@@ -33,7 +28,6 @@ type YTSendState =
     | { type: "error", message?: string };
 
 type YTSubmitProps = {
-    description: string,
     uploadAPI: (url: string) => Promise<Response>,
     title: string,
     placeholder: string,
@@ -96,9 +90,6 @@ const YTSubmit = (props: YTSubmitProps) => {
             <span className="title" style={{borderColor: props.titleColor}}>
                 {props.title}
             </span>
-            <br/>
-            <br/>
-            {props.description}
             <form>
                 <TextInput value={url}
                            onChange={onYTInputChange}
@@ -106,11 +97,14 @@ const YTSubmit = (props: YTSubmitProps) => {
                            title="Input is not a valid youtube URL"
                            withLabel={true}/>
             </form>
+            {(message !== "") ?
             <p style={{fontSize: "20px", display: "flex", alignItems: "center", color: color}}>
                 <MaterialIcon name={icon} size="25px"/>
                 &nbsp;                &nbsp;
                 {message}
-            </p>
+            </p> :
+                <br/>
+            }
         </>
     )
 }

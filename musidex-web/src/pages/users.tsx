@@ -1,7 +1,7 @@
 import './users.css'
 import {useContext, useState} from "react";
 import {User} from "../common/entity";
-import {PageEnum, PageProps} from "./navigator";
+import {Page, PageProps} from "./navigator";
 import {EditableText, MaterialIcon} from "../components/utils";
 import TextInput from "../components/input";
 import API from "../common/api";
@@ -12,7 +12,8 @@ import {SearchFormCtx} from "../App";
 export interface UsersProps extends PageProps {
     onSetUser: (id: number) => void;
     curUser?: number;
-    setCurPage: Setter<PageEnum>;
+    page: Page,
+    setCurPage: Setter<Page>;
 }
 
 const Users = (props: UsersProps) => {
@@ -38,7 +39,7 @@ const Users = (props: UsersProps) => {
 
     const onSelectUser = (user: number) => {
         props.onSetUser(user);
-        props.setCurPage("explorer");
+        props.setCurPage({...props.page, path: "explorer"});
         setSform({
             ...sform,
             filters: {

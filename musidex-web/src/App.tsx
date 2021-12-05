@@ -4,7 +4,7 @@ import Navbar from "./components/navbar";
 import Player from "./components/player";
 import {applyTrackPlayer, newTrackPlayer, setupListeners, TrackplayerCtx} from "./domain/trackplayer";
 import useLocalStorage from "use-local-storage";
-import PageNavigator, {PageEnum} from "./pages/navigator";
+import PageNavigator, {Page} from "./pages/navigator";
 import Tracklist, {
     emptyTracklist,
     updateScoreCache,
@@ -33,7 +33,7 @@ const App = () => {
     const [volume, setVolume] = useLocalStorage("volume", 1);
     const tp = useReducer(applyTrackPlayer, newTrackPlayer());
     const [trackplayer, dispatchPlayer] = tp;
-    const [curPage, setCurPage] = useLocalStorage("curpage", "explorer" as PageEnum);
+    const [curPage, setCurPage] = useState<Page>({path: "explorer", submit: false});
     const [list, setList] = useState<Tracklist>(emptyTracklist());
     const editableSt = useState(false);
     const selectedMusics = useMusicSelect(metadata, sform, list);
@@ -90,7 +90,8 @@ const App = () => {
     const metap = useMemo<[MusidexMetadata, () => void]>(() => [metadata, fetchMetadata], [metadata, fetchMetadata]);
     return (
         <>
-            <Navbar syncProblem={syncProblem} setCurPage={setCurPage}
+            <Navbar syncProblem={syncProblem}
+                    page={curPage} setCurPage={setCurPage}
                     curUser={metadata.users.find((x) => x.id === user)}/>
             <EditableCtx.Provider value={editableSt}>
                 <MetadataCtx.Provider value={metap}>

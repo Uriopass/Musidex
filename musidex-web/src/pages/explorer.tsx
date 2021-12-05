@@ -11,11 +11,13 @@ import {MetadataCtx} from "../domain/metadata";
 import {SearchFormCtx, SelectedMusicsCtx, TracklistCtx} from "../App";
 import {clamp, useDebouncedEffect} from "../common/utils";
 import noCoverImg from "../no_cover.jpg";
+import Submit from "./submit";
 
 export interface ExplorerProps extends PageProps {
     title?: string;
     doNext: NextTrackCallback;
     curUser?: number;
+    showSubmit: boolean;
 }
 
 const Explorer = React.memo((props: ExplorerProps) => {
@@ -85,6 +87,10 @@ const Explorer = React.memo((props: ExplorerProps) => {
 
     return (
         <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
+            {
+                props.showSubmit &&
+                <Submit />
+            }
             <div className="explorer color-fg">
                 <div className="explorer-search">
                     <TextInput value={searchForm.filters.searchQry} onChange={setSearchQry} name="Search"/>
