@@ -16,24 +16,18 @@ import Navigation from "./navigation";
 import {SafeAreaProvider} from "react-native-safe-area-context";
 import Colors from "./domain/colors";
 import useStored from "./domain/useStored";
-import {emptyMetadata, MusidexMetadata, newMetadata} from "./common/entity";
-import API, {RawMusidexMetadata} from "./common/api";
+import {MusidexMetadata} from "./common/entity";
+import API from "./common/api";
 import Ctx from "./domain/ctx";
 import {LocalSettings, newLocalSettings} from "./domain/localsettings";
 import {useMemoProv} from "./common/utils";
 import TrackPlayer, {CAPABILITY_JUMP_FORWARD} from "react-native-track-player";
+import useMetadata from "./domain/useMetadata";
+import {TextFg} from "./components/StyledText";
 
 export default function App() {
     const isLoadingComplete = useCachedResources();
-    const [metadata, setMetadata, loadedMeta] = useStored<MusidexMetadata>("metadata", 0, emptyMetadata(), {
-        ser: (v: MusidexMetadata): string => {
-            return JSON.stringify(v.raw);
-        },
-        deser: (v: string): MusidexMetadata => {
-            const obj: RawMusidexMetadata = JSON.parse(v);
-            return newMetadata(obj);
-        },
-    });
+    const [metadata, setMetadata, loadedMeta] = useMetadata();
 
     const [localSettings, setLocalSettings, loadedSettings] = useStored<LocalSettings>("local_settings", 3, newLocalSettings());
 
@@ -68,7 +62,8 @@ export default function App() {
     if (!isLoadingComplete || !loadedMeta || !loadedAPI || !loadedSettings) {
         return <View style={{backgroundColor: '#383838', flex: 1, alignItems: "center", justifyContent: "center"}}>
             <Image source={require('./musidex_logo.png')}/>
-        </View>;
+            <TextFg>Loading Metadata: {loadedMeta?"ok":"..."}</TextFg>
+        </View>
     } else {
         return (
             <SafeAreaProvider>
