@@ -8,6 +8,7 @@ export type RawMusidexMetadata = {
     users: User[];
     settings: [string, string][];
     patches?: patch[];
+    version: number;
 }
 
 type patch = { kind: 'add' | 'update' | 'remove', tag: Tag }
