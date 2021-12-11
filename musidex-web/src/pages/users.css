@@ -3,20 +3,22 @@
     max-width: 1000px;
     flex-wrap: wrap;
     justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    padding: 20px 0;
 }
 
 .user-card {
-    width: 100px;
-    height: 100px;
-    padding: 20px;
-    background-color: var(--fg);
     display: flex;
+    width: calc(100% - 20px);
+    height: 0.5rem;
+    padding: 20px 0;
+    background-color: var(--fg);
     justify-content: center;
     align-items: center;
-    margin: 10px 10px;
+    margin: 4px 10px;
     position: relative;
     cursor: pointer;
-    border-radius: 7px;
 }
 
 .user-card:hover {
@@ -47,48 +49,24 @@
 }
 
 .user-card-delete {
-    position: absolute;
-    top: 5px;
-    right: 5px;
+    position: relative;
     cursor: pointer;
+    padding-right: 5px;
 }
 
 .user-card-delete:hover {
     color: var(--danger);
 }
 
-@media screen and (orientation:portrait) {
-    .users {
-        flex-direction: column;
-        width: 100%;
-        padding: 20px 0;
-    }
+.user-card-name {
+    white-space: nowrap;
+    justify-content: center;
+    flex-grow: 1;
+    padding: 0 20px;
+    display: flex;
+}
 
-    .user-card-delete {
-        position: relative;
-        right: unset;
-        top: unset;
-        padding-right: 5px;
-    }
-
-    .user-card-name {
-        white-space: nowrap;
-        justify-content: center;
-        flex-grow: 1;
-        padding: 0 20px;
-        display: flex;
-    }
-
-    .user-card-name .editable-text {
-        max-width: 200px;
-        overflow: hidden;
-    }
-
-    .user-card {
-        display: flex;
-        width: calc(100% - 20px);
-        padding: 20px 0;
-        margin: 5px 10px;
-        height: 0.5rem;
-    }
+.user-card-name .editable-text {
+    max-width: 200px;
+    overflow: hidden;
 }
