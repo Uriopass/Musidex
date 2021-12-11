@@ -158,7 +158,7 @@ const SmallPlayer = (_: PlayerProps) => {
                     </>}
                     {open &&
                     <>
-                        <TextBg>{timeFormat(position)}/{timeFormat(duration)}</TextBg>
+                        <TextBg>{timeFormat(seekCur ?? position)}/{timeFormat(duration)}</TextBg>
                     </>}
                     <TouchableOpacity onPress={() => setOpen(!open)}>
                         <Icon size={32}
