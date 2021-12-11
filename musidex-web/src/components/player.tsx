@@ -88,7 +88,7 @@ const Player = (props: PlayerProps) => {
                 {
                     (thumbnail !== "") &&
                     <div className="player-current-track-thumbnail">
-                        <img src={"storage/" + thumbnail} alt="song cover"/>
+                        <img src={"storage/" + thumbnail} alt="song cover" style={{animationPlayState: trackplayer.paused ? "paused" : "running"}}/>
                     </div>
                 }
                 <div className="player-current-track-title">

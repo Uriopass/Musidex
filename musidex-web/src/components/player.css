@@ -83,6 +83,13 @@
     object-fit: cover;
     height: 83px;
     width: 83px;
+    border-radius: 50%;
+    animation: 10s linear 0s infinite spin;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
 }
 
 .player-button {
