@@ -117,7 +117,7 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
 }
 
 export function emptyMetadata(): MusidexMetadata {
-    return newMetadata({musics: [], users: [], tags: [], settings: []});
+    return newMetadata({version: 0, musics: [], users: [], tags: [], settings: []});
 }
 
 export function canPlay(tags: Tags): boolean {
