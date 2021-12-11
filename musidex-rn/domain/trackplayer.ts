@@ -39,6 +39,22 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
     }, [trackplayer, dispatch]);
 
     useEffect(() => {
+        const v = TrackPlayer.addEventListener("remote-play", (_) => {
+            console.log("remote play", trackplayer.current);
+            doNext(trackplayer.current);
+        });
+        return () => v.remove();
+    }, [doNext, trackplayer]);
+
+    useEffect(() => {
+        const v = TrackPlayer.addEventListener("remote-pause", (_) => {
+            console.log("remote pause", trackplayer.current);
+            doNext(trackplayer.current);
+        });
+        return () => v.remove();
+    }, [doNext, trackplayer]);
+
+    useEffect(() => {
         const v = TrackPlayer.addEventListener("playback-queue-ended", (_) => {
             console.log("playback ended");
             doNext();

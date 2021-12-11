@@ -46,6 +46,7 @@ const Drawer = createDrawerNavigator();
 
 let loll = 0;
 let fetchMutex = new Mutex();
+let avoidFirst = 0;
 
 function RootNavigator() {
     const [metadata, fetchMetadata] = useContext(Ctx.Metadata);
@@ -70,6 +71,10 @@ function RootNavigator() {
     const loaded = loadedListe && loadedUser && loadedSF && loadedPosition;
 
     useEffect(() => {
+        if (avoidFirst === 0) {
+            return;
+        }
+        avoidFirst += 1;
         fetchMetadata()
     }, [apiURL]);
 
@@ -245,7 +250,6 @@ function CustomDrawerContent(d: MusidexDrawerProps, favorites: Set<number>, sett
                 {(lprops.isFavorite !== undefined) &&
                 <TouchableOpacity onPress={lprops.onFavoriteToggle}>
                     <Icon
-
                         style={styles.drawerFavorite}
                         size={20}
                         name={lprops.isFavorite ? "favorite" : "favorite-outline"}
