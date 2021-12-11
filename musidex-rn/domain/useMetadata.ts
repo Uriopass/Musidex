@@ -11,7 +11,8 @@ export default function useMetadata(): [MusidexMetadata, (newv: MusidexMetadata)
     const [loadedFile, setLoadedFile] = useState(false);
 
     useEffect(() => {
-        RNFetchBlob.fs.readFile(metapath, "utf8").then((raw: RawMusidexMetadata) => {
+        RNFetchBlob.fs.readFile(metapath, "utf8").then((s: string) => {
+            const raw: RawMusidexMetadata = JSON.parse(s);
             if (raw.version !== curVersion) {
                 return;
             }
