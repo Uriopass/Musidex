@@ -254,7 +254,7 @@ type SongElemProps = {
 
 const SongElem = React.memo((props: SongElemProps) => {
     const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
-    const artist = props.tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
+    const artist = props.tags.get("artist");
     const duration = props.tags.get("duration")?.integer;
 
     return (
@@ -272,7 +272,7 @@ const SongElem = React.memo((props: SongElemProps) => {
                 <Thumbnail tags={props.tags} local={props.thumbSynced}/>
                 <View style={styles.trackInfo}>
                     <TextFg numberOfLines={2}>{title?.text} </TextFg>
-                    <TextFgGray numberOfLines={1}>{artist?.text} {duration && "• " + timeFormat(duration)}</TextFgGray>
+                    <TextFgGray numberOfLines={1}>{artist?.text} {duration && ("• " + timeFormat(duration))}</TextFgGray>
                 </View>
             </View>
             <View style={styles.trackIcons}>

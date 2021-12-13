@@ -51,7 +51,7 @@ const SmallPlayer = (_: PlayerProps) => {
     const curTrack = list.last_played[list.last_played.length - 1];
     const tags = getTags(metadata, curTrack);
     const title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";
-    const artist = (tags !== undefined) ? (tags.get("artist")?.text || "Unknown Artist") : "";
+    const artist = tags?.get("artist")?.text || "";
 
     const canPrev = list.last_played.length > 1;
     const canReset = list.last_played.length > 0;
@@ -134,7 +134,7 @@ const SmallPlayer = (_: PlayerProps) => {
                     }}/>
                     <View style={styles.currentTrackTitle}>
                         <TextFg numberOfLines={2}>{title}</TextFg>
-                        <TextFgGray numberOfLines={1}>{artist}</TextFgGray>
+                        {(artist !== "") && <TextFgGray numberOfLines={1}>{artist}</TextFgGray>}
                     </View>
                 </View>
                 <View style={styles.controls}>
