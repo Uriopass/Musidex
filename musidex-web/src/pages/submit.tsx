@@ -102,6 +102,7 @@ const YTSubmit = (props: YTSubmitProps) => {
                 <MaterialIcon name={icon} size="25px"/>
                 &nbsp;                &nbsp;
                 {message}
+                <span style={{color: "gray"}} onClick={() => setSendState({type: "waiting_for_url"})}>&nbsp;⨯ </span>
             </p> :
                 <br/>
             }
