@@ -106,9 +106,35 @@ fn guess_title(title: &str) -> (String, Option<String>) {
 pub async fn youtube_upload_playlist(
     c: &mut Connection,
     url: String,
+    index_start: Option<usize>,
+    index_stop: Option<usize>,
     uid: UserID,
-) -> Result<StatusCode> {
-    let metadata = ytdl_run_with_args(vec!["--flat-playlist", "--yes-playlist", "-J", "--", &url])
+) -> Result<(StatusCode, usize)> {
+    let start = index_start.unwrap_or(0);
+    let stop = index_stop.unwrap_or(0);
+    if stop < start || (stop > 0 && start == stop) {
+        return Ok((StatusCode::OK, 0));
+    }
+
+    let mut args = vec![];
+    let starts;
+    if start != 0 {
+        args.push("--playlist-start");
+        starts = start.to_string();
+        args.push(&starts);
+    }
+
+    let stops;
+    if stop != 0 {
+        args.push("--playlist-end");
+        stops = stop.to_string();
+        args.push(&stops);
+    }
+
+    args.extend_from_slice(&["--flat-playlist", "--yes-playlist", "-J", "--"]);
+    args.push(&url);
+
+    let metadata = ytdl_run_with_args(args)
         .await
         .context("failed reading playlist metadata")?;
 
@@ -117,7 +143,15 @@ pub async fn youtube_upload_playlist(
             if p.entries.as_ref().map(|x| x.is_empty()).unwrap_or(true) {
                 log::warn!("no entries in playlist");
             }
-            for mut entry in p.entries.into_iter().flatten().rev() {
+            let entries = match p.entries {
+                Some(v) if v.len() > 0 => v,
+                _ => {
+                    log::warn!("no entries in playlist");
+                    return Ok((StatusCode::OK, 0));
+                }
+            };
+            let count = entries.len();
+            for mut entry in entries.into_iter().rev() {
                 if entry.ie_key.as_deref() != Some("Youtube") {
                     bail!("only yt playlist are supported at the moment");
                 }
@@ -137,13 +171,12 @@ pub async fn youtube_upload_playlist(
                 push_for_treatment(&tx, entry, url, uid)?;
                 tx.commit()?;
             }
+            return Ok((StatusCode::OK, count));
         }
         YoutubeDlOutput::SingleVideo(_) => {
-            return Ok(StatusCode::BAD_REQUEST);
+            return Ok((StatusCode::BAD_REQUEST, 0));
         }
     }
-
-    Ok(StatusCode::OK)
 }
 
 #[cfg(test)]

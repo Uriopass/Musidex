@@ -61,11 +61,6 @@ pub async fn create_tag(mut req: Request<Body>) -> Result<Response<Body>> {
     Ok(Response::new(Body::empty()))
 }
 
-#[derive(DeJson)]
-pub struct UploadYoutube {
-    pub url: String,
-}
-
 pub async fn delete_music(req: Request<Body>) -> Result<Response<Body>> {
     let music_id = req.params().get("id").context("missing parameter id")?;
     let db = req.state::<Db>();
@@ -96,6 +91,15 @@ pub async fn delete_music(req: Request<Body>) -> Result<Response<Body>> {
     Ok(Response::new(Body::empty()))
 }
 
+#[derive(DeJson)]
+pub struct UploadYoutube {
+    pub url: String,
+    #[nserde(rename = "indexStart")]
+    pub index_start: Option<usize>,
+    #[nserde(rename = "indexStop")]
+    pub index_stop: Option<usize>,
+}
+
 pub async fn youtube_upload(mut req: Request<Body>) -> Result<Response<Body>> {
     let uid = User::from_req(&req).context("no user id")?;
     let b: UploadYoutube = parse_body(&mut req).await?;
@@ -119,9 +123,11 @@ pub async fn youtube_upload_playlist(mut req: Request<Body>) -> Result<Response<
     }
     let db = req.state::<Db>();
     let mut c = db.get().await;
-    Ok(res_status(
-        upload::youtube_upload_playlist(&mut c, url, uid).await?,
-    ))
+    let (status, count) =
+        upload::youtube_upload_playlist(&mut c, url, b.index_start, b.index_stop, uid).await?;
+    let mut r = Response::new(Body::from(count.to_string()));
+    *r.status_mut() = status;
+    Ok(r)
 }
 
 #[derive(DeJson)]

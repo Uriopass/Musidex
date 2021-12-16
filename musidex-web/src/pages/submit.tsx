@@ -1,6 +1,6 @@
 import './submit.css'
 import TextInput from "../components/input";
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {MaterialIcon} from "../components/utils";
 import API from "../common/api";
 
@@ -14,6 +14,7 @@ const Submit = () => {
                 placeholder="Youtube URL"/>
             <YTSubmit
                 uploadAPI={API.youtubeUploadPlaylist}
+                showNth={true}
                 title="Upload YT Playlist"
                 titleColor="#fb0e0f"
                 placeholder="Youtube Playlist URL"/>
@@ -24,19 +25,24 @@ const Submit = () => {
 type YTSendState =
     { type: "waiting_for_url" }
     | { type: "sending" }
-    | { type: "accepted" }
+    | { type: "zero_accept" }
+    | { type: "accepted_unk"}
+    | { type: "accepted", count: number }
     | { type: "error", message?: string };
 
 type YTSubmitProps = {
-    uploadAPI: (url: string) => Promise<Response>,
+    uploadAPI: (url: string, indexStart?: number, indexStop?: number) => Promise<Response>,
     title: string,
     placeholder: string,
     titleColor: string,
+    showNth?: boolean,
 }
 
 const YTSubmit = (props: YTSubmitProps) => {
     const [sendState, setSendState] = useState({type: "waiting_for_url"} as YTSendState);
     const [url, setURL] = useState("");
+    const refIndexStart = useRef<HTMLInputElement | null>(null);
+    const refIndexStop = useRef<HTMLInputElement | null>(null);
 
     const onYTInputChange = (v: string) => {
         setURL(v);
@@ -45,21 +51,34 @@ const YTSubmit = (props: YTSubmitProps) => {
             return;
         }
         setSendState({type: "sending"});
-        props.uploadAPI(v).then((res: Response) => {
+        props.uploadAPI(v, parseInt(refIndexStart.current?.value || "0"), parseInt(refIndexStop.current?.value || "0")).then((res: Response) => {
             setURL("");
             if (res.ok) {
-                setSendState({type: "accepted"});
-                return;
+                return res.text();
             }
             if (res.status === 409) {
-                setSendState({"type": "error", message: "track already in library"});
+                setSendState({type: "error", message: "track already in library"});
                 return;
             }
             console.log("not ok", res);
-            setSendState({"type": "error"});
+            setSendState({type: "error"});
+        }).then((v) => {
+            if (v === undefined) {
+                return;
+            }
+            if (v === "") {
+                setSendState({type: "accepted_unk"});
+                return;
+            }
+            const c = parseInt(v);
+            if (!c) {
+                setSendState({type: "zero_accept"});
+                return;
+            }
+            setSendState({type: "accepted", count: c});
         }).catch((e) => {
             console.log(e);
-            setSendState({"type": "error"});
+            setSendState({type: "error"});
         });
     }
 
@@ -80,8 +99,18 @@ const YTSubmit = (props: YTSubmitProps) => {
             break;
         case "accepted":
             icon = "done"
-            message = "Music(s) successfully added to your library. Download will begin shortly."
+            message = sendState.count + " musics successfully added to your library. Download will begin shortly"
             color = "var(--success)";
+            break;
+        case "accepted_unk":
+            icon = "done"
+            message = "Music(s) successfully added to your library. Download will begin shortly"
+            color = "var(--success)";
+            break;
+        case "zero_accept":
+            icon = "error"
+            message = "No music found"
+            color = "var(--alert)";
             break;
     }
 
@@ -90,12 +119,21 @@ const YTSubmit = (props: YTSubmitProps) => {
             <span className="title" style={{borderColor: props.titleColor}}>
                 {props.title}
             </span>
-            <form>
+            <form style={{color: "var(--color-bg)"}}>
                 <TextInput value={url}
                            onChange={onYTInputChange}
                            name={props.placeholder}
                            title="Input is not a valid youtube URL"
                            withLabel={true}/>
+                {props.showNth &&
+                    <>
+                        <br/>
+                    Playlist index:&nbsp;&nbsp;
+                        <input ref={refIndexStart} type="number" placeholder="start" className="form_field" min="0" style={{width: "5rem"}} />
+                        &nbsp;-&nbsp;
+                        <input ref={refIndexStop} type="number" placeholder="stop" className="form_field" min="0" style={{width: "5rem"}} />
+                </>
+                }
             </form>
             {(message !== "") ?
             <p style={{fontSize: "20px", display: "flex", alignItems: "center", color: color}}>
