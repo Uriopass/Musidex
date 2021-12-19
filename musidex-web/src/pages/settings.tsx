@@ -31,29 +31,27 @@ const SettingsPage = (props: PageProps) => {
     };
 
     return (
-        <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")}>
-            <div className="settings color-fg ">
-                <div className="title">
-                    Settings
-                </div>
-                <div className="settings-item">
-                    <button className="navbar-button" onClick={onRestartServer}>
-                        <MaterialIcon name={restartStatus}
-                                      size={25}/>&nbsp;Restart
-                        server
-                    </button>
-                </div>
-                <div className="settings-item">
-                    <input id="settings-editable" className="checkbox" type="checkbox" checked={editable}
-                           onChange={(x) => setEditable(x.currentTarget.checked)}/>
-                    <label htmlFor="settings-editable" style={{paddingLeft: 5}}>Enable click-to-edit</label>
-                </div>
-                {
-                    metadata.settings_l.slice(0, 0).map(([key, value]) => {
-                        return <SettingsElem sync={metadataSync} key={key} setting_key={key} value={value}/>;
-                    })
-                }
+        <div className={"settings color-fg "+ (props.hidden ? " hidden" : "")}>
+            <div className="title">
+                Settings
             </div>
+            <div className="settings-item">
+                <button className="navbar-button" onClick={onRestartServer}>
+                    <MaterialIcon name={restartStatus}
+                                  size={25}/>&nbsp;Restart
+                    server
+                </button>
+            </div>
+            <div className="settings-item">
+                <input id="settings-editable" className="checkbox" type="checkbox" checked={editable}
+                       onChange={(x) => setEditable(x.currentTarget.checked)}/>
+                <label htmlFor="settings-editable" style={{paddingLeft: 5}}>Enable click-to-edit</label>
+            </div>
+            {
+                metadata.settings_l.slice(0, 0).map(([key, value]) => {
+                    return <SettingsElem sync={metadataSync} key={key} setting_key={key} value={value}/>;
+                })
+            }
         </div>
     )
 }

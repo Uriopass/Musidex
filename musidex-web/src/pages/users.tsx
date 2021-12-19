@@ -8,14 +8,12 @@ import API from "../common/api";
 import {MetadataCtx} from "../domain/metadata";
 import {Setter} from "../../../musidex-ts-common/utils";
 import {SearchFormCtx} from "../App";
-import Submit from "./submit";
 
 export interface UsersProps extends PageProps {
     onSetUser: (id: number) => void;
     curUser?: number;
     page: Page,
     setCurPage: Setter<Page>;
-    showSubmit: boolean;
 }
 
 const Users = (props: UsersProps) => {
@@ -52,12 +50,8 @@ const Users = (props: UsersProps) => {
     };
 
     return (
-        <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")}>
-            {
-                props.showSubmit &&
-                <Submit />
-            }
-            <div className="users color-fg ">
+        <>
+            <div className={"users color-fg " + (props.hidden ? " hidden" : "")}>
                 {
                     meta.users.map((user) => {
                         return <UserCard key={user.id}
@@ -74,7 +68,7 @@ const Users = (props: UsersProps) => {
                 <TextInput onChange={setNewName} value={newName} withLabel={true} name="User Name" title="User Name"/>
                 <div className="user-add-submit" onClick={onNewSubmit}>Submit</div>
             </div>
-        </div>
+        </>
     )
 }
 

@@ -3,6 +3,9 @@ import Users from "./users";
 import {NextTrackCallback} from "../common/tracklist";
 import SettingsPage from "./settings";
 import {Setter} from "../../../musidex-ts-common/utils";
+import React, {useContext, useState} from "react";
+import Submit from "./submit";
+import {MetadataCtx} from "../domain/metadata";
 
 export type Page = { path: "explorer" | "users" | "settings", submit: boolean };
 
@@ -19,13 +22,28 @@ export interface PageProps {
 }
 
 const PageNavigator = (props: NavigatorProps) => {
+    const [metadata] = useContext(MetadataCtx);
+
+    const [shown, setShown] = useState(40);
+    const onScroll = (e: any) => {
+        const elem: HTMLDivElement = e.target;
+        if (elem.scrollHeight - elem.scrollTop < elem.clientHeight + 500) {
+            if (metadata.musics.length > shown) {
+                setShown(shown + 20);
+            }
+        }
+    };
+
     return (
-        <>
-            <Explorer hidden={props.page.path !== "explorer"} showSubmit={props.page.submit} curUser={props.curUser} doNext={props.doNext}/>
+        <div className={"scrollable-element content"} onScroll={onScroll}>
+            {
+                props.page.submit && <Submit />
+            }
+            <Explorer hidden={props.page.path !== "explorer"} curUser={props.curUser} doNext={props.doNext} shown={shown} setShown={setShown}/>
             <Users hidden={props.page.path !== "users"} onSetUser={props.onSetUser} curUser={props.curUser}
-                   page={props.page} setCurPage={props.setCurPage} showSubmit={props.page.submit}/>
+                   page={props.page} setCurPage={props.setCurPage}/>
             <SettingsPage hidden={props.page.path !== "settings"}/>
-        </>
+        </div>
     )
 }
 

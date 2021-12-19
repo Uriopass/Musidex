@@ -9,15 +9,15 @@ import {PageProps} from "./navigator";
 import Filters, {isSimilarity, SimilarityParams, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {MetadataCtx} from "../domain/metadata";
 import {SearchFormCtx, SelectedMusicsCtx, TracklistCtx} from "../App";
-import {clamp, useDebouncedEffect} from "../common/utils";
+import {clamp, Setter, useDebouncedEffect} from "../common/utils";
 import noCoverImg from "../no_cover.jpg";
-import Submit from "./submit";
 
 export interface ExplorerProps extends PageProps {
     title?: string;
     doNext: NextTrackCallback;
     curUser?: number;
-    showSubmit: boolean;
+    shown: number;
+    setShown: Setter<number>;
 }
 
 const Explorer = React.memo((props: ExplorerProps) => {
@@ -25,7 +25,6 @@ const Explorer = React.memo((props: ExplorerProps) => {
     const [searchForm, setSearchForm] = useContext(SearchFormCtx);
     const toShow = useContext(SelectedMusicsCtx);
     const list = useContext(TracklistCtx);
-    const [shown, setShown] = useState(40);
 
     const setFilters = useCallback((f: Filters) => setSearchForm({
         ...searchForm,
@@ -43,14 +42,6 @@ const Explorer = React.memo((props: ExplorerProps) => {
     const [localTemp, setLocalTemp] = useState(searchForm.similarityParams.temperature * 100);
 
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
-    const onScroll = (e: any) => {
-        const elem: HTMLDivElement = e.target;
-        if (elem.scrollHeight - elem.scrollTop < elem.clientHeight + 500) {
-            if (metadata.musics.length > shown) {
-                setShown(shown + 20);
-            }
-        }
-    };
 
     const colorCur = "#1d2f23";
     const colorSongs = "#28222f";
@@ -80,74 +71,67 @@ const Explorer = React.memo((props: ExplorerProps) => {
 
     useDebouncedEffect(() => {
         if (searchForm.similarityParams.temperature !== localTemp / 100) {
-            console.log("set");
             setSimilarityParam({temperature: localTemp / 100})
         }
     }, [searchForm, setSimilarityParam, localTemp], 50);
 
     return (
-        <div className={"scrollable-element content" + (props.hidden ? " hidden" : "")} onScroll={onScroll}>
-            {
-                props.showSubmit &&
-                <Submit />
+        <div className={"explorer color-fg" + (props.hidden ? " hidden" : "")}>
+            <div className="explorer-search">
+                <TextInput value={searchForm.filters.searchQry} onChange={setSearchQry} name="Search"/>
+            </div>
+            <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
+                          sortBy={searchForm.sort} setSortBy={setSortBy}
+                          hasSimilarity={curTrack !== undefined}/>
+            <FilterBySelect
+                users={metadata.users}
+                filters={searchForm.filters}
+                setFilters={setFilters}/>
+            {isSimilarity(searchForm) &&
+            <div className="temperature-pick">
+                <MaterialIcon name="casino" style={{paddingLeft: 1}}/>
+                <input className="temperature-pick-range" type="range"
+                       value={localTemp} min={0} max={100}
+                       onChange={(v) => setLocalTemp(parseInt(v.currentTarget.value))}/>
+            </div>
             }
-            <div className="explorer color-fg">
-                <div className="explorer-search">
-                    <TextInput value={searchForm.filters.searchQry} onChange={setSearchQry} name="Search"/>
-                </div>
-                <SortBySelect forced={(searchForm.filters.searchQry !== "") ? "Query match score" : undefined}
-                              sortBy={searchForm.sort} setSortBy={setSortBy}
-                              hasSimilarity={curTrack !== undefined}/>
-                <FilterBySelect
-                    users={metadata.users}
-                    filters={searchForm.filters}
-                    setFilters={setFilters}/>
-                {isSimilarity(searchForm) &&
-                <div className="temperature-pick">
-                    <MaterialIcon name="casino" style={{paddingLeft: 1}}/>
-                    <input className="temperature-pick-range" type="range"
-                           value={localTemp} min={0} max={100}
-                           onChange={(v) => setLocalTemp(parseInt(v.currentTarget.value))}/>
-                </div>
-                }
-                {isRegexpInvalid &&
-                <span>Regex is invalid: {"" + isRegexpInvalid}</span>}
-                {curPlaying}
-                {
-                    toShow.slice(0, shown).map((id) => {
-                        const tags = getTags(metadata, id);
-                        if (tags === undefined) {
+            {isRegexpInvalid &&
+            <span>Regex is invalid: {"" + isRegexpInvalid}</span>}
+            {curPlaying}
+            {
+                toShow.slice(0, props.shown).map((id) => {
+                    const tags = getTags(metadata, id);
+                    if (tags === undefined) {
+                        return <Fragment key={id}/>;
+                    }
+                    let progress = list.score_map.get(id);
+                    let progressColor = colorSongs;
+                    if (id === curTrack) {
+                        if (isSimilarity(searchForm)) {
                             return <Fragment key={id}/>;
                         }
-                        let progress = list.score_map.get(id);
-                        let progressColor = colorSongs;
-                        if (id === curTrack) {
-                            if (isSimilarity(searchForm)) {
-                                return <Fragment key={id}/>;
-                            }
-                            progress = 1.0;
-                            progressColor = colorCur;
-                        }
-                        return (
-                            <SongElem key={id} musicID={id}
-                                      tags={tags}
-                                      curUser={props.curUser}
-                                      syncMetadata={syncMetadata}
-                                      doNext={props.doNext}
-                                      progress={progress}
-                                      progressColor={progressColor}
-                            />
-                        )
-                    })
-                }
-                {
-                    (shown < toShow.length) && (
-                        <button style={{marginTop: "10px"}} onClick={() => setShown(shown + 20)}>
-                            Show more
-                        </button>
+                        progress = 1.0;
+                        progressColor = colorCur;
+                    }
+                    return (
+                        <SongElem key={id} musicID={id}
+                                  tags={tags}
+                                  curUser={props.curUser}
+                                  syncMetadata={syncMetadata}
+                                  doNext={props.doNext}
+                                  progress={progress}
+                                  progressColor={progressColor}
+                        />
                     )
-                }
-            </div>
+                })
+            }
+            {
+                (props.shown < toShow.length) && (
+                    <button style={{marginTop: "10px"}} onClick={() => props.setShown(props.shown + 20)}>
+                        Show more
+                    </button>
+                )
+            }
         </div>
     )
 })
