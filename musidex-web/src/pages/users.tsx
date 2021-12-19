@@ -63,7 +63,7 @@ const Users = (props: UsersProps) => {
                     })
                 }
             </div>
-            <div className="user-add">
+            <div className={"user-add" + (props.hidden ? " hidden" : "")}>
                 <b>Create user</b>
                 <TextInput onChange={setNewName} value={newName} withLabel={true} name="User Name" title="User Name"/>
                 <div className="user-add-submit" onClick={onNewSubmit}>Submit</div>

@@ -6,8 +6,9 @@ import {Setter} from "../../../musidex-ts-common/utils";
 import React, {useContext, useState} from "react";
 import Submit from "./submit";
 import {MetadataCtx} from "../domain/metadata";
+import MusicMap from "./map";
 
-export type Page = { path: "explorer" | "users" | "settings", submit: boolean };
+export type Page = { path: "explorer" | "users" | "settings" | "music_map", submit: boolean };
 
 interface NavigatorProps {
     page: Page;
@@ -42,6 +43,7 @@ const PageNavigator = (props: NavigatorProps) => {
             <Explorer hidden={props.page.path !== "explorer"} curUser={props.curUser} doNext={props.doNext} shown={shown} setShown={setShown}/>
             <Users hidden={props.page.path !== "users"} onSetUser={props.onSetUser} curUser={props.curUser}
                    page={props.page} setCurPage={props.setCurPage}/>
+            <MusicMap hidden={props.page.path !== "users"} />
             <SettingsPage hidden={props.page.path !== "settings"}/>
         </div>
     )

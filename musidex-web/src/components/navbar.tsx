@@ -26,6 +26,9 @@ const Navbar = React.memo((props: NavbarProps) => {
                     <button className="navbar-button" style={{color: props.page.submit ? "var(--primary)" : undefined}} onClick={() => props.setCurPage({...props.page, submit: !props.page.submit})} title="Add musics to the library">
                         <MaterialIcon name="file_upload" size={25}/>
                     </button>
+                    <button className="navbar-button" style={{color: props.page.submit ? "var(--primary)" : undefined}} onClick={() => setPath("music_map")} title="Show map of music embeddings">
+                        <MaterialIcon name="explore" size={25}/>
+                    </button>
                     {
                         props.syncProblem &&
                         <div style={{color: "var(--danger)", display: "flex", padding: "0 6px"}}>
