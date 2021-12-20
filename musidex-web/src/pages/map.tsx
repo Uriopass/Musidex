@@ -171,6 +171,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
 
         let proj = new Vector3(-1.0 + 2.0 * (ev.clientX - xoff) / w, 1.0 - 2.0 * (ev.clientY - yoff) / h, 5).unproject(gfx.camera);
 
+        // eslint-disable-next-line
         curMouse = [proj.x, proj.y];
 
         if(mouseMesh) {
@@ -221,10 +222,6 @@ function MusicMap(props: MusicMapProps): JSX.Element {
 
     return <div ref={rootdiv} onMouseMove={onMouseMove} onWheel={onScroll} style={{flexGrow: 1, width: "100%"}}>
     </div>
-}
-
-function updateMouse() {
-
 }
 
 export default MusicMap;
