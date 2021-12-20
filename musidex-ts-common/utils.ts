@@ -28,6 +28,15 @@ export function dot(v1v: Vector, v2v: Vector): number {
     return d;
 }
 
+export function dotn(v1: number[], v2: number[]): number {
+    let d = 0;
+    for (let i = 0; i < v1.length && i < v2.length; i++) {
+        // @ts-ignore
+        d += v1[i] * v2[i];
+    }
+    return d;
+}
+
 export function timeFormat(total: number): string {
     let minutes = Math.floor(total / 60);
     let seconds = Math.floor(total % 60);

@@ -43,7 +43,7 @@ const PageNavigator = (props: NavigatorProps) => {
             <Explorer hidden={props.page.path !== "explorer"} curUser={props.curUser} doNext={props.doNext} shown={shown} setShown={setShown}/>
             <Users hidden={props.page.path !== "users"} onSetUser={props.onSetUser} curUser={props.curUser}
                    page={props.page} setCurPage={props.setCurPage}/>
-            <MusicMap hidden={props.page.path !== "users"} />
+            {props.page.path === "music_map" && <MusicMap />}
             <SettingsPage hidden={props.page.path !== "settings"}/>
         </div>
     )
