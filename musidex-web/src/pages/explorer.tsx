@@ -220,6 +220,25 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
     </div>;
 })
 
+type ThumbnailProps = {
+    playable?: boolean,
+    setHovered?: (hov: boolean) => void,
+    onClick?: () => void,
+    cover?: string,
+}
+
+export const Thumbnail = (props: ThumbnailProps) => {
+    return <div className={`cover-image-container ${props.playable ? "song-elem-playable" : ""}`} onClick={props.onClick}
+                onMouseEnter={() => props.setHovered?.(true)} onMouseLeave={() => props.setHovered?.(false)}>
+        {
+            (props.cover) ?
+                <img src={"storage/" + props.cover} alt="album or video cover" loading="lazy"/> :
+                <img src={noCoverImg} alt="album or video cover"/>
+        }
+    </div>
+}
+
+
 type SongElemProps = {
     musicID: number;
     tags: Map<string, Tag>;
@@ -277,14 +296,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
         <div
             className={`song-elem ${playable ? "" : "song-elem-disabled"} ${(hovered && playable) ? "song-elem-hovered" : ""}`}
             style={{background: grad}}>
-            <div className={`cover-image-container ${playable ? "song-elem-playable" : ""}`} onClick={onNext}
-                 onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-                {
-                    (cover) ?
-                        <img src={"storage/" + cover} alt="album or video cover" loading="lazy"/> :
-                        <img src={noCoverImg} alt="album or video cover"/>
-                }
-            </div>
+            <Thumbnail playable={playable} onClick={props.doNext} setHovered={setHovered} cover={cover}/>
             <div style={{paddingLeft: "10px"}}>
                 <b>
                     <EditableText text={title.text || ""}

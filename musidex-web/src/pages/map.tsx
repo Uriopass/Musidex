@@ -3,18 +3,8 @@ import {MetadataCtx} from "../domain/metadata";
 import {dotn, useUpdate} from "../common/utils";
 import {PCA} from 'ml-pca';
 import * as THREE from "three";
-import {
-    Camera,
-    DoubleSide,
-    Mesh,
-    OrthographicCamera,
-    PerspectiveCamera,
-    Scene,
-    Vector2,
-    Vector3,
-    WebGLRenderer
-} from "three";
-import {FilterBySelect, SongElem} from "./explorer";
+import {Camera, Mesh, OrthographicCamera, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer} from "three";
+import {FilterBySelect, Thumbnail} from "./explorer";
 import {NextTrackCallback} from "../common/tracklist";
 import {Tag} from "../common/entity";
 import {SearchFormCtx} from "../App";
@@ -34,10 +24,12 @@ type GfxContext = {
 }
 
 let moved = false;
+let leftClicked = false;
 
 function MusicMap(props: MusicMapProps): JSX.Element {
-    const [metadata, syncMetadata] = useContext(MetadataCtx);
+    const [metadata] = useContext(MetadataCtx);
     const [selected, setSelected] = useState<undefined | number>(undefined);
+    const [selectedPos, setSelectedPos] = useState<[number, number]>([0, 0]);
     const [searchForm, setSearchForm] = useContext(SearchFormCtx);
     const setFilters = useCallback((f: Filters) => setSearchForm({
         ...searchForm,
@@ -48,7 +40,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
     const gfxr = useRef<GfxContext | null>(null);
     const [gfxinit, updateGfxInit] = useUpdate();
 
-    if(gfxr.current) {
+    if (gfxr.current) {
         gfxr.current.controls.enableRotate = _3d;
     }
 
@@ -121,7 +113,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         const h = rootdiv.current.offsetHeight;
         const scene = new THREE.Scene();
         let camera: Camera = new THREE.OrthographicCamera(-w / 200, w / 200, -h / 200, h / 200, -1000, 1000);
-        if(_3d) {
+        if (_3d) {
             camera = new THREE.PerspectiveCamera(70, w / h);
         }
 
@@ -175,7 +167,12 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         const gfx = gfxr.current;
 
         const geometry = new THREE.SphereGeometry(0.02, 16, 16);
-        const material = new THREE.MeshPhongMaterial({color: "#54636f", shininess: 0, emissive: "#ffffff", emissiveIntensity: 0.05});
+        const material = new THREE.MeshPhongMaterial({
+            color: "#54636f",
+            shininess: 0,
+            emissive: "#ffffff",
+            emissiveIntensity: 0.05
+        });
         const circles = new THREE.InstancedMesh(geometry, material, projected.length);
         const matrix = new THREE.Matrix4();
         matrix.identity();
@@ -193,14 +190,20 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         return () => {
             circles.removeFromParent();
         }
-    }, [gfxinit, projected]);
+// eslint-disable-next-line
+    }, [gfxinit]);
 
     useEffect(() => {
         if (!gfxinit || gfxr.current === null) {
             return;
         }
         const geometry = new THREE.SphereGeometry(0.021, 32, 32);
-        const material = new THREE.MeshPhongMaterial({color: "#863aa3", shininess: 0, emissive: "#ffffff", emissiveIntensity: 0.1});
+        const material = new THREE.MeshPhongMaterial({
+            color: "#863aa3",
+            shininess: 0,
+            emissive: "#ffffff",
+            emissiveIntensity: 0.1
+        });
 
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.x = 0;
@@ -234,7 +237,8 @@ function MusicMap(props: MusicMapProps): JSX.Element {
 
         const v = new Vector2(-1.0 + 2.0 * (ev.clientX - xoff) / w, 1.0 - 2.0 * (ev.clientY - yoff) / h);
 
-        let selected;
+        let selected: number | undefined = undefined;
+        let selectedPos: [number, number] = [0, 0];
         let minDist = 100000;
         for (const i of projected.keys()) {
             let [x, y, z, mid] = projected[i] ?? [0, 0, 0, -1];
@@ -247,31 +251,23 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                 gfx.mouse.position.z = _3d ? z : 1.1;
                 gfx.mouse.visible = true;
                 selected = mid;
+                selectedPos = [(projectedCam.x + 1.0) / 2.0 * w, (-projectedCam.y + 1.0) / 2.0 * h];
                 minDist = dist;
             }
         }
         if (selected) {
             setSelected(selected);
         }
+        setSelectedPos(selectedPos);
     }
 
-    const onMouseClick = (ev: React.MouseEvent) => {
-        if (moved || ev.buttons !== 1) {
+    const onMouseClick = () => {
+        if (moved) {
             return;
         }
-        if (selected) {
+        if (selected && leftClicked) {
             props.doNext(selected);
         }
-    };
-
-    const onScroll = (ev: React.WheelEvent) => {
-        if (gfxr.current === null) {
-            return;
-        }
-        const gfx = gfxr.current;
-
-        const factor = Math.pow(1.2, ev.deltaY / 50);
-        //gfx.camera.position.z *= factor;
     };
 
     useEffect(() => {
@@ -300,18 +296,50 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         }
     }, [upd]);
 
+    let selectedTags = metadata.music_tags_idx.get(selected || -1) || new Map<string, Tag>();
+
+    let cover = selectedTags?.get("compressed_thumbnail")?.text || selectedTags?.get("thumbnail")?.text;
 
     return <>
-        <div ref={rootdiv} onMouseDown={() => moved = false} onMouseMove={onMouseMove} onWheel={onScroll}
-             onMouseUp={onMouseClick} style={{flexGrow: 1, width: "100%"}}>
+        <div ref={rootdiv} onMouseDown={(ev) => {
+            moved = false;
+            leftClicked = ev.buttons === 1;
+        }} onMouseMove={onMouseMove} onMouseUp={onMouseClick} style={{flexGrow: 1, width: "100%"}}>
+            <div
+                style={{
+                    left: selectedPos[0] + 20,
+                    top: selectedPos[1] + 80,
+                    position: "absolute",
+                    zIndex: 1,
+                    width: 250,
+                    borderRadius: 5,
+                    backgroundColor: "var(--bg)",
+                    display: (selectedPos[0] === 0 && selectedPos[1] === 0) ? "none" : "flex",
+                    flexDirection: "row",
+                    color: "var(--color-fg)",
+                    overflow: "hidden",
+                }}
+            >
+                <Thumbnail cover={cover}/>
+                <div style={{paddingLeft: "10px", display: "flex", flexDirection: "column", fontSize: "1rem", justifyContent: "space-evenly", alignItems: "flex-start", textAlign: "left"}}>
+                    <b>
+                        {selectedTags?.get("title")?.text}
+                    </b>
+                    <span className="small gray-fg">
+                        {selectedTags?.get("artist")?.text}
+                    </span>
+                </div>
+            </div>
         </div>
         <div style={{
-            flexBasis: 120,
+            flexBasis: 45,
             maxWidth: 1000,
             width: "100%",
             display: "flex",
             alignItems: "center",
-            flexDirection: "column"
+            justifyContent: "center",
+            flexDirection: "column",
+            color: "var(--color-fg)",
         }}>
             <div style={{
                 width: "100%",
@@ -320,20 +348,18 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                 justifyContent: "flex-start",
                 flexDirection: "row"
             }}>
-                <span style={{cursor: "pointer", marginLeft: 10, marginRight: 10, color: _3d ? "var(--primary)": "inherit"}}
-                onClick={() => set3D(!_3d)}>Enable 3D</span>
+                <span style={{
+                    cursor: "pointer",
+                    marginLeft: 10,
+                    marginRight: 10,
+                    color: _3d ? "var(--primary)" : "var(--color-bg)"
+                }}
+                      onClick={() => set3D(!_3d)}>Enable 3D</span>
                 <FilterBySelect
                     users={metadata.users}
                     filters={searchForm.filters}
                     setFilters={setFilters}/>
             </div>
-            {(selected !== undefined) &&
-            <SongElem
-                syncMetadata={syncMetadata}
-                doNext={props.doNext}
-                tags={metadata.music_tags_idx.get(selected) || new Map<string, Tag>()}
-                musicID={selected}
-            />}
         </div>
     </>
 }
