@@ -33,7 +33,6 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         filters: f
     }), [setSearchForm, searchForm]);
 
-    const selectedID = metadata.musics[selected || 0] || 0;
 
     const projectedAll: [number, number][] = useMemo(() => {
         if (metadata.musics.length < 10) {
@@ -77,17 +76,18 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         return projected;
     }, [metadata]);
 
-    const projected = useMemo(() => {
+    const projected: [number, number, number][] = useMemo(() => {
         const musics = metadata.musics.slice();
         applyFilters(searchForm.filters, musics, metadata);
 
         const musicSet = new Set(musics);
 
-        const projected: [number, number][] = [];
+        const projected: [number, number, number][] = [];
         for (let i = 0; i < metadata.musics.length; i++) {
-            if (musicSet.has(metadata.musics[i] || -1)) {
-                let v = projectedAll[i];
-                projected.push(v || [0, 0]);
+            const mid = metadata.musics[i] || -1;
+            if (musicSet.has(mid)) {
+                let v = projectedAll[i] || [0, 0];
+                projected.push([v[0], v[1], mid]);
             }
         }
         return projected;
@@ -151,7 +151,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         matrix.identity();
 
         for (let i = 0; i < projected.length; i++) {
-            const [x, y] = projected[i] as [number, number];
+            const [x, y] = projected[i] as [number, number, number];
             matrix.setPosition(x, y, 1);
             circles.setMatrixAt(i, matrix);
         }
@@ -216,13 +216,13 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         let selected;
         let minDist = 100000;
         for (const i of projected.keys()) {
-            let [x, y] = projected[i] ?? [0, 0];
+            let [x, y, mid] = projected[i] ?? [0, 0, -1];
             const dist = Math.sqrt((x - proj.x) * (x - proj.x) + (y - proj.y) * (y - proj.y));
             if (dist < 0.1 && dist < minDist) {
                 gfx.mouse.position.x = x;
                 gfx.mouse.position.y = y;
                 gfx.mouse.visible = true;
-                selected = i;
+                selected = mid;
                 minDist = dist;
             }
         }
@@ -236,7 +236,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             return;
         }
         if (selected) {
-            props.doNext(selectedID);
+            props.doNext(selected);
         }
     };
 
@@ -294,8 +294,8 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             <SongElem
                 syncMetadata={syncMetadata}
                 doNext={props.doNext}
-                tags={metadata.music_tags_idx.get(selectedID) || new Map<string, Tag>()}
-                musicID={selectedID}
+                tags={metadata.music_tags_idx.get(selected) || new Map<string, Tag>()}
+                musicID={selected}
             />}
         </div>
     </>
