@@ -106,8 +106,13 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         const scene = new THREE.Scene();
         const camera = new THREE.OrthographicCamera(-w / 200, w / 200, -h / 200, h / 200, -1000, 1000);
         camera.position.z = 5;
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setSize(w, h);
+        renderer.setClearColor("#09090b");
+
+        const directionalLight = new THREE.DirectionalLight( "#ffffff", 1 );
+        directionalLight.position.set(0.5, 0.5, 1);
+        scene.add( directionalLight );
 
         console.log("initializing gfxr");
         gfxr.current = {camera: camera, scene: scene, renderer: renderer};
@@ -143,9 +148,8 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         }
         const gfx = gfxr.current;
 
-        const geometry = new THREE.CircleGeometry(0.02, 32);
-
-        const material = new THREE.MeshBasicMaterial({color: 0xff0000, side: DoubleSide});
+        const geometry = new THREE.SphereGeometry(0.02, 16, 16);
+        const material = new THREE.MeshPhongMaterial({color: "#54636f", shininess: 0});
         const circles = new THREE.InstancedMesh(geometry, material, projected.length);
         const matrix = new THREE.Matrix4();
         matrix.identity();
@@ -170,7 +174,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             return;
         }
         const geometry = new THREE.CircleGeometry(0.02, 32);
-        const material = new THREE.MeshBasicMaterial({color: 0x00ff00, side: DoubleSide});
+        const material = new THREE.MeshBasicMaterial({color: "#863aa3", side: DoubleSide});
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.x = 0;
         mesh.position.y = 0;
@@ -248,6 +252,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
 
         gfx.camera.scale.x *= Math.pow(1.2, ev.deltaY / 50);
         gfx.camera.scale.y *= Math.pow(1.2, ev.deltaY / 50);
+        gfx.camera.scale.z *= Math.pow(1.2, ev.deltaY / 50);
     };
 
     useEffect(() => {
@@ -285,7 +290,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         <div ref={rootdiv} onMouseDown={() => moved = false} onMouseMove={onMouseMove} onWheel={onScroll}
              onMouseUp={onMouseClick} style={{flexGrow: 1, width: "100%"}}>
         </div>
-        <div style={{flexBasis: 120, width: 500, display: "flex", alignItems: "center", flexDirection: "column"}}>
+        <div style={{flexBasis: 120, maxWidth: 1000, width: "100%", display: "flex", alignItems: "center", flexDirection: "column"}}>
             <FilterBySelect
                 users={metadata.users}
                 filters={searchForm.filters}
