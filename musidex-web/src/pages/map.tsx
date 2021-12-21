@@ -191,7 +191,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             circles.removeFromParent();
         }
 // eslint-disable-next-line
-    }, [gfxinit]);
+    }, [gfxinit, projected]);
 
     useEffect(() => {
         if (!gfxinit || gfxr.current === null) {
