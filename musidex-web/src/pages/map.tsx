@@ -88,21 +88,24 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         return projected;
     }, [metadata]);
 
-    const projected: [number, number, number, number][] = useMemo(() => {
+    const [projected, projectedDisabled]: [[number, number, number, number][], [number, number, number][]] = useMemo(() => {
         const musics = metadata.musics.slice();
         applyFilters(searchForm.filters, musics, metadata);
 
         const musicSet = new Set(musics);
 
         const projected: [number, number, number, number][] = [];
+        const projectedDisabled: [number, number, number][] = [];
         for (let i = 0; i < metadata.musics.length; i++) {
             const mid = metadata.musics[i] || -1;
+            let v = projectedAll[i] || [0, 0, 0];
             if (musicSet.has(mid)) {
-                let v = projectedAll[i] || [0, 0, 0];
                 projected.push([v[0], v[1], v[2], mid]);
+            } else {
+                projectedDisabled.push([v[0], v[1], v[2]]);
             }
         }
-        return projected;
+        return [projected, projectedDisabled];
     }, [projectedAll, metadata, searchForm.filters])
 
     useEffect(() => {
@@ -182,16 +185,33 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             matrix.setPosition(x, y, _3d ? z : 1);
             circles.setMatrixAt(i, matrix);
         }
+        const materialDisabled = new THREE.MeshPhongMaterial({
+            color: "#313539",
+            transparent: true,
+            opacity: 0.25,
+            shininess: 0,
+            emissive: "#ffffff",
+            emissiveIntensity: 0.01
+        });
+        const circlesDisabled = new THREE.InstancedMesh(geometry, materialDisabled, projectedDisabled.length);
+
+        for (let i = 0; i < projectedDisabled.length; i++) {
+            const [x, y, z] = projectedDisabled[i] as [number, number, number];
+            matrix.setPosition(x, y, _3d ? z : 1);
+            circlesDisabled.setMatrixAt(i, matrix);
+        }
 
         console.log("making circles", projected.length);
 
         gfx.scene.add(circles);
+        gfx.scene.add(circlesDisabled);
 
         return () => {
             circles.removeFromParent();
+            circlesDisabled.removeFromParent();
         }
 // eslint-disable-next-line
-    }, [gfxinit, projected]);
+    }, [gfxinit, projected, projectedDisabled]);
 
     useEffect(() => {
         if (!gfxinit || gfxr.current === null) {
