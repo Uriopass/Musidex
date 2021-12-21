@@ -44,7 +44,6 @@ const Explorer = React.memo((props: ExplorerProps) => {
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
 
     const colorCur = "#1d2f23";
-    const colorSongs = "#28222f";
     let curPlaying = <></>;
     if (curTrack && searchForm.sort.kind.kind === "similarity" && searchForm.filters.searchQry === "") {
         const tags = getTags(metadata, curTrack) || new Map();
@@ -105,7 +104,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
                         return <Fragment key={id}/>;
                     }
                     let progress = list.score_map.get(id);
-                    let progressColor = colorSongs;
+                    let progressColor;
                     if (id === curTrack) {
                         if (isSimilarity(searchForm)) {
                             return <Fragment key={id}/>;
@@ -142,7 +141,7 @@ type FilterBySelectProps = {
     users: User[],
 }
 
-const FilterBySelect = React.memo((props: FilterBySelectProps) => {
+export const FilterBySelect = React.memo((props: FilterBySelectProps) => {
     let onMySongsChange = (x: any) => {
         const v = parseInt(x.target.value);
         props.setFilters({
@@ -231,7 +230,7 @@ type SongElemProps = {
     curUser?: number;
 }
 
-const SongElem = React.memo((props: SongElemProps) => {
+export const SongElem = React.memo((props: SongElemProps) => {
     let cover = props.tags?.get("compressed_thumbnail")?.text || props.tags?.get("thumbnail")?.text;
 
     const playable = canPlay(props.tags);
@@ -241,7 +240,10 @@ const SongElem = React.memo((props: SongElemProps) => {
     };
 
     const [hovered, setHovered] = useState(false);
-    const c = props.progressColor;
+    let c = props.progressColor;
+    if (c === undefined) {
+        c = "#28222f";
+    }
     const p = clamp(100 * (props.progress || 0), 0, 100);
     const grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
 

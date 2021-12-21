@@ -1,25 +1,41 @@
-import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {MetadataCtx} from "../domain/metadata";
 import {dotn, useUpdate} from "../common/utils";
 import {PCA} from 'ml-pca';
 import * as THREE from "three";
 import {DoubleSide, Mesh, OrthographicCamera, Scene, Vector3, WebGLRenderer} from "three";
+import {FilterBySelect, SongElem} from "./explorer";
+import {NextTrackCallback} from "../common/tracklist";
+import {Tag} from "../common/entity";
+import {SearchFormCtx} from "../App";
+import Filters, {applyFilters} from "../common/filters";
 
 type MusicMapProps = {
+    doNext: NextTrackCallback;
 }
 
 type GfxContext = {
     camera: OrthographicCamera,
     scene: Scene,
     renderer: WebGLRenderer,
+    mouse?: Mesh,
 }
 
 let curMouse = [0, 0];
+let moved = false;
 
 function MusicMap(props: MusicMapProps): JSX.Element {
-    const [metadata] = useContext(MetadataCtx);
+    const [metadata, syncMetadata] = useContext(MetadataCtx);
+    const [selected, setSelected] = useState<undefined | number>(undefined);
+    const [searchForm, setSearchForm] = useContext(SearchFormCtx);
+    const setFilters = useCallback((f: Filters) => setSearchForm({
+        ...searchForm,
+        filters: f
+    }), [setSearchForm, searchForm]);
 
-    const projected = useMemo(() => {
+    const selectedID = metadata.musics[selected || 0] || 0;
+
+    const projectedAll: [number, number][] = useMemo(() => {
         if (metadata.musics.length < 10) {
             return [];
         }
@@ -49,7 +65,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         const v1: number[] = eigenv.getColumn(0);
         const v2: number[] = eigenv.getColumn(1);
 
-        const projected = [];
+        const projected: [number, number][] = [];
         for (let v of embeddings) {
             let vv = v.slice();
             for (let i = 0; i < vv.length; i++) {
@@ -60,6 +76,22 @@ function MusicMap(props: MusicMapProps): JSX.Element {
 
         return projected;
     }, [metadata]);
+
+    const projected = useMemo(() => {
+        const musics = metadata.musics.slice();
+        applyFilters(searchForm.filters, musics, metadata);
+
+        const musicSet = new Set(musics);
+
+        const projected: [number, number][] = [];
+        for (let i = 0; i < metadata.musics.length; i++) {
+            if (musicSet.has(metadata.musics[i] || -1)) {
+                let v = projectedAll[i];
+                projected.push(v || [0, 0]);
+            }
+        }
+        return projected;
+    }, [projectedAll, metadata, searchForm.filters])
 
     const rootdiv = useRef<HTMLDivElement | null>(null);
     const gfxr = useRef<GfxContext | null>(null);
@@ -72,7 +104,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         const w = 640;
         const h = 400;
         const scene = new THREE.Scene();
-        const camera = new THREE.OrthographicCamera(-w/2, w/2, -h/2, h/2, -1000, 1000);
+        const camera = new THREE.OrthographicCamera(-w / 200, w / 200, -h / 200, h / 200, -1000, 1000);
         camera.position.z = 5;
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(w, h);
@@ -83,7 +115,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
 
         const child = rootdiv.current?.appendChild(renderer.domElement);
 
-        let handle: {h: number | null} = {h: null};
+        let handle: { h: number | null } = {h: null};
         const animate = function () {
             handle.h = requestAnimationFrame(animate);
 
@@ -111,76 +143,104 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         }
         const gfx = gfxr.current;
 
-        const geometry = new THREE.CircleGeometry(3, 16);
+        const geometry = new THREE.CircleGeometry(0.02, 32);
 
         const material = new THREE.MeshBasicMaterial({color: 0xff0000, side: DoubleSide});
         const circles = new THREE.InstancedMesh(geometry, material, projected.length);
         const matrix = new THREE.Matrix4();
         matrix.identity();
 
-        console.log(projected.length);
         for (let i = 0; i < projected.length; i++) {
             const [x, y] = projected[i] as [number, number];
-            matrix.setPosition(x * 100, y * 100, 1);
+            matrix.setPosition(x, y, 1);
             circles.setMatrixAt(i, matrix);
         }
 
+        console.log("making circles", projected.length);
+
         gfx.scene.add(circles);
+
+        return () => {
+            circles.removeFromParent();
+        }
     }, [projected]);
 
-    const [mouseMesh, setMouseMesh] = useState<Mesh | null>(null);
-
     useEffect(() => {
-        if (!gfxinit) {
+        if (!gfxinit || gfxr.current === null) {
             return;
         }
-        const geometry = new THREE.CircleGeometry(5, 32);
+        const geometry = new THREE.CircleGeometry(0.02, 32);
         const material = new THREE.MeshBasicMaterial({color: 0x00ff00, side: DoubleSide});
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.x = 0;
         mesh.position.y = 0;
-        mesh.position.z = 1;
+        mesh.position.z = 2;
+        mesh.visible = false;
 
         const gfx = gfxr.current;
-        gfx?.scene.add(mesh);
-        console.log("adding mouse");
-
-        setMouseMesh(mesh);
+        gfx.scene.add(mesh);
+        gfx.mouse = mesh;
     }, [gfxinit]);
 
     const onMouseMove = (ev: React.MouseEvent) => {
+        moved = true;
         if (gfxr.current === null) {
             return;
         }
         const gfx = gfxr.current;
+        if (!gfx.mouse) {
+            return;
+        }
 
         if (ev.buttons === 1) {
-            gfx.camera.position.x -= ev.movementX * gfx.camera.scale.x;
-            gfx.camera.position.y += ev.movementY * gfx.camera.scale.y;
+            gfx.camera.position.x -= ev.movementX * gfx.camera.scale.x * 0.01;
+            gfx.camera.position.y += ev.movementY * gfx.camera.scale.y * 0.01;
         }
 
         gfx.camera.updateMatrixWorld();
         gfx.camera.updateProjectionMatrix();
         gfx.camera.updateMatrix();
 
-        const w = gfx.camera.right - gfx.camera.left;
-        const h = gfx.camera.top - gfx.camera.bottom;
+        const w = rootdiv.current?.clientWidth || 1;
+        const h = rootdiv.current?.clientHeight || 1;
 
         const xoff = rootdiv.current?.offsetLeft || 0;
         const yoff = rootdiv.current?.offsetTop || 0;
 
-        let proj = new Vector3(-1.0 + 2.0 * (ev.clientX - xoff) / w, 1.0 - 2.0 * (ev.clientY - yoff) / h, 5).unproject(gfx.camera);
+        const v = new Vector3(-1.0 + 2.0 * (ev.clientX - xoff) / w, 1.0 - 2.0 * (ev.clientY - yoff) / h, 5);
+        let proj = v.unproject(gfx.camera);
 
         // eslint-disable-next-line
         curMouse = [proj.x, proj.y];
 
-        if(mouseMesh) {
-            mouseMesh.position.x = proj.x;
-            mouseMesh.position.y = proj.y;
+        let selected;
+        let minDist = 100000;
+        for (const i of projected.keys()) {
+            let [x, y] = projected[i] ?? [0, 0];
+            const dist = Math.sqrt((x - proj.x) * (x - proj.x) + (y - proj.y) * (y - proj.y));
+            if (dist < 0.1 && dist < minDist) {
+                gfx.mouse.position.x = x;
+                gfx.mouse.position.y = y;
+                gfx.mouse.visible = true;
+                selected = i;
+                minDist = dist;
+            }
+        }
+        if (selected) {
+            setSelected(selected);
+        }
+    }
+
+    const onMouseClick = (ev: React.MouseEvent) => {
+        if (moved) {
+            return;
+        }
+        if (selected) {
+            props.doNext(selectedID);
         }
     };
 
-    const onScroll = (ev: React.WheelEvent) =>{
+    const onScroll = (ev: React.WheelEvent) => {
         if (gfxr.current === null) {
             return;
         }
@@ -197,10 +257,10 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             const h = rootdiv.current.offsetHeight;
             gfx.renderer.setSize(w, h);
 
-            gfx.camera.left = -w / 2;
-            gfx.camera.right = w / 2;
-            gfx.camera.top = h / 2;
-            gfx.camera.bottom = -h / 2;
+            gfx.camera.left = -w / 200;
+            gfx.camera.right = w / 200;
+            gfx.camera.top = h / 200;
+            gfx.camera.bottom = -h / 200;
 
             gfx.camera.updateProjectionMatrix();
         }
@@ -220,8 +280,25 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         }
     }, [upd]);
 
-    return <div ref={rootdiv} onMouseMove={onMouseMove} onWheel={onScroll} style={{flexGrow: 1, width: "100%"}}>
-    </div>
+
+    return <>
+        <div ref={rootdiv} onMouseDown={() => moved = false} onMouseMove={onMouseMove} onWheel={onScroll}
+             onMouseUp={onMouseClick} style={{flexGrow: 1, width: "100%"}}>
+        </div>
+        <div style={{flexBasis: 120, width: 500, display: "flex", alignItems: "center", flexDirection: "column"}}>
+            <FilterBySelect
+                users={metadata.users}
+                filters={searchForm.filters}
+                setFilters={setFilters}/>
+            {(selected !== undefined) &&
+            <SongElem
+                syncMetadata={syncMetadata}
+                doNext={props.doNext}
+                tags={metadata.music_tags_idx.get(selectedID) || new Map<string, Tag>()}
+                musicID={selectedID}
+            />}
+        </div>
+    </>
 }
 
 export default MusicMap;
