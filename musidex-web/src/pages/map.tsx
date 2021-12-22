@@ -28,6 +28,8 @@ let moved = false;
 let leftClicked = false;
 let tsne: TSNE;
 
+let algorithmMax = 500;
+
 function MusicMap(props: MusicMapProps): JSX.Element {
     const [metadata] = useContext(MetadataCtx);
     const [selected, setSelected] = useState<undefined | number>(undefined);
@@ -93,8 +95,8 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         } else if (algorithm === "tsne") {
             if(algorithmProgress === 0) {
                 tsne = new TSNE({
-                    epsilon: 10, // epsilon is learning rate (10 = default)
-                    perplexity: 30, // roughly how many neighbors each point influences (30 = default)
+                    epsilon: 30, // epsilon is learning rate (10 = default)
+                    perplexity: 20, // roughly how many neighbors each point influences (30 = default)
                     dim: _3d ? 3 : 2 // dimensionality of the embedding (2 = default)
                 });
 
@@ -107,16 +109,16 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                 tsne.initDataRaw(embeddings);
             }
 
-            if(algorithmProgress < 500) {
+            if(algorithmProgress < algorithmMax) {
                 const iterations = 10;
                 for (let i = 0; i < iterations; i++) {
                     tsne.step(); // every time you call this, solution gets better
                 }
 
-                setTimeout(() => setAlgorithmProgress(algorithmProgress + 10), 10);
+                setTimeout(() => setAlgorithmProgress(algorithmProgress + 10), 5);
+            } else {
+                projected = tsne.getSolution() as any;
             }
-
-            projected = tsne.getSolution() as any;
 
             if (!_3d) {
                 for (let i of projected.keys()) {
@@ -431,7 +433,10 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                     marginRight: 10,
                     color: _3d ? "var(--primary)" : "var(--color-bg)"
                 }}
-                      onClick={() => set3D(!_3d)}>Enable 3D</span>
+                      onClick={() => {
+                          set3D(!_3d);
+                          setAlgorithmProgress(0);
+                      }}>Enable 3D</span>
                 <FilterBySelect
                     users={metadata.users}
                     filters={searchForm.filters}
@@ -449,6 +454,9 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                           setAlgorithm("tsne");
                           setAlgorithmProgress(0);
                       }}>t-Sne</span>
+                {(algorithmProgress > 0 && algorithmProgress < algorithmMax) && <span>
+                    Calculating... {algorithmProgress}/{algorithmMax}
+                </span>}
                 <span style={{
                     cursor: "pointer",
                     marginLeft: 10,
