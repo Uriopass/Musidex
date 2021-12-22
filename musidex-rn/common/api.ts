@@ -79,11 +79,15 @@ export const API = {
         });
     },
 
-    async youtubeUploadPlaylist(url: string): Promise<Response> {
+    async youtubeUploadPlaylist(url: string, indexStart?: number, indexStop?: number): Promise<Response> {
         return fetch(apiURL + "/api/youtube_upload/playlist", {
             method: "post",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({url: url}),
+            body: JSON.stringify({
+                url: url,
+                indexStart: indexStart ?? 0,
+                indexStop: indexStop ?? 0,
+            }),
         });
     },
 
@@ -151,7 +155,7 @@ function getRaw(url: string) {
 
         req.onload = () => {
             let resp = req.response;
-            if(resp) {
+            if (resp) {
                 accept(resp);
             }
         };

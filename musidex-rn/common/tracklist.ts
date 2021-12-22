@@ -60,7 +60,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
 
             if (isSimilarity(sform)) {
                 best_id = selectedMusics[0];
-                const score = list.score_map.get(best_id || -1);
+                const score = list.score_map.get(best_id ?? -1);
                 if (score === undefined) {
                     return;
                 }
@@ -131,7 +131,7 @@ export function updateScoreCache(list: Tracklist, metadata: MusidexMetadata): Tr
 }
 
 export function getLastvec(list: Tracklist, metadata: MusidexMetadata): Vector | undefined {
-    return metadata.embeddings.get(list.last_played[list.last_played.length - 1] || -1);
+    return metadata.embeddings.get(list.last_played[list.last_played.length - 1] ?? -1);
 }
 
 export function neuralScore(list: Tracklist, lastvec: Vector | undefined, id: number, metadata: MusidexMetadata): number | undefined {

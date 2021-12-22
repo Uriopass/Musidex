@@ -74,7 +74,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
             const va = prng(seed + a)();
             const vb = prng(seed + b)();
             const vc = (va - vb) * temp;
-            return (scoremap.get(b) || -100000) - (scoremap.get(a) || -100000) + vc;
+            return (scoremap.get(b) ?? -100000) - (scoremap.get(a) ?? -100000) + vc;
         });
         return l;
     }, [metadata, scoremap, temp]);

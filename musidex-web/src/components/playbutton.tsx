@@ -14,7 +14,7 @@ export type PlayButtonProps = {
 export const PlayButton = ({doNext, musicID, size}: PlayButtonProps) => {
     let [trackplayer] = useContext(TrackplayerCtx);
     let [metadata,] = useContext(MetadataCtx);
-    let same_v = (trackplayer.current || -1) === musicID;
+    let same_v = (trackplayer.current ?? -1) === musicID;
     let title = getTags(metadata, musicID)?.get("title")?.text || "No Title";
 
     let onClick = useCallback(() => {

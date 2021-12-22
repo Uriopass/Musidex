@@ -7,7 +7,7 @@ import {Camera, Mesh, OrthographicCamera, PerspectiveCamera, Scene, Vector2, Vec
 import {FilterBySelect, Thumbnail} from "./explorer";
 import {NextTrackCallback} from "../common/tracklist";
 import {Tag} from "../common/entity";
-import {SearchFormCtx} from "../App";
+import {SearchFormCtx, TracklistCtx} from "../App";
 import Filters, {applyFilters} from "../common/filters";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {run_tsne} from '@uriopass/tsne-wasm';
@@ -21,6 +21,7 @@ type GfxContext = {
     scene: Scene,
     renderer: WebGLRenderer,
     mouse?: Mesh,
+    curplaying?: Mesh,
     controls: OrbitControls,
 }
 
@@ -29,6 +30,7 @@ let leftClicked = false;
 
 function MusicMap(props: MusicMapProps): JSX.Element {
     const [realMetadata] = useContext(MetadataCtx);
+    const list = useContext(TracklistCtx);
     const [metadata, setMetadata] = useState(realMetadata);
     if (metadata.musics.length === 0 && realMetadata.musics.length > 0) {
         setMetadata(realMetadata);
@@ -52,24 +54,24 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         gfxr.current.controls.enableRotate = _3d;
     }
 
-    const projectedAll: [number, number, number][] = useMemo(() => {
-        let projected: [number, number, number][] = [];
+    const projectedAll: [number, number, number, number][] = useMemo(() => {
+        let projected: [number, number, number, number][] = [];
         const n = metadata.embeddings.size;
         if (n < 10) {
             return projected;
         }
         let origdim = 0;
-        for (let v of metadata.embeddings.values()) {
-            origdim = v.v.length;
-            break;
+        const mids = [];
+        for (const v of metadata.embeddings.entries()) {
+            origdim = v[1].v.length;
+            mids.push(v[0]);
         }
-
         console.log("recalculating projection");
 
         if (algorithm === "pca") {
             const embeddings = [];
             let avg: number[] = [];
-            for (const v of metadata.embeddings) {
+            for (const v of metadata.embeddings.entries()) {
                 const vv = v[1].v;
                 if (avg.length === 0) {
                     avg = vv.slice();
@@ -95,12 +97,14 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             const v2: number[] = eigenv.getColumn(1);
             const v3: number[] = eigenv.getColumn(2);
 
+            let idx = 0;
             for (let v of embeddings) {
                 let vv = v.slice();
                 for (let i = 0; i < vv.length; i++) {
                     vv[i] -= avg[i] ?? 0;
                 }
-                projected.push([dotn(vv, v1) / l1, dotn(vv, v2) / l2, dotn(vv, v3) / l3])
+                projected.push([dotn(vv, v1) / l1, dotn(vv, v2) / l2, dotn(vv, v3) / l3, mids[idx] ?? -1]);
+                idx++;
             }
         } else if (algorithm === "tsne2D" || algorithm === "tsne3D") {
             const dim = _3d ? 3 : 2;
@@ -118,18 +122,11 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             const y = run_tsne(data, n, origdim, dim, 20, 0.5, false, 250);
 
             for (let i = 0; i < y.length; i += dim) {
-                const yo: [number, number, number] = [0, 0, 0.1];
+                const yo: [number, number, number, number] = [0, 0, 0.1, mids[i / dim] ?? -1];
                 for (let j = 0; j < dim; j++) {
                     yo[j] = y[i+j] || 0;
                 }
                 projected.push(yo);
-            }
-
-            if (!_3d) {
-                for (let i of projected.keys()) {
-                    // @ts-ignore
-                    projected[i] = [projected[i][0], projected[i][1], 0.1];
-                }
             }
         }
         let rescale = 0;
@@ -140,7 +137,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         for (let i of projected.keys()) {
             let v = projected[i];
             // @ts-ignore
-            projected[i] = [v[0] / rescale, v[1] / rescale, v[2] / rescale];
+            projected[i] = [v[0] / rescale, v[1] / rescale, v[2] / rescale, v[3]];
         }
         return projected;
         // eslint-disable-next-line
@@ -155,7 +152,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         const projected: [number, number, number, number][] = [];
         const projectedDisabled: [number, number, number][] = [];
         for (let i = 0; i < metadata.musics.length; i++) {
-            const mid = metadata.musics[i] || -1;
+            const mid = metadata.musics[i] ?? -1;
             let v = projectedAll[i] || [0, 0, 0];
             if (musicSet.has(mid)) {
                 projected.push([v[0], v[1], v[2], mid]);
@@ -275,24 +272,71 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         if (!gfxinit || gfxr.current === null) {
             return;
         }
-        const geometry = new THREE.SphereGeometry(0.021, 32, 32);
-        const material = new THREE.MeshPhongMaterial({
+        const geometrymouse = new THREE.SphereGeometry(0.021, 32, 32);
+        const materialmouse = new THREE.MeshPhongMaterial({
             color: "#863aa3",
             shininess: 0,
             emissive: "#ffffff",
             emissiveIntensity: 0.1
         });
 
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.x = 0;
-        mesh.position.y = 0;
-        mesh.position.z = 2;
-        mesh.visible = false;
+        const meshmouse = new THREE.Mesh(geometrymouse, materialmouse);
+        meshmouse.position.x = 0;
+        meshmouse.position.y = 0;
+        meshmouse.position.z = 2;
+        meshmouse.visible = false;
+
+        const geometrycurplaying = new THREE.SphereGeometry(0.022, 32, 32);
+        const materialcurplaying = new THREE.MeshPhongMaterial({
+            color: "#4ab87c",
+            shininess: 0,
+            emissive: "#ffffff",
+            emissiveIntensity: 0.1
+        });
+
+        const meshcurplaying = new THREE.Mesh(geometrycurplaying, materialcurplaying);
+        meshcurplaying.position.x = 0;
+        meshcurplaying.position.y = 0;
+        meshcurplaying.position.z = 2;
+        meshcurplaying.visible = false;
 
         const gfx = gfxr.current;
-        gfx.scene.add(mesh);
-        gfx.mouse = mesh;
+        gfx.scene.add(meshcurplaying);
+        gfx.scene.add(meshmouse);
+        gfx.mouse = meshmouse;
+        gfx.curplaying = meshcurplaying;
+
+        return () => {
+            meshmouse.removeFromParent();
+            meshcurplaying.removeFromParent();
+        }
     }, [gfxinit]);
+
+    useEffect(() => {
+        if (gfxr.current === null) {
+            return;
+        }
+        const gfx = gfxr.current;
+        if (gfx.curplaying === undefined) {
+            return;
+        }
+
+        gfx.curplaying.visible = false;
+        if(list.last_played.length === 0) {
+            return;
+        }
+        const playing = list.last_played[list.last_played.length - 1];
+        for (const i of projectedAll.keys()) {
+            const v = projectedAll[i] as [number, number, number, number];
+            if (v[3] === playing) {
+                gfx.curplaying.position.x = v[0];
+                gfx.curplaying.position.y = v[1];
+                gfx.curplaying.position.z = _3d ? v[2] : 1.1;
+                gfx.curplaying.visible = true;
+                break;
+            }
+        }
+    }, [list, gfxinit, gfxr?.current?.curplaying, projectedAll, _3d])
 
     const onMouseMove = (ev: React.MouseEvent) => {
         moved = true;
@@ -318,6 +362,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         let selected: number | undefined = undefined;
         let selectedPos: [number, number] = [0, 0];
         let minDist = 100000;
+        gfx.mouse.visible = false;
         for (const i of projected.keys()) {
             let [x, y, z, mid] = projected[i] ?? [0, 0, 0, -1];
             const projectedCam = new Vector3(x, y, z).project(gfx.camera);
@@ -333,9 +378,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                 minDist = dist;
             }
         }
-        if (selected) {
-            setSelected(selected);
-        }
+        setSelected(selected);
         setSelectedPos(selectedPos);
     }
 
@@ -374,7 +417,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         }
     }, [upd]);
 
-    let selectedTags = metadata.music_tags_idx.get(selected || -1) || new Map<string, Tag>();
+    let selectedTags = metadata.music_tags_idx.get(selected ?? -1) || new Map<string, Tag>();
 
     let cover = selectedTags?.get("compressed_thumbnail")?.text || selectedTags?.get("thumbnail")?.text;
 
@@ -385,8 +428,9 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         }} onMouseMove={onMouseMove} onMouseUp={onMouseClick} style={{flexGrow: 1, width: "100%"}}>
             <div
                 style={{
-                    left: selectedPos[0] + 20,
-                    top: selectedPos[1] + 80,
+                    pointerEvents: "none",
+                    left: selectedPos[0] + 30,
+                    top: selectedPos[1] + 60,
                     position: "absolute",
                     zIndex: 1,
                     width: 250,
