@@ -6,6 +6,7 @@ import {Setter} from "../../../musidex-ts-common/utils";
 import React, {Suspense, useContext, useState} from "react";
 import Submit from "./submit";
 import {MetadataCtx} from "../domain/metadata";
+import {ErrorBoundary} from "react-error-boundary";
 
 export type Page = { path: "explorer" | "users" | "settings" | "music_map", submit: boolean };
 
@@ -39,16 +40,19 @@ const PageNavigator = (props: NavigatorProps) => {
     return (
         <div className={"scrollable-element content"} onScroll={onScroll}>
             {
-                props.page.submit && <Submit />
+                props.page.submit && <Submit/>
             }
-            <Explorer hidden={props.page.path !== "explorer"} curUser={props.curUser} doNext={props.doNext} shown={shown} setShown={setShown}/>
+            <Explorer hidden={props.page.path !== "explorer"} curUser={props.curUser} doNext={props.doNext}
+                      shown={shown} setShown={setShown}/>
             <Users hidden={props.page.path !== "users"} onSetUser={props.onSetUser} curUser={props.curUser}
                    page={props.page} setCurPage={props.setCurPage}/>
-            {(props.page.path === "music_map") &&
+            <ErrorBoundary FallbackComponent={() => <div>Error loading map, please reload the page.</div>}>
+                {(props.page.path === "music_map") &&
                 <Suspense fallback={<div>Loading...</div>}>
                     <MusicMap doNext={props.doNext}/>
                 </Suspense>
-            }
+                }
+            </ErrorBoundary>
             <SettingsPage hidden={props.page.path !== "settings"}/>
         </div>
     )

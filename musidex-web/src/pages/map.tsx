@@ -59,6 +59,8 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             break;
         }
 
+        console.log("recalculating projection");
+
         if (algorithm === "pca") {
             const embeddings = [];
             let avg: number[] = [];
