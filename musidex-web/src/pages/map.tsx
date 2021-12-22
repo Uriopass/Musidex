@@ -10,6 +10,7 @@ import {Tag} from "../common/entity";
 import {SearchFormCtx} from "../App";
 import Filters, {applyFilters} from "../common/filters";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {TSNE} from '@keckelt/tsne';
 
 type MusicMapProps = {
     doNext: NextTrackCallback;
@@ -39,54 +40,95 @@ function MusicMap(props: MusicMapProps): JSX.Element {
     const rootdiv = useRef<HTMLDivElement | null>(null);
     const gfxr = useRef<GfxContext | null>(null);
     const [gfxinit, updateGfxInit] = useUpdate();
+    const [algorithm, setAlgorithm] = useState<"tsne" | "pca">("tsne");
 
     if (gfxr.current) {
         gfxr.current.controls.enableRotate = _3d;
     }
 
     const projectedAll: [number, number, number][] = useMemo(() => {
+        let projected: [number, number, number][] = [];
         if (metadata.musics.length < 10) {
-            return [];
+            return projected;
         }
-        const embeddings = [];
-        let avg: number[] = [];
-        for (const v of metadata.embeddings) {
-            const vv = v[1].v;
-            if (avg.length === 0) {
-                avg = vv.slice();
-            } else {
+
+        if (algorithm === "pca") {
+            const embeddings = [];
+            let avg: number[] = [];
+            for (const v of metadata.embeddings) {
+                const vv = v[1].v;
+                if (avg.length === 0) {
+                    avg = vv.slice();
+                } else {
+                    for (let i = 0; i < vv.length; i++) {
+                        avg[i] += vv[i] ?? 0;
+                    }
+                }
+                embeddings.push(vv);
+            }
+
+            for (let i = 0; i < avg.length; i++) {
+                avg[i] /= metadata.embeddings.size;
+            }
+
+            const pca = new PCA(embeddings);
+            const eigenv = pca.getEigenvectors();
+            let [l1, l2, l3] = pca.getEigenvalues();
+            l1 = Math.sqrt(l1 ?? 0);
+            l2 = Math.sqrt(l2 ?? 0);
+            l3 = Math.sqrt(l3 ?? 0);
+            const v1: number[] = eigenv.getColumn(0);
+            const v2: number[] = eigenv.getColumn(1);
+            const v3: number[] = eigenv.getColumn(2);
+
+            for (let v of embeddings) {
+                let vv = v.slice();
                 for (let i = 0; i < vv.length; i++) {
-                    avg[i] += vv[i] ?? 0;
+                    vv[i] -= avg[i] ?? 0;
+                }
+                projected.push([dotn(vv, v1) / l1, dotn(vv, v2) / l2, dotn(vv, v3) / l3])
+            }
+        } else if (algorithm === "tsne") {
+            const tsne = new TSNE({
+                epsilon: 10, // epsilon is learning rate (10 = default)
+                perplexity: 30, // roughly how many neighbors each point influences (30 = default)
+                dim: _3d ? 3 : 2 // dimensionality of the embedding (2 = default)
+            });
+
+            const embeddings: number[][] = [];
+            for (const v of metadata.embeddings) {
+                const vv = v[1].v;
+                embeddings.push(vv);
+            }
+
+            tsne.initDataRaw(embeddings);
+
+            const iterations = 500;
+            for (let i = 0; i < iterations; i++) {
+                tsne.step(); // every time you call this, solution gets better
+            }
+
+            projected = tsne.getSolution() as any;
+
+            if (!_3d) {
+                for (let i of projected.keys()) {
+                    // @ts-ignore
+                    projected[i] = [projected[i][0], projected[i][1], 0.1];
                 }
             }
-            embeddings.push(vv);
         }
-
-        for (let i = 0; i < avg.length; i++) {
-            avg[i] /= metadata.embeddings.size;
+        let rescale = 0;
+        for (let v of projected) {
+            rescale = Math.max(rescale, v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
         }
-
-        const pca = new PCA(embeddings);
-        const eigenv = pca.getEigenvectors();
-        let [l1, l2, l3] = pca.getEigenvalues();
-        l1 = Math.sqrt(l1 ?? 0);
-        l2 = Math.sqrt(l2 ?? 0);
-        l3 = Math.sqrt(l3 ?? 0);
-        const v1: number[] = eigenv.getColumn(0);
-        const v2: number[] = eigenv.getColumn(1);
-        const v3: number[] = eigenv.getColumn(2);
-
-        const projected: [number, number, number][] = [];
-        for (let v of embeddings) {
-            let vv = v.slice();
-            for (let i = 0; i < vv.length; i++) {
-                vv[i] -= avg[i] ?? 0;
-            }
-            projected.push([dotn(vv, v1) / l1, dotn(vv, v2) / l2, dotn(vv, v3) / l3])
+        rescale = Math.sqrt(rescale) / 2;
+        for (let i of projected.keys()) {
+            let v = projected[i];
+            // @ts-ignore
+            projected[i] = [v[0] / rescale, v[1] / rescale, v[2] / rescale];
         }
-
         return projected;
-    }, [metadata]);
+    }, [metadata, algorithm, _3d]);
 
     const [projected, projectedDisabled]: [[number, number, number, number][], [number, number, number][]] = useMemo(() => {
         const musics = metadata.musics.slice();
@@ -341,7 +383,15 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                 }}
             >
                 <Thumbnail cover={cover}/>
-                <div style={{paddingLeft: "10px", display: "flex", flexDirection: "column", fontSize: "1rem", justifyContent: "space-evenly", alignItems: "flex-start", textAlign: "left"}}>
+                <div style={{
+                    paddingLeft: "10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    fontSize: "1rem",
+                    justifyContent: "space-evenly",
+                    alignItems: "flex-start",
+                    textAlign: "left"
+                }}>
                     <b>
                         {selectedTags?.get("title")?.text}
                     </b>
@@ -356,8 +406,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             maxWidth: 1000,
             width: "100%",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            alignItems: "flex-start",
             flexDirection: "column",
             color: "var(--color-fg)",
         }}>
@@ -380,6 +429,24 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                     filters={searchForm.filters}
                     setFilters={setFilters}/>
             </div>
+            <span style={{color: "var(--color-bg)"}}>
+                Algorithm:
+                <span style={{
+                    cursor: "pointer",
+                    marginLeft: 10,
+                    marginRight: 10,
+                    color: (algorithm === "tsne") ? "var(--primary)" : "var(--color-bg)"
+                }}
+                      onClick={() => setAlgorithm("tsne")}>t-Sne</span>
+                <span style={{
+                    cursor: "pointer",
+                    marginLeft: 10,
+                    marginRight: 10,
+                    color: (algorithm === "pca") ? "var(--primary)" : "var(--color-bg)"
+                }}
+                      onClick={() => setAlgorithm("pca")}>PCA</span>
+            </span>
+
         </div>
     </>
 }
