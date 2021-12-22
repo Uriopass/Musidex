@@ -26,6 +26,7 @@ type GfxContext = {
 
 let moved = false;
 let leftClicked = false;
+let tsne: TSNE;
 
 function MusicMap(props: MusicMapProps): JSX.Element {
     const [metadata] = useContext(MetadataCtx);
@@ -41,6 +42,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
     const gfxr = useRef<GfxContext | null>(null);
     const [gfxinit, updateGfxInit] = useUpdate();
     const [algorithm, setAlgorithm] = useState<"tsne" | "pca">("tsne");
+    const [algorithmProgress, setAlgorithmProgress] = useState(0);
 
     if (gfxr.current) {
         gfxr.current.controls.enableRotate = _3d;
@@ -89,23 +91,29 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                 projected.push([dotn(vv, v1) / l1, dotn(vv, v2) / l2, dotn(vv, v3) / l3])
             }
         } else if (algorithm === "tsne") {
-            const tsne = new TSNE({
-                epsilon: 10, // epsilon is learning rate (10 = default)
-                perplexity: 30, // roughly how many neighbors each point influences (30 = default)
-                dim: _3d ? 3 : 2 // dimensionality of the embedding (2 = default)
-            });
+            if(algorithmProgress === 0) {
+                tsne = new TSNE({
+                    epsilon: 10, // epsilon is learning rate (10 = default)
+                    perplexity: 30, // roughly how many neighbors each point influences (30 = default)
+                    dim: _3d ? 3 : 2 // dimensionality of the embedding (2 = default)
+                });
 
-            const embeddings: number[][] = [];
-            for (const v of metadata.embeddings) {
-                const vv = v[1].v;
-                embeddings.push(vv);
+                const embeddings: number[][] = [];
+                for (const v of metadata.embeddings) {
+                    const vv = v[1].v;
+                    embeddings.push(vv);
+                }
+
+                tsne.initDataRaw(embeddings);
             }
 
-            tsne.initDataRaw(embeddings);
+            if(algorithmProgress < 500) {
+                const iterations = 10;
+                for (let i = 0; i < iterations; i++) {
+                    tsne.step(); // every time you call this, solution gets better
+                }
 
-            const iterations = 50;
-            for (let i = 0; i < iterations; i++) {
-                tsne.step(); // every time you call this, solution gets better
+                setAlgorithmProgress(algorithmProgress + 10);
             }
 
             projected = tsne.getSolution() as any;
@@ -128,7 +136,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             projected[i] = [v[0] / rescale, v[1] / rescale, v[2] / rescale];
         }
         return projected;
-    }, [metadata, algorithm, _3d]);
+    }, [metadata, algorithm, _3d, algorithmProgress]);
 
     const [projected, projectedDisabled]: [[number, number, number, number][], [number, number, number][]] = useMemo(() => {
         const musics = metadata.musics.slice();
@@ -437,7 +445,10 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                     marginRight: 10,
                     color: (algorithm === "tsne") ? "var(--primary)" : "var(--color-bg)"
                 }}
-                      onClick={() => setAlgorithm("tsne")}>t-Sne</span>
+                      onClick={() => {
+                          setAlgorithm("tsne");
+                          setAlgorithmProgress(0);
+                      }}>t-Sne</span>
                 <span style={{
                     cursor: "pointer",
                     marginLeft: 10,
