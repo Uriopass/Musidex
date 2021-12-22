@@ -103,7 +103,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
 
             tsne.initDataRaw(embeddings);
 
-            const iterations = 500;
+            const iterations = 50;
             for (let i = 0; i < iterations; i++) {
                 tsne.step(); // every time you call this, solution gets better
             }
