@@ -27,6 +27,7 @@ type GfxContext = {
 let moved = false;
 let leftClicked = false;
 let tsne: TSNE;
+let algprogresslock = 0;
 
 let algorithmMax = 500;
 
@@ -43,7 +44,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
     const rootdiv = useRef<HTMLDivElement | null>(null);
     const gfxr = useRef<GfxContext | null>(null);
     const [gfxinit, updateGfxInit] = useUpdate();
-    const [algorithm, setAlgorithm] = useState<"tsne" | "pca">("tsne");
+    const [algorithm, setAlgorithm] = useState<"tsne" | "pca">("pca");
     const [algorithmProgress, setAlgorithmProgress] = useState(0);
 
     if (gfxr.current) {
@@ -115,7 +116,14 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                     tsne.step(); // every time you call this, solution gets better
                 }
 
-                setTimeout(() => setAlgorithmProgress(algorithmProgress + 10), 5);
+                algprogresslock += 1;
+                let v = algprogresslock;
+                setTimeout(() => {
+                    if (algprogresslock !== v) {
+                        return;
+                    }
+                    setAlgorithmProgress(algorithmProgress + 10)
+                }, 5);
             } else {
                 projected = tsne.getSolution() as any;
             }
@@ -453,7 +461,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                       onClick={() => {
                           setAlgorithm("tsne");
                           setAlgorithmProgress(0);
-                      }}>t-Sne</span>
+                      }}>t-Sne (expensive)</span>
                 {(algorithmProgress > 0 && algorithmProgress < algorithmMax) && <span>
                     Calculating... {algorithmProgress}/{algorithmMax}
                 </span>}
