@@ -10,7 +10,7 @@ import {Tag} from "../common/entity";
 import {SearchFormCtx} from "../App";
 import Filters, {applyFilters} from "../common/filters";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {TSNE} from '@keckelt/tsne';
+import {run_tsne} from '@uriopass/tsne-wasm';
 
 type MusicMapProps = {
     doNext: NextTrackCallback;
@@ -26,10 +26,6 @@ type GfxContext = {
 
 let moved = false;
 let leftClicked = false;
-let tsne: TSNE;
-let algprogresslock = 0;
-
-let algorithmMax = 500;
 
 function MusicMap(props: MusicMapProps): JSX.Element {
     const [metadata] = useContext(MetadataCtx);
@@ -44,8 +40,8 @@ function MusicMap(props: MusicMapProps): JSX.Element {
     const rootdiv = useRef<HTMLDivElement | null>(null);
     const gfxr = useRef<GfxContext | null>(null);
     const [gfxinit, updateGfxInit] = useUpdate();
-    const [algorithm, setAlgorithm] = useState<"tsne" | "pca">("pca");
-    const [algorithmProgress, setAlgorithmProgress] = useState(0);
+    const [algorithmBase, setAlgorithm] = useState<"tsne" | "pca">("pca");
+    const algorithm: "pca" | "tsne3D" | "tsne2D" = (algorithmBase === "pca") ? "pca" : (_3d ? "tsne3D": "tsne2D");
 
     if (gfxr.current) {
         gfxr.current.controls.enableRotate = _3d;
@@ -53,8 +49,14 @@ function MusicMap(props: MusicMapProps): JSX.Element {
 
     const projectedAll: [number, number, number][] = useMemo(() => {
         let projected: [number, number, number][] = [];
-        if (metadata.musics.length < 10) {
+        const n = metadata.embeddings.size;
+        if (n < 10) {
             return projected;
+        }
+        let origdim = 0;
+        for (let v of metadata.embeddings.values()) {
+            origdim = v.v.length;
+            break;
         }
 
         if (algorithm === "pca") {
@@ -93,39 +95,27 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                 }
                 projected.push([dotn(vv, v1) / l1, dotn(vv, v2) / l2, dotn(vv, v3) / l3])
             }
-        } else if (algorithm === "tsne") {
-            if(algorithmProgress === 0) {
-                tsne = new TSNE({
-                    epsilon: 30, // epsilon is learning rate (10 = default)
-                    perplexity: 20, // roughly how many neighbors each point influences (30 = default)
-                    dim: _3d ? 3 : 2 // dimensionality of the embedding (2 = default)
-                });
+        } else if (algorithm === "tsne2D" || algorithm === "tsne3D") {
+            const dim = _3d ? 3 : 2;
+            let data = new Float64Array(origdim * n);
 
-                const embeddings: number[][] = [];
-                for (const v of metadata.embeddings) {
-                    const vv = v[1].v;
-                    embeddings.push(vv);
+            let i = 0;
+            for (const v of metadata.embeddings) {
+                const vv = v[1].v;
+                for (const vvv of vv) {
+                    data[i] = vvv;
+                    i++;
                 }
-
-                tsne.initDataRaw(embeddings);
             }
 
-            if(algorithmProgress < algorithmMax) {
-                const iterations = 10;
-                for (let i = 0; i < iterations; i++) {
-                    tsne.step(); // every time you call this, solution gets better
-                }
+            const y = run_tsne(data, n, origdim, dim, 20, 0.5, false, 250);
 
-                algprogresslock += 1;
-                let v = algprogresslock;
-                setTimeout(() => {
-                    if (algprogresslock !== v) {
-                        return;
-                    }
-                    setAlgorithmProgress(algorithmProgress + 10)
-                }, 5);
-            } else {
-                projected = tsne.getSolution() as any;
+            for (let i = 0; i < y.length; i += dim) {
+                const yo: [number, number, number] = [0, 0, 0.1];
+                for (let j = 0; j < dim; j++) {
+                    yo[j] = y[i+j] || 0;
+                }
+                projected.push(yo);
             }
 
             if (!_3d) {
@@ -146,7 +136,8 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             projected[i] = [v[0] / rescale, v[1] / rescale, v[2] / rescale];
         }
         return projected;
-    }, [metadata, algorithm, _3d, algorithmProgress]);
+        // eslint-disable-next-line
+    }, [metadata, algorithm]);
 
     const [projected, projectedDisabled]: [[number, number, number, number][], [number, number, number][]] = useMemo(() => {
         const musics = metadata.musics.slice();
@@ -441,10 +432,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                     marginRight: 10,
                     color: _3d ? "var(--primary)" : "var(--color-bg)"
                 }}
-                      onClick={() => {
-                          set3D(!_3d);
-                          setAlgorithmProgress(0);
-                      }}>Enable 3D</span>
+                      onClick={() => set3D(!_3d)}>Enable 3D</span>
                 <FilterBySelect
                     users={metadata.users}
                     filters={searchForm.filters}
@@ -456,15 +444,9 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                     cursor: "pointer",
                     marginLeft: 10,
                     marginRight: 10,
-                    color: (algorithm === "tsne") ? "var(--primary)" : "var(--color-bg)"
+                    color: (algorithm === "tsne2D" || algorithm === "tsne3D") ? "var(--primary)" : "var(--color-bg)"
                 }}
-                      onClick={() => {
-                          setAlgorithm("tsne");
-                          setAlgorithmProgress(0);
-                      }}>t-Sne (expensive)</span>
-                {(algorithmProgress > 0 && algorithmProgress < algorithmMax) && <span>
-                    Calculating... {algorithmProgress}/{algorithmMax}
-                </span>}
+                      onClick={() => setAlgorithm("tsne")}>t-Sne (expensive)</span>
                 <span style={{
                     cursor: "pointer",
                     marginLeft: 10,

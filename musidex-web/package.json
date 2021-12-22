@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@craco/craco": "^6.3.0",
-    "@keckelt/tsne": "^1.0.2",
+    "@uriopass/tsne-wasm": "^0.1.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
     "fuse.js": "^6.4.6",
