@@ -113,7 +113,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
                     tsne.step(); // every time you call this, solution gets better
                 }
 
-                setAlgorithmProgress(algorithmProgress + 10);
+                setTimeout(() => setAlgorithmProgress(algorithmProgress + 10), 10);
             }
 
             projected = tsne.getSolution() as any;
