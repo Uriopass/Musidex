@@ -9,7 +9,7 @@ import {PageProps} from "./navigator";
 import Filters, {isSimilarity, SimilarityParams, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {MetadataCtx} from "../domain/metadata";
 import {SearchFormCtx, SelectedMusicsCtx, TracklistCtx} from "../App";
-import {clamp, Setter, useDebouncedEffect} from "../common/utils";
+import {clamp, Setter, timeFormat, useDebouncedEffect} from "../common/utils";
 import noCoverImg from "../no_cover.jpg";
 
 export interface ExplorerProps extends PageProps {
@@ -284,6 +284,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
 
     const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = props.tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
+    const duration = props.tags.get("duration")?.integer;
 
     const onNext = () => {
         if (!playable) {
@@ -306,6 +307,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
                 <span className="small gray-fg">
                     <EditableText text={artist.text || ""}
                                   onRename={(v) => API.insertTag({...artist, text: v})}/>
+                    {duration && " • " + timeFormat(duration)}
                 </span>
             </div>
             <div className={`${playable ? "song-elem-playable" : ""}`}
