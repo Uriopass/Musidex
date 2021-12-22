@@ -28,8 +28,12 @@ let moved = false;
 let leftClicked = false;
 
 function MusicMap(props: MusicMapProps): JSX.Element {
-    const [metadataAtLoad] = useContext(MetadataCtx);
-    const [metadata] = useState(metadataAtLoad);
+    const [realMetadata] = useContext(MetadataCtx);
+    const [metadata, setMetadata] = useState(realMetadata);
+    if (metadata.musics.length === 0 && realMetadata.musics.length > 0) {
+        setMetadata(realMetadata);
+    }
+
     const [selected, setSelected] = useState<undefined | number>(undefined);
     const [selectedPos, setSelectedPos] = useState<[number, number]>([0, 0]);
     const [searchForm, setSearchForm] = useContext(SearchFormCtx);
