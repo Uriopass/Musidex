@@ -35,7 +35,7 @@ use futures::FutureExt;
 use hyper::body::Bytes;
 use hyper::header::{
     HeaderValue, ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS,
-    ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_ENCODING, COOKIE, USER_AGENT,
+    ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_ENCODING, CONTENT_TYPE, COOKIE, USER_AGENT,
 };
 use hyper::http::Extensions;
 use hyper::service::Service;
@@ -246,9 +246,15 @@ impl Handler for StaticHandle {
             || url.ends_with("png")
             || url.ends_with("woff2")
             || url.ends_with("js")
+            || url.ends_with("wasm")
             || url.ends_with("css");
+        let is_wasm = url.ends_with("wasm");
         Box::pin((move || async move {
             let mut r = serve_file(&p).await?;
+            if is_wasm {
+                r.headers_mut()
+                    .insert(CONTENT_TYPE, "application/wasm".parse().unwrap());
+            }
             if should_cache {
                 r.headers_mut().insert(
                     CACHE_CONTROL,
