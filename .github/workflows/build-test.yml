@@ -35,6 +35,9 @@ jobs:
       - name: Test daemon
         working-directory: ./musidex-daemon
         run: cargo test --verbose
+      - name: Install web
+        working-directory: ./musidex-web
+        run: npm install
       - name: Build web
         working-directory: ./musidex-web
-        run: npm install && npm run build
+        run: CI= npm run build
