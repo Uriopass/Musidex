@@ -87,7 +87,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
         if (searchQry === "" || fuse === undefined || isRegex) {
             return [];
         }
-        return fuse.search(searchQry).map((v: any) => v.item.id);
+        return fuse.search(searchQry).map((v) => v.item.id);
     }, [searchQry, fuse, isRegex]);
 
     const regexFilter = useMemo(() => {

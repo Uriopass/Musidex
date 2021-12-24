@@ -11,7 +11,7 @@ import Tracklist, {
     useNextTrackCallback,
     usePrevTrackCallback
 } from "./common/tracklist";
-import {EditableCtx, useCookie, useLocalStorageVersion} from "./components/utils";
+import {EditableCtx, useCookie} from "./components/utils";
 import {newSearchForm, SearchForm, useMusicSelect} from "./common/filters";
 import {MetadataCtx, useMetadata} from "./domain/metadata";
 import {Setter} from "./common/utils";
@@ -27,7 +27,7 @@ const App = () => {
     const [userStr, setUserStr] = useCookie("cur_user", undefined);
     const user = parseInt(userStr || "undefined") || undefined;
     const setUser = useCallback((v: number) => setUserStr(v.toString()), [setUserStr]);
-    const _sform = useLocalStorageVersion<SearchForm>("searchform", 2, newSearchForm(user));
+    const _sform = useLocalStorage<SearchForm>("searchform_v2", newSearchForm(user));
     const [sform, setSform] = _sform;
     const [syncProblem, setSyncProblem] = useState(false);
     const [volume, setVolume] = useLocalStorage("volume", 1);

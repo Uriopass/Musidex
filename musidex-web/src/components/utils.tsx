@@ -81,20 +81,6 @@ export const EditableText = (props: EditableTextProps) => {
     </span>;
 }
 
-export function useLocalStorageVersion<T>(key: string, version: number, defaultValue: T, options?: any): [T, Setter<T>] {
-    const [storedVer, setStoredVer] = useLocalStorage<number | null>(key+"__version", null);
-    const param = useLocalStorage(key, defaultValue, options);
-
-    if (storedVer === version) {
-        return param;
-    }
-
-    param[1](defaultValue);
-    setStoredVer(version);
-
-    return [defaultValue, param[1]];
-}
-
 const isBrowser = typeof window !== 'undefined';
 
 interface cookieOptions {
