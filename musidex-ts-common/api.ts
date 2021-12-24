@@ -143,7 +143,6 @@ export const API = {
     },
 
     getStreamSrc(id: number): string {
-        console.log(id);
         return apiURL + "/api/stream/" + id;
     },
 };
