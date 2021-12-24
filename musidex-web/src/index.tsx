@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import NoSleep from "nosleep.js";
+import NoSleep from "@uriopass/nosleep.js";
 
 ReactDOM.render(
     <React.StrictMode>
