@@ -1,7 +1,6 @@
 import './utils.css'
 import React, {createContext, FormEvent, useContext, useState} from "react";
 import {Setter} from "../common/utils";
-import useLocalStorage from "use-local-storage";
 
 export const MaterialIcon = React.memo((props: any) => {
     let size = props.size || 20;
