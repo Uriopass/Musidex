@@ -4,6 +4,7 @@ import {MaterialIcon} from "./utils";
 import {NextTrackCallback} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
 import {getTags} from "../common/entity";
+import {enableNoSleep} from "../index";
 
 export type PlayButtonProps = {
     musicID?: number;
@@ -18,6 +19,7 @@ export const PlayButton = ({doNext, musicID, size}: PlayButtonProps) => {
     let title = getTags(metadata, musicID)?.get("title")?.text || "No Title";
 
     let onClick = useCallback(() => {
+        enableNoSleep();
         doNext(musicID);
     }, [doNext, musicID]);
 

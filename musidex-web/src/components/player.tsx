@@ -8,6 +8,7 @@ import {MetadataCtx} from "../domain/metadata";
 import {clamp, timeFormat, useUpdate} from "../common/utils";
 import {getTags} from "../common/entity";
 import {TracklistCtx} from "../App";
+import {enableNoSleep} from "../index";
 
 interface PlayerProps {
     onVolumeChange: (volume: number) => void;
@@ -69,7 +70,10 @@ const Player = (props: PlayerProps) => {
     }
 
     let doNext = props.doNext;
-    let clickNext = useCallback(() => doNext(), [doNext]);
+    let clickNext = useCallback(() => {
+        doNext();
+        enableNoSleep();
+    }, [doNext]);
 
     let buffered: [number, number][] = [];
     if (trackplayer.duration > 1) {

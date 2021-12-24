@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import NoSleep from "nosleep.js";
 
 ReactDOM.render(
     <React.StrictMode>
@@ -37,6 +38,16 @@ requestWakeLock();
 
 document.addEventListener('visibilitychange', handleVisibilityChange);
 document.addEventListener('fullscreenchange', handleVisibilityChange);
+
+let noSleep = new NoSleep();
+let enabled = false;
+export function enableNoSleep() {
+    if(!enabled) {
+        console.log("no sleep using mute background video/audio enabled");
+        enabled = true;
+        noSleep.enable();
+    }
+}
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

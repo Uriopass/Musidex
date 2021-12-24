@@ -11,6 +11,7 @@ import {MetadataCtx} from "../domain/metadata";
 import {SearchFormCtx, SelectedMusicsCtx, TracklistCtx} from "../App";
 import {clamp, Setter, timeFormat, useDebouncedEffect} from "../common/utils";
 import noCoverImg from "../no_cover.jpg";
+import {enableNoSleep} from "../index";
 
 export interface ExplorerProps extends PageProps {
     title?: string;
@@ -290,6 +291,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
         if (!playable) {
             return;
         }
+        enableNoSleep();
         props.doNext(props.musicID);
     }
 
