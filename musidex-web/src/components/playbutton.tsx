@@ -19,8 +19,8 @@ export const PlayButton = ({doNext, musicID, size}: PlayButtonProps) => {
     let title = getTags(metadata, musicID)?.get("title")?.text || "No Title";
 
     let onClick = useCallback(() => {
-        enableNoSleep();
         doNext(musicID);
+        enableNoSleep();
     }, [doNext, musicID]);
 
     let titlePrefix = "Play ";

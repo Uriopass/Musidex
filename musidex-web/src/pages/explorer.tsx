@@ -291,8 +291,8 @@ export const SongElem = React.memo((props: SongElemProps) => {
         if (!playable) {
             return;
         }
-        enableNoSleep();
         props.doNext(props.musicID);
+        enableNoSleep();
     }
 
     return (
