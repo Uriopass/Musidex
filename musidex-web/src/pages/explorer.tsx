@@ -297,7 +297,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
         <div
             className={`song-elem ${playable ? "" : "song-elem-disabled"} ${(hovered && playable) ? "song-elem-hovered" : ""}`}
             style={{background: grad}}>
-            <Thumbnail playable={playable} onClick={props.doNext} setHovered={setHovered} cover={cover}/>
+            <Thumbnail playable={playable} onClick={onNext} setHovered={setHovered} cover={cover}/>
             <div style={{paddingLeft: "10px"}}>
                 <b>
                     <EditableText text={title.text || ""}
