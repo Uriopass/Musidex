@@ -23,9 +23,10 @@ Choose a starting point and let it choose the next song for you!
 - [x] Text search
 - [x] CI
 - [x] Multiple accounts
-- [x] Android App with local download
+- [x] Android App
 - [x] Docker build
 - [x] iOS App
+- [x] Local download for apps
 - [ ] Tag filtering
 - [ ] Playlists through tags/Tag editor
 - [ ] Chrome extension to add YT videos to library
