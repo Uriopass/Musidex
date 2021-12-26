@@ -1,4 +1,4 @@
-import {MusidexMetadata, newMetadata, Tag, User} from "./entity";
+import {makeRawMeta, MusidexMetadata, newMetadata, Tag, User} from "./entity";
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import Pako from "pako";
 
@@ -53,7 +53,11 @@ export const API = {
         let vv = new Uint8Array(m.data);
         const s = Pako.inflateRaw(vv, {to: 'string'});
         let v: RawMusidexMetadata = JSON.parse(s);
-        return [newMetadata(v, oldMeta), s];
+        let newmeta = newMetadata(v, oldMeta);
+        if(v.tags?.length) {
+            return [newmeta, s];
+        }
+        return [newmeta, JSON.stringify(makeRawMeta(newmeta))];
     },
 
     async getMetadata(): Promise<MusidexMetadata | null> {

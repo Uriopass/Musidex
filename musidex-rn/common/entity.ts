@@ -29,7 +29,6 @@ export type IndexedMusic = {
 }
 
 export type MusidexMetadata = {
-    raw: RawMusidexMetadata,
     musics: number[];
     tags: Tag[];
     users: User[];
@@ -51,9 +50,18 @@ export function firstUser(meta: MusidexMetadata): number | undefined {
     return meta.users[0]?.id;
 }
 
+export function makeRawMeta(meta: MusidexMetadata): RawMusidexMetadata {
+    return {
+        musics: meta.musics,
+        users: meta.users,
+        settings: meta.settings_l,
+        tags: meta.tags,
+        version: 0,
+    };
+}
+
 export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata): MusidexMetadata {
     let meta: MusidexMetadata = {
-        raw: raw,
         musics: raw.musics,
         users: raw.users,
         settings_l: raw.settings,

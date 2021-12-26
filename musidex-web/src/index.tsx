@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
+import {LoadBeforeApp} from './App';
 import reportWebVitals from './reportWebVitals';
 import NoSleep from "@uriopass/nosleep.js";
 
 ReactDOM.render(
     <React.StrictMode>
-        <App/>
+        <LoadBeforeApp/>
     </React.StrictMode>,
     document.getElementById('root')
 );
@@ -17,7 +17,7 @@ let wakeLock: any = null;
 // Function that attempts to request a wake lock.
 const requestWakeLock = async () => {
     try {
-        if('wakeLock' in navigator) {
+        if ('wakeLock' in navigator) {
             // @ts-ignore
             wakeLock = await navigator.wakeLock.request('screen');
             wakeLock.addEventListener('release', () => {
@@ -25,7 +25,8 @@ const requestWakeLock = async () => {
             });
             console.log("screen lock acquired");
         }
-    } catch (err) {}
+    } catch (err) {
+    }
 };
 
 const handleVisibilityChange = () => {
@@ -41,8 +42,9 @@ document.addEventListener('fullscreenchange', handleVisibilityChange);
 
 let noSleep = new NoSleep();
 let enabled = false;
+
 export function enableNoSleep() {
-    if(!enabled) {
+    if (!enabled) {
         console.log("no sleep using mute background video/audio enabled");
         enabled = true;
         noSleep.enable();
