@@ -33,6 +33,7 @@ import TrackPlayer from "react-native-track-player";
 import {TextFg} from "../components/StyledText";
 import {Icon} from "react-native-elements";
 import {LocalSettings} from "../domain/localsettings";
+import {PositionStorage} from "../domain/positionStorage";
 
 export default function Navigation() {
     return (
@@ -53,7 +54,7 @@ function RootNavigator() {
     const [apiURL] = useContext(Ctx.APIUrl);
     const [localSettings] = useContext(Ctx.LocalSettings);
 
-    const [list, setList, loadedListe] = useStored<Tracklist>("tracklist", 0, emptyTracklist(), {
+    const [list, setList, loadedListe] = useStored<Tracklist>("tracklist", emptyTracklist(), {
         ser: v => {
             let lol = {...v, score_map: [...v.score_map]};
             return JSON.stringify(lol);
@@ -64,11 +65,18 @@ function RootNavigator() {
             return obj as Tracklist;
         },
     });
-    const [user, setUser, loadedUser] = useStored<number | undefined>("user", 0, firstUser(metadata));
-    const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm", 2, newSearchForm(user));
-    const [lastPosition, setLastPosition, loadedPosition] = useStored<[number, number] | undefined>("last_position", 0, undefined);
+    const [user, setUser, loadedUser] = useStored<number | undefined>("user", firstUser(metadata));
+    const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm", newSearchForm(user));
+    const [lastPosition, setLastPosition, loadedPosition] = useStored<PositionStorage>("last_position_v1", {positions: {}});
 
     const loaded = loadedListe && loadedUser && loadedSF && loadedPosition;
+
+    useEffect(() => {
+        if(!loaded) {
+            return;
+        }
+
+    }, [list])
 
     useEffect(() => {
         if (avoidFirst === 0) {
@@ -80,7 +88,7 @@ function RootNavigator() {
 
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
     const selectedMusics = useMusicSelect(metadata, searchForm, list);
-    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, searchForm, selectedMusics, lastPosition, setLastPosition, TrackPlayer.getPosition);
+    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, searchForm, selectedMusics, lastPosition);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const doReset = useResetCallback(setList, metadata);
 

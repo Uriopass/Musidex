@@ -14,7 +14,7 @@ function Settings() {
     const [metadata] = useContext(Ctx.Metadata);
     const [apiUrl, setAPIUrl] = useContext(Ctx.APIUrl);
     const [localSettings, setLocalSettings] = useContext(Ctx.LocalSettings);
-    const [localApiUrl, setLocalAPIUrl] = useStored("local_api_url", 0, apiUrl);
+    const [localApiUrl, setLocalAPIUrl] = useStored("local_api_url", apiUrl);
 
     const [connectivity, setConnectivity] = useState("no_url");
 

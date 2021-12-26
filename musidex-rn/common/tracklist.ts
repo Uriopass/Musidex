@@ -2,6 +2,7 @@ import {canPlay, getTags, MusidexMetadata, Tags, Vector} from "./entity";
 import {isSimilarity, SearchForm} from "./filters";
 import {Dispatch, dot} from "./utils";
 import {useCallback, useRef} from "react";
+import {PositionStorage} from "../domain/positionStorage";
 
 export type TrackPlayerAction =
     { action: "play", id: number, tags?: Tags, seekAt?: number }
@@ -28,7 +29,7 @@ export type PrevTrackCallback = () => void;
 
 let positionSetID = 0;
 
-export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Tracklist) => void, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, sform: SearchForm, selectedMusics: number[], lastPosition: [number, number] | undefined, setLastPosition: (newv: [number, number] | undefined) => void, getPosition: () => Promise<number>): NextTrackCallback {
+export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Tracklist) => void, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, sform: SearchForm, selectedMusics: number[], lastPosition: PositionStorage): NextTrackCallback {
     let f = useRef<NextTrackCallback | null>(null);
     f.current = (id) => {
         let list = {

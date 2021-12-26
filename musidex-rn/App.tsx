@@ -29,9 +29,9 @@ export default function App() {
     const isLoadingComplete = useCachedResources();
     const [metadata, setMetadata, loadedMeta] = useMetadata();
 
-    const [localSettings, setLocalSettings, loadedSettings] = useStored<LocalSettings>("local_settings", 3, newLocalSettings());
+    const [localSettings, setLocalSettings, loadedSettings] = useStored<LocalSettings>("local_settings", newLocalSettings());
 
-    const [apiURL, setAPIUrl, loadedAPI] = useStored<string>("api_url", 0, "");
+    const [apiURL, setAPIUrl, loadedAPI] = useStored<string>("api_url", "");
     API.setAPIUrl(apiURL);
 
     let fetchMetadata = useCallback(() => {
