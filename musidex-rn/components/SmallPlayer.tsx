@@ -48,7 +48,7 @@ const SmallPlayer = (_: PlayerProps) => {
     const syncState = useContext(Ctx.SyncState);
     const [open, setOpen] = useState(false);
 
-    const curTrack = list.last_played[list.last_played.length - 1];
+    const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
     const tags = getTags(metadata, curTrack);
     const title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";
     const artist = tags?.get("artist")?.text || "";
@@ -58,6 +58,9 @@ const SmallPlayer = (_: PlayerProps) => {
 
     const [seekCur, setSeekCur] = useState<number | undefined>(undefined);
     let [position, duration] = useTrackProgress(1000);
+
+    duration = tags?.get("duration")?.integer || duration;
+    position = position || player.lastPosition.current?.positions[curTrack] || 0;
 
     const onPlay = () => {
         if (list.last_played.length > 0) {

@@ -1,23 +1,26 @@
-import {Dispatch, useEffect} from "react";
+import {Dispatch, RefObject, useEffect} from "react";
 import {NextTrackCallback, PrevTrackCallback, TrackPlayerAction} from "../common/tracklist";
 import TrackPlayer, {State, STATE_PAUSED, STATE_PLAYING, STATE_READY, Track} from "react-native-track-player";
 import API from "../common/api";
 import RNFetchBlob from "rn-fetch-blob";
 import {getMusicPath, getThumbnailPath} from "./sync";
+import {PositionStorage} from "./positionStorage";
 
 type Trackplayer = {
     current: number | undefined,
     duration: number | undefined,
     paused: boolean,
     loading: boolean,
+    lastPosition: RefObject<PositionStorage>,
 };
 
-export function newTrackPlayer(): Trackplayer {
+export function newTrackPlayer(lastPosition: RefObject<PositionStorage>): Trackplayer {
     return {
         current: undefined,
         duration: undefined,
         paused: true,
         loading: false,
+        lastPosition: lastPosition,
     };
 }
 
@@ -111,6 +114,7 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
             const title = action.tags?.get("title")?.text;
             const artist = action.tags?.get("artist")?.text;
             const thumbnail = action.tags?.get("compressed_thumbnail")?.text || (action.tags?.get("thumbnail")?.text || "");
+            const seekAt = trackplayer.lastPosition.current?.positions[action.id];
 
             const changeSong = async () => {
                 const fn = getMusicPath(action.tags);
@@ -138,8 +142,8 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                 if (q.length > 0) {
                     await TrackPlayer.skipToNext();
                 }
-                if (action.seekAt !== undefined) {
-                    await TrackPlayer.seekTo(action.seekAt);
+                if (seekAt) {
+                    await TrackPlayer.seekTo(seekAt);
                 }
                 await TrackPlayer.play();
                 console.log("changed song ok");
@@ -155,7 +159,7 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
             };
         case "reset":
             TrackPlayer.reset();
-            return newTrackPlayer();
+            return newTrackPlayer(trackplayer.lastPosition);
         case "setTime":
             TrackPlayer.seekTo(action.time);
             return {

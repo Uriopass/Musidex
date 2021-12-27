@@ -30,7 +30,7 @@ const Player = (props: PlayerProps) => {
 
     let tags = getTags(metadata, trackplayer.current);
     let curtime = trackplayer.audio.currentTime || 0;
-    let duration = trackplayer.duration || (tags?.get("duration")?.integer || 0);
+    let duration = tags?.get("duration")?.integer || trackplayer.duration;
     let trackProgress = duration > 0 ? curtime / duration : 0;
     let title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";
     let artist = tags?.get("artist")?.text || "";

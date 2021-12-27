@@ -103,12 +103,12 @@ function RootNavigator() {
             return;
         }
         avoidFirst += 1;
-        fetchMetadata()
+        fetchMetadata();
     }, [apiURL]);
 
-    const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer());
+    const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer(lastPosition));
     const selectedMusics = useMusicSelect(metadata, searchForm, list);
-    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, searchForm, selectedMusics, lastPosition);
+    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, searchForm, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const doReset = useResetCallback(setList, metadata);
 
@@ -173,7 +173,7 @@ function RootNavigator() {
             return;
         }
         let cpy = loll;
-        let curTimeout: number | undefined = undefined;
+        let curTimeout: any = undefined;
         const f = async () => {
             const release = await fetchMutex.acquire();
             if (cpy != loll) {
