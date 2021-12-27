@@ -83,16 +83,20 @@ function RootNavigator() {
         }
         let update = async () => {
             const pos = await TrackPlayer.getPosition();
+            if (pos === 0) {
+                timeout.t = setTimeout(update, 5000);
+                return;
+            }
             updateLastPosition((v) => {
                 v.current.positions[last] = pos;
             });
             timeout.t = setTimeout(update, 5000);
         }
 
-        update();
+        timeout.t = setTimeout(update, 5000);
 
         return () => {
-            if(timeout) {
+            if(timeout.t) {
                 clearTimeout(timeout.t);
             }
         }
