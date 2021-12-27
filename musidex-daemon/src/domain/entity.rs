@@ -147,6 +147,15 @@ tag_key! {
     nested UserLibrary => "user_library",
 }
 
+impl TagKey {
+    pub fn as_user_library(&self) -> Option<&str> {
+        match *self {
+            TagKey::UserLibrary(ref x) => Some(x),
+            _ => None,
+        }
+    }
+}
+
 impl Display for TagKey {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let s: String = self.into();

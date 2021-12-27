@@ -8,8 +8,8 @@ import * as React from 'react';
 import {useCallback, useContext, useEffect, useMemo, useReducer, useState} from 'react';
 
 import MainScreen from "./MainScreen";
-import useStored from "../domain/useStored";
-import {firstUser, User} from "../common/entity";
+import useStored, {useStoredRef} from "../domain/useStored";
+import {firstUser, getTags, User} from "../common/entity";
 import Ctx from "../domain/ctx";
 import Tracklist, {
     emptyTracklist,
@@ -67,7 +67,7 @@ function RootNavigator() {
     });
     const [user, setUser, loadedUser] = useStored<number | undefined>("user", firstUser(metadata));
     const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm", newSearchForm(user));
-    const [lastPosition, setLastPosition, loadedPosition] = useStored<PositionStorage>("last_position_v1", {positions: {}});
+    const [lastPosition, updateLastPosition, loadedPosition] = useStoredRef<PositionStorage>("last_position_v2", {positions: {}});
 
     const loaded = loadedListe && loadedUser && loadedSF && loadedPosition;
 
@@ -75,8 +75,28 @@ function RootNavigator() {
         if(!loaded) {
             return;
         }
+        let timeout: any = {t: undefined};
+        const last = list.last_played[list.last_played.length-1];
+        const duration = getTags(metadata, last)?.get("duration")?.integer;
+        if (duration === undefined || duration < 30*60) {
+            return;
+        }
+        let update = async () => {
+            const pos = await TrackPlayer.getPosition();
+            updateLastPosition((v) => {
+                v.current.positions[last] = pos;
+            });
+            timeout.t = setTimeout(update, 5000);
+        }
 
-    }, [list])
+        update();
+
+        return () => {
+            if(timeout) {
+                clearTimeout(timeout.t);
+            }
+        }
+    }, [metadata, list, lastPosition, updateLastPosition])
 
     useEffect(() => {
         if (avoidFirst === 0) {

@@ -73,20 +73,22 @@ pub async fn delete_music(req: Request<Body>) -> Result<Response<Body>> {
     );
     let uid = User::from_req(&req).context("no user id")?;
 
-    if Tag::has(&c, id, TagKey::UserLibrary(uid.to_string()))? {
+    let tags = Tag::by_id(&c, id)?;
+    let owners: Vec<_> = tags
+        .iter()
+        .filter_map(|x| x.key.as_user_library())
+        .collect();
+    let mut removed_owner = false;
+    if owners.contains(&&*uid.to_string()) {
         Tag::remove(&c, id, TagKey::UserLibrary(uid.to_string()))?;
-        return Ok(Response::new(Body::empty()));
+        removed_owner = true;
+    } else if owners.len() >= 1 {
+        return Ok(res_status(StatusCode::UNAUTHORIZED));
     }
 
-    let users = User::list(&c)?;
-
-    for user in users {
-        if Tag::has(&c, id, TagKey::UserLibrary(user.id.to_string()))? {
-            return Ok(res_status(StatusCode::UNAUTHORIZED));
-        }
+    if owners.len() == 0 || (owners.len() == 1 && removed_owner) {
+        Music::delete(&c, id).context("couldn't delete music from db")?;
     }
-
-    Music::delete(&c, id).context("couldn't delete music from db")?;
 
     Ok(Response::new(Body::empty()))
 }
