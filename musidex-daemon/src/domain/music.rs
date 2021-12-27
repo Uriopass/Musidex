@@ -1,5 +1,6 @@
-use crate::domain::entity::{Music, MusicID};
+use crate::domain::entity::{Music, MusicID, Tag, TagKey, UserID};
 use anyhow::{Context, Result};
+use hyper::StatusCode;
 use rusqlite::Connection;
 
 impl Music {
@@ -24,4 +25,25 @@ impl Music {
             .context("error executing delete music")
             .map(|x| x == 1)
     }
+}
+
+pub fn delete_music(c: &Connection, uid: UserID, id: MusicID) -> Result<StatusCode> {
+    let tags = Tag::by_id(&c, id)?;
+    let owners: Vec<_> = tags
+        .iter()
+        .filter_map(|x| x.key.as_user_library())
+        .collect();
+    let mut removed_owner = false;
+    if owners.contains(&&*uid.to_string()) {
+        Tag::remove(&c, id, TagKey::UserLibrary(uid.to_string()))?;
+        removed_owner = true;
+    } else if owners.len() >= 1 {
+        return Ok(StatusCode::UNAUTHORIZED);
+    }
+
+    if owners.len() == 0 || (owners.len() == 1 && removed_owner) {
+        Music::delete(&c, id).context("couldn't delete music from db")?;
+    }
+
+    Ok(StatusCode::OK)
 }

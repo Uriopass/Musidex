@@ -69,7 +69,7 @@ async fn start() -> anyhow::Result<()> {
             handlers::youtube_upload_playlist,
         )
         .get("/api/stream/:musicid", handlers::stream)
-        .delete("/api/music/:id", handlers::delete_music)
+        .delete("/api/music/:id", handlers::delete_music_handler)
         .post("/api/tag/create", handlers::create_tag)
         .post("/api/user/create", user_handlers::create)
         .post("/api/user/update/:id", user_handlers::update)

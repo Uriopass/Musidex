@@ -3,7 +3,8 @@ use std::convert::TryInto;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
 
-use crate::domain::entity::{Music, MusicID, Tag, TagKey, User};
+use crate::domain::entity::{MusicID, Tag, User};
+use crate::domain::music::delete_music;
 use crate::domain::sync::{compress_meta, serve_sync_websocket, SyncBroadcastSubscriber};
 use crate::domain::{stream, sync, upload};
 use crate::infrastructure::router::RequestExt;
@@ -61,7 +62,7 @@ pub async fn create_tag(mut req: Request<Body>) -> Result<Response<Body>> {
     Ok(Response::new(Body::empty()))
 }
 
-pub async fn delete_music(req: Request<Body>) -> Result<Response<Body>> {
+pub async fn delete_music_handler(req: Request<Body>) -> Result<Response<Body>> {
     let music_id = req.params().get("id").context("missing parameter id")?;
     let db = req.state::<Db>();
     let c = db.get().await;
@@ -73,24 +74,7 @@ pub async fn delete_music(req: Request<Body>) -> Result<Response<Body>> {
     );
     let uid = User::from_req(&req).context("no user id")?;
 
-    let tags = Tag::by_id(&c, id)?;
-    let owners: Vec<_> = tags
-        .iter()
-        .filter_map(|x| x.key.as_user_library())
-        .collect();
-    let mut removed_owner = false;
-    if owners.contains(&&*uid.to_string()) {
-        Tag::remove(&c, id, TagKey::UserLibrary(uid.to_string()))?;
-        removed_owner = true;
-    } else if owners.len() >= 1 {
-        return Ok(res_status(StatusCode::UNAUTHORIZED));
-    }
-
-    if owners.len() == 0 || (owners.len() == 1 && removed_owner) {
-        Music::delete(&c, id).context("couldn't delete music from db")?;
-    }
-
-    Ok(Response::new(Body::empty()))
+    Ok(res_status(delete_music(&c, uid, id)?))
 }
 
 #[derive(DeJson)]
