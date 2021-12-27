@@ -56,6 +56,7 @@ const Users = (props: UsersProps) => {
                     meta.users.map((user) => {
                         return <UserCard key={user.id}
                                          user={user}
+                                         nSongs={meta.user_nsongs.get(user.id) || 0}
                                          isCurrent={props.curUser === user.id}
                                          onSelect={onSelectUser}
                                          onDelete={onDelete}
@@ -74,6 +75,7 @@ const Users = (props: UsersProps) => {
 
 type UserCardProps = {
     user: User;
+    nSongs: number;
     onSelect: (id: number) => void;
     onDelete: (id: number) => void;
     onRename: (id: number, newName: string) => void;
@@ -84,11 +86,17 @@ const UserCard = (props: UserCardProps) => {
     return <div className={"user-card " + (props.isCurrent ? " user-card-current" : "")}
                 onClick={() => props.onSelect(props.user.id)}
     >
+        <div className="user-card-delete" >
+            {props.nSongs} songs
+        </div>
         <div className="user-card-name">
             <EditableText text={props.user.name} onRename={(v) => props.onRename(props.user.id, v)}/>
         </div>
-        <div className="user-card-delete" onClick={() => props.onDelete(props.user.id)}>
-            <MaterialIcon name="delete" size={20}/>
+        <div className="user-card-delete">
+            <MaterialIcon name="delete" onClick={(e: React.MouseEvent) => {
+                props.onDelete(props.user.id);
+                e.stopPropagation();
+            }} size={20}/>
         </div>
     </div>;
 }

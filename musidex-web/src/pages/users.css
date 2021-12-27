@@ -51,10 +51,15 @@
 .user-card-delete {
     position: relative;
     cursor: pointer;
+    padding-left: 5px;
     padding-right: 5px;
+    flex-basis: 80px;
+    text-align: right;
+    font-size: 0.9rem;
+    color: var(--color-bg);
 }
 
-.user-card-delete:hover {
+.user-card-delete .material-icons:hover {
     color: var(--danger);
 }
 

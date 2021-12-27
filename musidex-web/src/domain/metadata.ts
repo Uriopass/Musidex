@@ -8,7 +8,7 @@ export const MetadataCtx = React.createContext<[MusidexMetadata, () => void]>([e
 }]);
 
 export function useMetadata(): [MusidexMetadata, (meta: MusidexMetadata, metastr: string) => void, boolean] {
-    let [metaStored, setMetaStored, loaded] = useIndexedStorage("metadata", "");
+    let [metaStored, setMetaStored, loaded] = useIndexedStorage("metadata_v2", "");
 
     let [meta, setMeta] = useState<MusidexMetadata>(emptyMetadata());
     let [firstLoad, setFirstLoad] = useState(false);

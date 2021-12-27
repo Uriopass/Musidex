@@ -5,6 +5,7 @@ import {Setter, useUpdate} from "../common/utils";
 export const MaterialIcon = React.memo((props: any) => {
     let size = props.size || 20;
     return (<span className="material-icons"
+                  onClick={props.onClick}
                   style={{
                       ...props.style,
                       fontSize: size,
