@@ -335,6 +335,7 @@ impl Service<Request<Body>> for RouterService {
             .and_then(|x| x.to_str().ok())
             .unwrap_or("unknown user agent")
             .to_string();
+        let origin = &*origin;
 
         let nocors = router.nocors;
         let route = Arc::new(req.uri().to_string());
@@ -356,7 +357,7 @@ impl Service<Request<Body>> for RouterService {
             if nocors {
                 set_nocors(&mut response);
             } else {
-                set_defaultcors(&mut response);
+                set_defaultcors(origin, &mut response);
             }
             Ok(response)
         };
