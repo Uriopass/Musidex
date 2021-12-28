@@ -34,9 +34,10 @@ use crate::utils::res_status;
 use futures::FutureExt;
 use hyper::body::Bytes;
 use hyper::header::{
-    HeaderValue, ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS,
-    ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_MAX_AGE, ACCESS_CONTROL_REQUEST_METHOD,
-    CACHE_CONTROL, CONTENT_ENCODING, CONTENT_TYPE, COOKIE, ORIGIN, USER_AGENT,
+    HeaderValue, ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_HEADERS,
+    ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_MAX_AGE,
+    ACCESS_CONTROL_REQUEST_METHOD, CACHE_CONTROL, CONTENT_ENCODING, CONTENT_TYPE, COOKIE, ORIGIN,
+    USER_AGENT,
 };
 use hyper::http::Extensions;
 use hyper::service::Service;
@@ -384,6 +385,12 @@ fn set_nocors(req: &mut Response<Body>) {
     );
     req.headers_mut()
         .insert(ACCESS_CONTROL_MAX_AGE, "3600".parse().unwrap());
+    req.headers_mut().insert(
+        ACCESS_CONTROL_ALLOW_HEADERS,
+        "Origin, X-Requested-With, Content-Type, Accept"
+            .parse()
+            .unwrap(),
+    );
 }
 
 fn set_defaultcors(origin: &str, req: &mut Response<Body>) {
@@ -395,6 +402,14 @@ fn set_defaultcors(origin: &str, req: &mut Response<Body>) {
         req.headers_mut().insert(
             ACCESS_CONTROL_ALLOW_METHODS,
             "GET, POST, OPTIONS".parse().unwrap(),
+        );
+        req.headers_mut()
+            .insert(ACCESS_CONTROL_MAX_AGE, "3600".parse().unwrap());
+        req.headers_mut().insert(
+            ACCESS_CONTROL_ALLOW_HEADERS,
+            "Origin, X-Requested-With, Content-Type, Accept"
+                .parse()
+                .unwrap(),
         );
     }
 }
