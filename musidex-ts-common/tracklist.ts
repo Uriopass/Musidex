@@ -1,8 +1,7 @@
 import {canPlay, getTags, MusidexMetadata, Tags, Vector} from "./entity";
 import {isSimilarity, SearchForm} from "./filters";
 import {Dispatch, dot} from "./utils";
-import {RefObject, useCallback, useRef} from "react";
-import {PositionStorage} from "../domain/positionStorage";
+import {useCallback, useRef} from "react";
 
 export type TrackPlayerAction =
     { action: "play", id: number, tags?: Tags }
