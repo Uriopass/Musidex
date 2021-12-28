@@ -3,7 +3,7 @@ use std::convert::TryInto;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
 
-use crate::domain::entity::{MusicID, Tag, User};
+use crate::domain::entity::{MusicID, Tag, User, UserID};
 use crate::domain::music::delete_music;
 use crate::domain::sync::{compress_meta, serve_sync_websocket, SyncBroadcastSubscriber};
 use crate::domain::{stream, sync, upload};
@@ -80,6 +80,7 @@ pub async fn delete_music_handler(req: Request<Body>) -> Result<Response<Body>> 
 #[derive(DeJson)]
 pub struct UploadYoutube {
     pub url: String,
+    pub uid: Option<i32>,
     #[nserde(rename = "indexStart")]
     pub index_start: Option<usize>,
     #[nserde(rename = "indexStop")]
@@ -87,11 +88,14 @@ pub struct UploadYoutube {
 }
 
 pub async fn youtube_upload(mut req: Request<Body>) -> Result<Response<Body>> {
-    let uid = User::from_req(&req).context("no user id")?;
     let b: UploadYoutube = parse_body(&mut req).await?;
     if b.url.len() < 3 {
         return Ok(res_status(StatusCode::BAD_REQUEST));
     }
+    let uid = match b.uid {
+        Some(x) => UserID(x),
+        None => User::from_req(&req).context("no user id")?,
+    };
     let db = req.state::<Db>();
     let mut c = db.get().await;
 
@@ -101,12 +105,16 @@ pub async fn youtube_upload(mut req: Request<Body>) -> Result<Response<Body>> {
 }
 
 pub async fn youtube_upload_playlist(mut req: Request<Body>) -> Result<Response<Body>> {
-    let uid = User::from_req(&req).context("no user id")?;
     let b: UploadYoutube = parse_body(&mut req).await?;
     let url = b.url;
     if url.len() < 3 {
         return Ok(res_status(StatusCode::BAD_REQUEST));
     }
+    let uid = match b.uid {
+        Some(x) => UserID(x),
+        None => User::from_req(&req).context("no user id")?,
+    };
+
     let db = req.state::<Db>();
     let mut c = db.get().await;
     let (status, count) =
