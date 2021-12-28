@@ -36,7 +36,6 @@ export type MusidexMetadata = {
     music_tags_idx: Map<number, Tags>;
     settings: Map<string, string>;
     embeddings: Map<number, Vector>;
-    user_nsongs: Map<number, number>;
     fuse_document: IndexedMusic[];
 }
 
@@ -57,7 +56,6 @@ export function makeRawMeta(meta: MusidexMetadata): RawMusidexMetadata {
         users: meta.users,
         settings: meta.settings_l,
         tags: meta.tags,
-        version: 0,
     };
 }
 
@@ -69,7 +67,6 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
         settings: new Map(raw.settings),
         music_tags_idx: new Map(),
         embeddings: new Map(),
-        user_nsongs: new Map(),
         fuse_document: [],
         tags: raw.tags || previous?.tags || [],
     };
@@ -113,15 +110,6 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
             mag = Math.sqrt(mag);
             meta.embeddings.set(tag.music_id, {v: tag.vector, mag: mag});
         }
-        if (tag.key.startsWith("user_library:")) {
-            let v = tag.key.split("user_library:")[1];
-            if (v) {
-                let uid = parseInt(v);
-                if (!isNaN(uid)) {
-                    meta.user_nsongs.set(uid, (meta.user_nsongs.get(uid) ?? 0) + 1)
-                }
-            }
-        }
     });
 
     for (let [id, tags] of meta.music_tags_idx.entries()) {
@@ -136,7 +124,7 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
 }
 
 export function emptyMetadata(): MusidexMetadata {
-    return newMetadata({version: 0, musics: [], users: [], tags: [], settings: []});
+    return newMetadata({musics: [], users: [], tags: [], settings: []});
 }
 
 export function canPlay(tags: Tags): boolean {

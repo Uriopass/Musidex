@@ -1,10 +1,11 @@
 import {canPlay, getTags, MusidexMetadata, Tags, Vector} from "./entity";
 import {isSimilarity, SearchForm} from "./filters";
 import {Dispatch, dot} from "./utils";
-import {useCallback, useRef} from "react";
+import {RefObject, useCallback, useRef} from "react";
+import {PositionStorage} from "../domain/positionStorage";
 
 export type TrackPlayerAction =
-    { action: "play", id: number, tags?: Tags, seekAt?: number }
+    { action: "play", id: number, tags?: Tags }
     | { action: "audioTick" }
     | { action: "setTime", time: number }
     | { action: "reset" }
@@ -26,27 +27,12 @@ export function emptyTracklist(): Tracklist {
 export type NextTrackCallback = (id?: number) => void;
 export type PrevTrackCallback = () => void;
 
-let positionSetID = 0;
-
-export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Tracklist) => void, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, sform: SearchForm, selectedMusics: number[], lastPosition: [number, number] | undefined, setLastPosition: (newv: [number, number] | undefined) => void, getPosition: () => Promise<number>): NextTrackCallback {
+export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Tracklist) => void, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, sform: SearchForm, selectedMusics: number[]): NextTrackCallback {
     let f = useRef<NextTrackCallback | null>(null);
     f.current = (id) => {
         let list = {
             ...curlist,
         };
-
-        if (id !== undefined) {
-            positionSetID += 1;
-            const lPositionSetID = positionSetID;
-            const lid: number = id;
-            getPosition().then((pos) => {
-                if (positionSetID === lPositionSetID) {
-                    setLastPosition([lid, pos]);
-                }
-            })
-        } else {
-            setLastPosition(undefined);
-        }
 
         if (id === undefined) {
             let best_id = selectedMusics[0];
@@ -80,7 +66,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
             setList(list);
         }
 
-        dispatch({action: "play", id: id, tags: getTags(metadata, id), seekAt: (id === lastPosition?.[0]) ? lastPosition[1] : undefined});
+        dispatch({action: "play", id: id, tags: getTags(metadata, id)});
     };
     return useCallback((id) => f.current?.(id), [f]);
 }

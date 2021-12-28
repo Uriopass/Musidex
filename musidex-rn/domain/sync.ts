@@ -10,12 +10,12 @@ export type SyncState = {
 
 export async function fetchSong(metadata: MusidexMetadata, id: number): Promise<boolean> {
     const path = getMusicPath(metadata.music_tags_idx.get(id));
-    if (!path) {
+    if (path === undefined || path === "") {
         console.log("couldn't get path");
-        return false;
+        return new Promise((resolve => resolve(false)));
     }
     if (await RNFetchBlob.fs.exists(path)) {
-        return true;
+        return new Promise((resolve => resolve(true)));
     }
     return RNFetchBlob.config({
         path: path+".part",
@@ -85,6 +85,9 @@ export function syncIter(metadata: MusidexMetadata, syncState: SyncState, musics
 }
 
 export function getMusicFilename(tags: Tags | undefined): string | undefined {
+    if (!tags?.get("local_mp3")?.text) {
+        return undefined;
+    }
     const tag = tags?.get("youtube_video_id")?.text;
     if (tag && tag !== "") {
         return 'music_' + tag + '.mp3';

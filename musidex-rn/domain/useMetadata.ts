@@ -1,9 +1,8 @@
-import {emptyMetadata, MusidexMetadata, newMetadata} from "../common/entity";
+import {emptyMetadata, makeRawMeta, MusidexMetadata, newMetadata} from "../common/entity";
 import RNFetchBlob from "rn-fetch-blob";
 import {useCallback, useEffect, useState} from "react";
 import {RawMusidexMetadata} from "../common/api";
 
-const curVersion = 1;
 const metapath = RNFetchBlob.fs.dirs.DocumentDir + "/metadata.json";
 
 export default function useMetadata(): [MusidexMetadata, (newv: MusidexMetadata) => void, boolean] {
@@ -13,9 +12,6 @@ export default function useMetadata(): [MusidexMetadata, (newv: MusidexMetadata)
     useEffect(() => {
         RNFetchBlob.fs.readFile(metapath, "utf8").then((s: string) => {
             const raw: RawMusidexMetadata = JSON.parse(s);
-            if (raw.version !== curVersion) {
-                return;
-            }
             setLocalMeta(newMetadata(raw));
         }).catch(() => {}).finally(() => {
             setLoadedFile(true);
@@ -24,8 +20,7 @@ export default function useMetadata(): [MusidexMetadata, (newv: MusidexMetadata)
 
     const setMeta = useCallback((newmeta: MusidexMetadata) => {
         setLocalMeta(newmeta);
-        newmeta.raw.version = curVersion;
-        RNFetchBlob.fs.writeFile(metapath, JSON.stringify(newmeta.raw), "utf8");
+        RNFetchBlob.fs.writeFile(metapath, JSON.stringify(makeRawMeta(newmeta)), "utf8");
     }, [setLocalMeta]);
 
     return [localMeta, setMeta, loadedFile];

@@ -103,10 +103,10 @@ function RootNavigator() {
     }, [metadata, list, lastPosition, updateLastPosition])
 
     useEffect(() => {
-        if (avoidFirst === 0) {
+        avoidFirst += 1;
+        if (avoidFirst === 1) {
             return;
         }
-        avoidFirst += 1;
         fetchMetadata();
     }, [apiURL]);
 

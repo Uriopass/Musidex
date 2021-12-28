@@ -56,7 +56,6 @@ export function makeRawMeta(meta: MusidexMetadata): RawMusidexMetadata {
         users: meta.users,
         settings: meta.settings_l,
         tags: meta.tags,
-        version: 0,
     };
 }
 
@@ -125,7 +124,7 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
 }
 
 export function emptyMetadata(): MusidexMetadata {
-    return newMetadata({version: 0, musics: [], users: [], tags: [], settings: []});
+    return newMetadata({musics: [], users: [], tags: [], settings: []});
 }
 
 export function canPlay(tags: Tags): boolean {
