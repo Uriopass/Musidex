@@ -35,8 +35,8 @@ use futures::FutureExt;
 use hyper::body::Bytes;
 use hyper::header::{
     HeaderValue, ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS,
-    ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_ENCODING, CONTENT_TYPE, COOKIE, ORIGIN,
-    USER_AGENT,
+    ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_MAX_AGE, ACCESS_CONTROL_REQUEST_METHOD,
+    CACHE_CONTROL, CONTENT_ENCODING, CONTENT_TYPE, COOKIE, ORIGIN, USER_AGENT,
 };
 use hyper::http::Extensions;
 use hyper::service::Service;
@@ -333,10 +333,18 @@ impl Service<Request<Body>> for RouterService {
             .headers()
             .get(ORIGIN)
             .and_then(|x| x.to_str().ok())
-            .unwrap_or("unknown user agent")
-            .to_string();
+            .unwrap_or("unknown user agent");
 
-        let nocors = router.nocors;
+        let is_preflight = req.headers().contains_key(ACCESS_CONTROL_REQUEST_METHOD);
+        if is_preflight {
+            let mut response = Response::new(Body::empty());
+            if router.nocors {
+                set_nocors(&mut response);
+            } else {
+                set_defaultcors(origin, &mut response);
+            }
+            return Box::pin(async move { Ok(response) });
+        }
         let route = Arc::new(req.uri().to_string());
         let route2 = route.clone();
         let fut = router.serve(req);
@@ -353,11 +361,6 @@ impl Service<Request<Body>> for RouterService {
                         .unwrap()
                 }
             };
-            if nocors {
-                set_nocors(&mut response);
-            } else {
-                set_defaultcors(&origin, &mut response);
-            }
             Ok(response)
         };
         log::info!(
@@ -379,6 +382,8 @@ fn set_nocors(req: &mut Response<Body>) {
         ACCESS_CONTROL_ALLOW_METHODS,
         "GET, POST, OPTIONS".parse().unwrap(),
     );
+    req.headers_mut()
+        .insert(ACCESS_CONTROL_MAX_AGE, "3600".parse().unwrap());
 }
 
 fn set_defaultcors(origin: &str, req: &mut Response<Body>) {
