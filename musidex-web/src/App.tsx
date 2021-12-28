@@ -77,8 +77,7 @@ const App = (props: { syncProblem: boolean }) => {
     const [list, setList] = useState<Tracklist>(emptyTracklist());
     const editableSt = useState(false);
     const selectedMusics = useMusicSelect(meta, sform, list);
-    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, meta, sform, selectedMusics, undefined, () => {
-    }, async () => 0);
+    const doNext = useNextTrackCallback(list, setList, dispatchPlayer, meta, sform, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, meta);
 
     useEffect(() => {
