@@ -11,9 +11,6 @@
 
 > Cross-browser extension boilerplate - barebones template with Parcel 2, options handler and auto-publishing.
 
-Screenshot of extension options:
-![Sample extension options output](media/previewer.png)
-
 ## Features
 
 - Use npm dependencies thanks to Parcel 2.
@@ -23,10 +20,6 @@ Screenshot of extension options:
 - [Extensive configuration documentation](#configuration).
 
 ## Getting started
-
-### Create your own copy
-
-1. Click [<kbd>Use this template</kbd>](https://github.com/fregante/browser-extension-template/generate) to make a copy of your own. 😉
 
 ### Build locally
 
