@@ -35,7 +35,8 @@ use futures::FutureExt;
 use hyper::body::Bytes;
 use hyper::header::{
     HeaderValue, ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_METHODS,
-    ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_ENCODING, CONTENT_TYPE, COOKIE, USER_AGENT,
+    ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_ENCODING, CONTENT_TYPE, COOKIE, ORIGIN,
+    USER_AGENT,
 };
 use hyper::http::Extensions;
 use hyper::service::Service;
@@ -328,6 +329,13 @@ impl Service<Request<Body>> for RouterService {
             .and_then(|x| x.to_str().ok())
             .unwrap_or("unknown user agent")
             .to_string();
+        let origin = req
+            .headers()
+            .get(ORIGIN)
+            .and_then(|x| x.to_str().ok())
+            .unwrap_or("unknown user agent")
+            .to_string();
+
         let nocors = router.nocors;
         let route = Arc::new(req.uri().to_string());
         let route2 = route.clone();
@@ -373,17 +381,17 @@ fn set_nocors(req: &mut Response<Body>) {
     );
 }
 
-fn set_defaultcors(req: &mut Response<Body>) {
-    req.headers_mut().insert(
-        ACCESS_CONTROL_ALLOW_ORIGIN,
-        "https://youtube.com".parse().unwrap(),
-    );
-    req.headers_mut()
-        .insert(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true".parse().unwrap());
-    req.headers_mut().insert(
-        ACCESS_CONTROL_ALLOW_METHODS,
-        "GET, POST, OPTIONS".parse().unwrap(),
-    );
+fn set_defaultcors(origin: &str, req: &mut Response<Body>) {
+    if origin.starts_with("https://www.youtube.com") || origin.starts_with("https://youtube.com") {
+        req.headers_mut()
+            .insert(ACCESS_CONTROL_ALLOW_ORIGIN, origin.parse().unwrap());
+        req.headers_mut()
+            .insert(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true".parse().unwrap());
+        req.headers_mut().insert(
+            ACCESS_CONTROL_ALLOW_METHODS,
+            "GET, POST, OPTIONS".parse().unwrap(),
+        );
+    }
 }
 
 impl RouterService {
