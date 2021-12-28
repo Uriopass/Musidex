@@ -1,0 +1,17 @@
+name: Test
+
+on:
+  - pull_request
+  - push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install deps extension
+        working-directory: ./musidex-browser-extension
+        run: npm install
+      - name: test extension
+        working-directory: ./musidex-browser-extension
+        run: npm test
