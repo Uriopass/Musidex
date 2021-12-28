@@ -334,7 +334,8 @@ impl Service<Request<Body>> for RouterService {
             .headers()
             .get(ORIGIN)
             .and_then(|x| x.to_str().ok())
-            .unwrap_or("unknown user agent");
+            .unwrap_or("unknown user agent")
+            .to_string();
 
         let is_preflight = req.headers().contains_key(ACCESS_CONTROL_REQUEST_METHOD);
         if is_preflight {
@@ -342,7 +343,7 @@ impl Service<Request<Body>> for RouterService {
             if router.nocors {
                 set_nocors(&mut response);
             } else {
-                set_defaultcors(origin, &mut response);
+                set_defaultcors(&origin, &mut response);
             }
             return Box::pin(async move { Ok(response) });
         }
@@ -362,6 +363,11 @@ impl Service<Request<Body>> for RouterService {
                         .unwrap()
                 }
             };
+            if router.nocors {
+                set_nocors(&mut response);
+            } else {
+                set_defaultcors(&origin, &mut response);
+            }
             Ok(response)
         };
         log::info!(
