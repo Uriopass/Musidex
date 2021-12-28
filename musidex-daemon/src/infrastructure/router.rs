@@ -347,6 +347,8 @@ impl Service<Request<Body>> for RouterService {
             };
             if nocors {
                 set_nocors(&mut response);
+            } else {
+                set_defaultcors(&mut response);
             }
             Ok(response)
         };
@@ -363,6 +365,19 @@ impl Service<Request<Body>> for RouterService {
 fn set_nocors(req: &mut Response<Body>) {
     req.headers_mut()
         .insert(ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
+    req.headers_mut()
+        .insert(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true".parse().unwrap());
+    req.headers_mut().insert(
+        ACCESS_CONTROL_ALLOW_METHODS,
+        "GET, POST, OPTIONS".parse().unwrap(),
+    );
+}
+
+fn set_defaultcors(req: &mut Response<Body>) {
+    req.headers_mut().insert(
+        ACCESS_CONTROL_ALLOW_ORIGIN,
+        "https://youtube.com".parse().unwrap(),
+    );
     req.headers_mut()
         .insert(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true".parse().unwrap());
     req.headers_mut().insert(
