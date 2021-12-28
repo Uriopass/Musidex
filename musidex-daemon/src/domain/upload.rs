@@ -54,7 +54,17 @@ fn push_for_treatment(c: &Connection, v: Box<SingleVideo>, url: String, uid: Use
     mk_tag(TagKey::YoutubeDLWorkerTreated, s!("false"))?;
     mk_tag(TagKey::Title, title)?;
     if let Some(v) = v.duration {
-        mk_tag(TagKey::Duration, ((v + 0.99) as i64).to_string())?;
+        Tag::insert(
+            &c,
+            Tag {
+                music_id: id,
+                key: TagKey::Duration,
+                text: Some((v + 0.99).to_string()),
+                integer: Some((v + 0.99) as i32),
+                date: None,
+                vector: None,
+            },
+        )?;
     }
     if let Some(p) = v.playlist_title {
         mk_tag(TagKey::YoutubeDLPlaylist, p)?;
