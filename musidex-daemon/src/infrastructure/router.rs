@@ -359,7 +359,7 @@ impl Service<Request<Body>> for RouterService {
                     log::error!("{:?}", e);
                     Response::builder()
                         .status(500)
-                        .body(Body::from(format!("{}", e)))
+                        .body(Body::from(format!("{:?}", e)))
                         .unwrap()
                 }
             };

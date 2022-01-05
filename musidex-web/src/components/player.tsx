@@ -7,7 +7,7 @@ import {NextTrackCallback} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
 import {clamp, timeFormat, useUpdate} from "../common/utils";
 import {getTags} from "../common/entity";
-import {TracklistCtx} from "../App";
+import {SelectedMusicsCtx, TracklistCtx} from "../App";
 import {enableNoSleep} from "../index";
 
 interface PlayerProps {
@@ -17,10 +17,11 @@ interface PlayerProps {
 }
 
 const Player = (props: PlayerProps) => {
-    let [trackplayer, dispatch] = useContext(TrackplayerCtx);
-    let list = useContext(TracklistCtx);
-    let [metadata,] = useContext(MetadataCtx);
-    let [, forceUpdate] = useUpdate();
+    const [trackplayer, dispatch] = useContext(TrackplayerCtx);
+    const list = useContext(TracklistCtx);
+    const [metadata,] = useContext(MetadataCtx);
+    const [, forceUpdate] = useUpdate();
+    const toShow = useContext(SelectedMusicsCtx);
 
     useEffect(() => {
         trackplayer.audio.addEventListener("timeupdate", forceUpdate);
@@ -28,27 +29,27 @@ const Player = (props: PlayerProps) => {
     }, [forceUpdate, trackplayer.audio])
 
 
-    let tags = getTags(metadata, trackplayer.current);
-    let curtime = trackplayer.audio.currentTime || 0;
-    let duration = tags?.get("duration")?.integer || trackplayer.duration;
-    let trackProgress = duration > 0 ? curtime / duration : 0;
-    let title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";
-    let artist = tags?.get("artist")?.text || "";
-    let thumbnail = tags?.get("compressed_thumbnail")?.text || (tags?.get("thumbnail")?.text || "");
+    const tags = getTags(metadata, trackplayer.current);
+    const curtime = trackplayer.audio.currentTime || 0;
+    const duration = tags?.get("duration")?.integer || trackplayer.duration;
+    const trackProgress = duration > 0 ? curtime / duration : 0;
+    const title = (tags !== undefined) ? (tags.get("title")?.text || "No Title") : "";
+    const artist = tags?.get("artist")?.text || "";
+    const thumbnail = tags?.get("compressed_thumbnail")?.text || (tags?.get("thumbnail")?.text || "");
 
-    let trackBarOnMove = (ev: React.MouseEvent<HTMLDivElement>) => {
+    const trackBarOnMove = (ev: React.MouseEvent<HTMLDivElement>) => {
         if (ev.buttons !== 1) return;
-        let x = ev.pageX - ev.currentTarget.offsetLeft;
+        const x = ev.pageX - ev.currentTarget.offsetLeft;
         if (ev.currentTarget.offsetWidth <= 1 || duration <= 1) {
             return;
         }
-        let p = (x * duration) / ev.currentTarget.offsetWidth;
+        const p = (x * duration) / ev.currentTarget.offsetWidth;
         dispatch({action: "setTime", time: p});
     }
 
-    let volumeOnMove = (ev: React.MouseEvent<HTMLDivElement>) => {
+    const volumeOnMove = (ev: React.MouseEvent<HTMLDivElement>) => {
         if (ev.buttons !== 1) return;
-        let x = ev.pageX - ev.currentTarget.offsetLeft;
+        const x = ev.pageX - ev.currentTarget.offsetLeft;
         if (ev.currentTarget.offsetWidth <= 1) {
             return;
         }
@@ -61,7 +62,7 @@ const Player = (props: PlayerProps) => {
     }
 
     let volumeIcon = "volume_up";
-    let v = trackplayer.audio.volume;
+    const v = trackplayer.audio.volume;
     if (v <= 0.5) {
         volumeIcon = "volume_down";
     }
@@ -69,8 +70,8 @@ const Player = (props: PlayerProps) => {
         volumeIcon = "volume_mute";
     }
 
-    let doNext = props.doNext;
-    let clickNext = useCallback(() => {
+    const doNext = props.doNext;
+    const clickNext = useCallback(() => {
         doNext();
         enableNoSleep();
     }, [doNext]);
