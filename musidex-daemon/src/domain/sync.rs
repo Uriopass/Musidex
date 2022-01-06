@@ -55,7 +55,7 @@ impl SyncBroadcast {
         let refresh_tx = self.refresh_tx;
         tokio::spawn(async move {
             loop {
-                tokio::time::sleep(Duration::new(2, 0)).await;
+                tokio::time::sleep(Duration::from_secs(2)).await;
                 let _ = refresh_tx.send(()).await;
             }
         });
