@@ -14,4 +14,4 @@ jobs:
         run: npm install
       - name: test extension
         working-directory: ./musidex-browser-extension
-        run: npm test
+        run: npm build
