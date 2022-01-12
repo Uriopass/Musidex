@@ -19,6 +19,7 @@ impl Music {
     }
 
     pub fn delete(c: &Connection, id: MusicID) -> Result<bool> {
+        log::info!("deleting music {:?} from db", id);
         c.prepare_cached("DELETE FROM musics WHERE id=?1;")
             .context("error preparing delete music")?
             .execute([&id.0])

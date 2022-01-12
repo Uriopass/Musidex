@@ -11,6 +11,7 @@ mod infrastructure;
 mod tests;
 
 use crate::application::{handlers, user_handlers};
+use crate::domain::clean::clean;
 use crate::domain::config;
 use crate::domain::sync::SyncBroadcast;
 use crate::domain::worker_neural_embed::NeuralEmbedWorker;
@@ -18,11 +19,11 @@ use crate::domain::worker_thumbnail_resize::SmallThumbnailWorker;
 use crate::domain::worker_youtube_dl::YoutubeDLWorker;
 use crate::infrastructure::db::Db;
 use crate::infrastructure::migrate::migrate;
-use crate::infrastructure::router::Router;
+use crate::infrastructure::router::{RequestExt, Router};
 use crate::utils::env_or;
 use anyhow::Context;
 use hyper::server::conn::AddrIncoming;
-use hyper::{Body, Response, Server};
+use hyper::{Body, Request, Response, Server};
 use include_dir::{include_dir, Dir};
 
 pub static MIGRATIONS: Dir = include_dir!("migrations");
@@ -62,6 +63,10 @@ async fn start() -> anyhow::Result<()> {
         .get("/api/metadata/compressed", handlers::metadata_compressed)
         .get("/api/ping", handlers::ping)
         .get("/api/metadata/ws", handlers::subscribe_sync)
+        .post("/api/clean", move |r: Request<Body>| async move {
+            clean(r.state::<Db>()).await?;
+            Ok(Response::new(Body::empty()))
+        })
         .post("/api/config/update", handlers::update_config)
         .post("/api/youtube_upload", handlers::youtube_upload)
         .post(
