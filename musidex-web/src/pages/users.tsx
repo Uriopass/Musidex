@@ -102,7 +102,7 @@ const UserCard = (props: UserCardProps) => {
     return <div className={"user-card " + (props.isCurrent ? " user-card-current" : "")}
                 onClick={() => props.onSelect(props.user.id)}
     >
-        <div className="user-card-delete">
+        <div className="user-card-info">
             <div>
                 {props.nSongs} songs
             </div>
