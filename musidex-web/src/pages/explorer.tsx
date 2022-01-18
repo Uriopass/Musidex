@@ -88,7 +88,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
                 filters={searchForm.filters}
                 setFilters={setFilters}/>
             {isSimilarity(searchForm) &&
-            <div className="temperature-pick">
+            <div className="temperature-pick" title="Random amount">
                 <MaterialIcon name="casino" style={{paddingLeft: 1}}/>
                 <input className="temperature-pick-range" type="range"
                        value={localTemp} min={0} max={100}

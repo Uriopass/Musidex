@@ -43,6 +43,12 @@ export function timeFormat(total: number): string {
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 }
 
+export function timeFormatHour(total: number): string {
+    let hours = Math.floor(total / 3600);
+    let minutes = Math.floor((total - hours * 3600) / 60);
+    return `${hours}h${minutes < 10 ? "0" : ""}${minutes}`;
+}
+
 export function clamp(v: number, lower: number, upper: number) {
     if (v < lower) {
         return lower;
