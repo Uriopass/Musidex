@@ -11,5 +11,5 @@ export function newLocalSettings(): LocalSettings {
         downloadUsers: [],
         iosEnableJumpForward: false,
         favorites: [],
-    }
+    };
 }

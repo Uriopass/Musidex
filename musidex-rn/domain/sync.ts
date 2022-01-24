@@ -1,4 +1,4 @@
-import RNFetchBlob from "rn-fetch-blob"
+import RNFetchBlob from "rn-fetch-blob";
 import API from "../common/api";
 import {MusidexMetadata, Tags} from "../common/entity";
 import {LocalSettings} from "./localsettings";
@@ -18,18 +18,18 @@ export async function fetchSong(metadata: MusidexMetadata, id: number): Promise<
         return new Promise((resolve => resolve(true)));
     }
     return RNFetchBlob.config({
-        path: path+".part",
+        path: path + ".part",
     }).fetch('GET', API.getStreamSrc(id))
         .catch((err) => {
             console.log("error fetching", err);
             return false;
         })
-        .then(() => RNFetchBlob.fs.mv(path+".part", path))
+        .then(() => RNFetchBlob.fs.mv(path + ".part", path))
         .then(() => true)
         .catch((err) => {
             console.log("error mving", err);
             return false;
-        })
+        });
 }
 
 export async function fetchThumbnail(thumbTag: string): Promise<boolean> {
@@ -38,14 +38,14 @@ export async function fetchThumbnail(thumbTag: string): Promise<boolean> {
         return true;
     }
     return RNFetchBlob.config({
-        path: path+".part",
+        path: path + ".part",
     }).fetch('GET', API.getAPIUrl() + "/storage/" + thumbTag)
-        .then(() => RNFetchBlob.fs.mv(path+".part", path))
+        .then(() => RNFetchBlob.fs.mv(path + ".part", path))
         .then(() => true)
         .catch((err) => {
             console.log(err);
             return false;
-        })
+        });
 }
 
 export function syncIter(metadata: MusidexMetadata, syncState: SyncState, musicsToDownload: number[]): Promise<boolean> {
@@ -56,7 +56,7 @@ export function syncIter(metadata: MusidexMetadata, syncState: SyncState, musics
             if (fn && !syncState.files.has(fn)) {
                 console.log("fetching song...", id);
                 if (!await fetchSong(metadata, id)) {
-                    continue
+                    continue;
                 }
                 console.log("fetching song ok");
                 syncState.files.add(fn);
@@ -71,7 +71,7 @@ export function syncIter(metadata: MusidexMetadata, syncState: SyncState, musics
             if (!syncState.files.has(fnt)) {
                 console.log("fetching thumb...", thumb);
                 if (!await fetchThumbnail(thumb)) {
-                    break
+                    break;
                 }
                 console.log("fetching thumb ok");
                 syncState.files.add(fnt);
@@ -127,7 +127,7 @@ export function emptySyncState(): SyncState {
     return {
         files: new Set(),
         loaded: false,
-    }
+    };
 }
 
 export function newSyncState(): Promise<SyncState> {
@@ -135,7 +135,7 @@ export function newSyncState(): Promise<SyncState> {
         return {
             files: new Set(await RNFetchBlob.fs.ls(RNFetchBlob.fs.dirs.DocumentDir)),
             loaded: true,
-        }
+        };
     };
     return x();
 }

@@ -6,7 +6,7 @@ import Colors from "../domain/colors";
 import Ctx from "../domain/ctx";
 import {NextTrackCallback} from "../common/tracklist";
 import Slider from "@react-native-community/slider";
-import {isSimilarity, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
+import {isSimilarity, MusicSelect, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {Checkbox, SearchInput} from "./Input";
 import Filters, {SimilarityParams} from "../../musidex-web/src/common/filters";
 import Thumbnail from "./Thumbnail";
@@ -26,18 +26,18 @@ export default function Explorer() {
     const setSortBy = useCallback((s: SortBy) => setSearchForm({...searchForm, sort: s}), [setSearchForm, searchForm]);
     const setSearchQry = useCallback((s: string) => setSearchForm({
         ...searchForm,
-        filters: {...searchForm.filters, searchQry: s}
+        filters: {...searchForm.filters, searchQry: s},
     }), [setSearchForm, searchForm]);
 
     const setFilters = useCallback((f) => setSearchForm({...searchForm, filters: f}), [setSearchForm, searchForm]);
     const setSimilarityParam = useCallback((s: SimilarityParams) => setSearchForm({
         ...searchForm,
-        similarityParams: s
+        similarityParams: s,
     }), [setSearchForm, searchForm]);
 
     const curTrack: number | undefined = tracklist.last_played[tracklist.last_played.length - 1];
     const vChange = useCallback((value) => {
-        setSimilarityParam({temperature: value / 100})
+        setSimilarityParam({temperature: value / 100});
     }, [setSimilarityParam]);
 
     const firstV = useMemo(() => searchForm.similarityParams.temperature * 100, []);
@@ -59,18 +59,12 @@ export default function Explorer() {
                     value={firstV} minimumValue={0} maximumValue={100}
                     onValueChange={vChange}/>
         </View>}
-        {(curTrack && isSimilarity(searchForm)) &&
-        <SongElem musicID={curTrack} tags={getTags(metadata, curTrack) || new Map()} doNext={doNext} progress={1.0}
-                  isSynced={isMusicSynced(syncState, metadata, curTrack)}
-                  thumbSynced={isThumbSynced(syncState, metadata, curTrack)}
-                  progressColor="#1d2f23"/>
-        }
-    </>
+    </>;
 
     return (
         <SongList musics={toShow} topComp={TopComp}/>
     );
-};
+}
 
 
 type SortBySelectProps = {
@@ -82,7 +76,7 @@ type SortBySelectProps = {
 
 const SortBySelect = React.memo((props: SortBySelectProps) => {
     let SortByElem = (props2: { sort: SortByKind, name: string }) => {
-        let is_same = sortby_kind_eq(props.sortBy.kind, props2.sort)
+        let is_same = sortby_kind_eq(props.sortBy.kind, props2.sort);
         let on_click = () => {
             let new_desc = true;
             if (is_same) {
@@ -106,8 +100,8 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
                         <Icon name="north" size={18} color={Colors.primary}/>
                 )
             }
-        </TouchableOpacity>
-    }
+        </TouchableOpacity>;
+    };
 
     if (props.forced !== undefined) {
         return <View style={styles.sortFilterSelect}>
@@ -125,7 +119,7 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
         <SortByElem sort={{kind: "creation_time"}} name="Last added"/>
         <SortByElem sort={{kind: "random"}} name="Random"/>
     </View>;
-})
+});
 
 type FilterBySelectProps = {
     user: number | undefined,
@@ -150,14 +144,14 @@ const FilterBySelect = React.memo((props: FilterBySelectProps) => {
                 <TextBg> My Songs</TextBg>
             </Checkbox>
         </View>
-    </View>
-})
+    </View>;
+});
 
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 function SongList(props: {
-    musics: number[],
+    musics: MusicSelect,
     topComp: any,
 }) {
     const [metadata, fetchMetadata] = useContext(Ctx.Metadata);
@@ -176,11 +170,8 @@ function SongList(props: {
 
     const renderSong = useCallback(({item}: { item: number }) => {
         let color = "#28222f";
-        let progress = tracklist.score_map.get(item);
+        let progress = props.musics.scoremap.get(item);
         if (item === curTrack) {
-            if (isSimilarity(searchForm)) {
-                return <></>;
-            }
             color = "#1d2f23";
             progress = 1.0;
         }
@@ -214,11 +205,11 @@ function SongList(props: {
     };
 
     return <>
-        <FlatList data={props.musics}
+        <FlatList data={props.musics.list}
                   refreshing={refreshing}
                   onRefresh={() => {
                       setRefreshing(true);
-                      fetchMetadata().then(() => setRefreshing(false))
+                      fetchMetadata().then(() => setRefreshing(false));
                   }}
                   keyboardShouldPersistTaps={"handled"}
                   ref={flatRef}

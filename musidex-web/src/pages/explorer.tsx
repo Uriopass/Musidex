@@ -45,20 +45,6 @@ const Explorer = React.memo((props: ExplorerProps) => {
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
 
     const colorCur = "#1d2f23";
-    let curPlaying = <></>;
-    if (curTrack && searchForm.sort.kind.kind === "similarity" && searchForm.filters.searchQry === "") {
-        const tags = getTags(metadata, curTrack) || new Map();
-        curPlaying =
-            <>
-                <SongElem musicID={curTrack}
-                          doNext={props.doNext}
-                          syncMetadata={syncMetadata}
-                          tags={tags}
-                          curUser={props.curUser}
-                          progress={1.0}
-                          progressColor={colorCur}/>
-            </>;
-    }
 
     let isRegexpInvalid = false;
     try {
@@ -75,6 +61,8 @@ const Explorer = React.memo((props: ExplorerProps) => {
         }
     }, [searchForm, setSimilarityParam, localTemp], 50);
 
+    const keepOrderSim = searchForm.sort.kind.kind === "similarity" && searchForm.sort.kind.keepOrder;
+
     return (
         <div className={"explorer color-fg" + (props.hidden ? " hidden" : "")}>
             <div className="explorer-search">
@@ -88,28 +76,38 @@ const Explorer = React.memo((props: ExplorerProps) => {
                 filters={searchForm.filters}
                 setFilters={setFilters}/>
             {isSimilarity(searchForm) &&
-            <div className="temperature-pick" title="Random amount">
-                <MaterialIcon name="casino" style={{paddingLeft: 1}}/>
-                <input className="temperature-pick-range" type="range"
-                       value={localTemp} min={0} max={100}
-                       onChange={(v) => setLocalTemp(parseInt(v.currentTarget.value))}/>
-            </div>
+            <>
+                <div className="temperature-pick" title="Random amount">
+                    {searchForm.sort.kind.kind === "similarity" &&
+                    <div title="Lock music order based on latest manually selected music"
+                         onClick={() => {
+                             list.last_manual_select = list.last_played[list.last_played.length - 1];
+                             setSortBy({...searchForm.sort, kind: {kind: "similarity", keepOrder: !keepOrderSim}})
+                         }}>
+
+                        {keepOrderSim ?
+                            <MaterialIcon name="lock" style={{paddingLeft: 1, color: "var(--primary)"}}/>
+                            :
+                            <MaterialIcon name="lock_open" style={{paddingLeft: 1}}/>}
+                    </div>}
+                    <MaterialIcon name="casino" style={{paddingLeft: 1}}/>
+                    <input className="temperature-pick-range" type="range"
+                           value={localTemp} min={0} max={100}
+                           onChange={(v) => setLocalTemp(parseInt(v.currentTarget.value))}/>
+                </div>
+            </>
             }
             {isRegexpInvalid &&
             <span>Regex is invalid: {"" + isRegexpInvalid}</span>}
-            {curPlaying}
             {
-                toShow.slice(0, props.shown).map((id) => {
+                toShow.list.slice(0, props.shown).map((id) => {
                     const tags = getTags(metadata, id);
                     if (tags === undefined) {
                         return <Fragment key={id}/>;
                     }
-                    let progress = list.score_map.get(id);
+                    let progress = toShow.scoremap.get(id);
                     let progressColor;
                     if (id === curTrack) {
-                        if (isSimilarity(searchForm)) {
-                            return <Fragment key={id}/>;
-                        }
                         progress = 1.0;
                         progressColor = colorCur;
                     }
@@ -126,7 +124,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
                 })
             }
             {
-                (props.shown < toShow.length) && (
+                (props.shown < toShow.list.length) && (
                     <button style={{marginTop: "10px"}} onClick={() => props.setShown(props.shown + 20)}>
                         Show more
                     </button>
@@ -229,7 +227,8 @@ type ThumbnailProps = {
 }
 
 export const Thumbnail = (props: ThumbnailProps) => {
-    return <div className={`cover-image-container ${props.playable ? "song-elem-playable" : ""}`} onClick={props.onClick}
+    return <div className={`cover-image-container ${props.playable ? "song-elem-playable" : ""}`}
+                onClick={props.onClick}
                 onMouseEnter={() => props.setHovered?.(true)} onMouseLeave={() => props.setHovered?.(false)}>
         {
             (props.cover) ?

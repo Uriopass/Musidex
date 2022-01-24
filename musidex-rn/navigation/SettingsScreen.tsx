@@ -10,7 +10,7 @@ function SettingsScreen() {
         <Header title="Settings"/>
         <Settings/>
         <SmallPlayer/>
-    </SafeAreaView>)
+    </SafeAreaView>);
 }
 
 

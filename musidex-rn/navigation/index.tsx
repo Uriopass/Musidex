@@ -3,7 +3,6 @@
  * https://reactnavigation.org/docs/getting-started
  *
  */
-import {NavigationContainer} from '@react-navigation/native';
 import * as React from 'react';
 import {useCallback, useContext, useEffect, useMemo, useReducer, useState} from 'react';
 
@@ -15,14 +14,13 @@ import Tracklist, {
     emptyTracklist,
     NextTrackCallback,
     PrevTrackCallback,
-    updateScoreCache,
     useNextTrackCallback,
     usePrevTrackCallback,
     useResetCallback,
 } from "../common/tracklist";
 import {newSearchForm, SearchForm, useMusicSelect} from "../common/filters";
 import Trackplayer, {applyTrackPlayer, newTrackPlayer, useSetupListeners} from "../domain/trackplayer";
-import {createDrawerNavigator, DrawerContentComponentProps, DrawerContentScrollView,} from '@react-navigation/drawer';
+import {createDrawerNavigator, DrawerContentComponentProps, DrawerContentScrollView} from '@react-navigation/drawer';
 import {Pressable, StyleSheet, TouchableOpacity, View} from "react-native";
 import Colors from "../domain/colors";
 import SettingsScreen from "./SettingsScreen";
@@ -34,6 +32,7 @@ import {TextFg} from "../components/StyledText";
 import {Icon} from "react-native-elements";
 import {LocalSettings} from "../domain/localsettings";
 import {PositionStorage} from "../domain/positionStorage";
+import {NavigationContainer} from "@react-navigation/native";
 
 export default function Navigation() {
     return (
@@ -54,17 +53,7 @@ function RootNavigator() {
     const [apiURL] = useContext(Ctx.APIUrl);
     const [localSettings] = useContext(Ctx.LocalSettings);
 
-    const [list, setList, loadedListe] = useStored<Tracklist>("tracklist", emptyTracklist(), {
-        ser: v => {
-            let lol = {...v, score_map: [...v.score_map]};
-            return JSON.stringify(lol);
-        },
-        deser: s => {
-            let obj: any = JSON.parse(s);
-            obj.score_map = new Map(obj.score_map);
-            return obj as Tracklist;
-        },
-    });
+    const [list, setList, loadedListe] = useStored<Tracklist>("tracklist", emptyTracklist());
     const [user, setUser, loadedUser] = useStored<number | undefined>("user", firstUser(metadata));
     const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm", newSearchForm(user));
     const [lastPosition, updateLastPosition, loadedPosition] = useStoredRef<PositionStorage>("last_position_v2", {positions: {}});
@@ -72,13 +61,13 @@ function RootNavigator() {
     const loaded = loadedListe && loadedUser && loadedSF && loadedPosition;
 
     useEffect(() => {
-        if(!loaded) {
+        if (!loaded) {
             return;
         }
         let timeout: any = {t: undefined};
-        const last = list.last_played[list.last_played.length-1];
+        const last = list.last_played[list.last_played.length - 1];
         const duration = getTags(metadata, last)?.get("duration")?.integer;
-        if (duration === undefined || duration < 30*60) {
+        if (duration === undefined || duration < 30 * 60) {
             return;
         }
         let update = async () => {
@@ -91,16 +80,16 @@ function RootNavigator() {
                 v.current.positions[last] = pos;
             });
             timeout.t = setTimeout(update, 5000);
-        }
+        };
 
         timeout.t = setTimeout(update, 5000);
 
         return () => {
-            if(timeout.t) {
+            if (timeout.t) {
                 clearTimeout(timeout.t);
             }
-        }
-    }, [metadata, list, lastPosition, updateLastPosition])
+        };
+    }, [metadata, list, lastPosition, updateLastPosition, loaded]);
 
     useEffect(() => {
         avoidFirst += 1;
@@ -114,13 +103,13 @@ function RootNavigator() {
     const selectedMusics = useMusicSelect(metadata, searchForm, list);
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, searchForm, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
-    const doReset = useResetCallback(setList, metadata);
+    const doReset = useResetCallback(setList);
 
     useSetupListeners(trackplayer, dispatchPlayer, doNext, doPrev);
 
     useEffect(() => {
         if (!loaded) {
-            return
+            return;
         }
         if (searchForm.filters.user === undefined) {
             setSearchForm({
@@ -128,14 +117,14 @@ function RootNavigator() {
                 filters: {
                     ...searchForm.filters,
                     user: user,
-                }
-            })
+                },
+            });
         }
     }, [loaded]);
 
     useEffect(() => {
         if (!loaded) {
-            return
+            return;
         }
         if (user === undefined || !metadata.users.some((u) => u.id === user)) {
             const u = firstUser(metadata);
@@ -143,16 +132,12 @@ function RootNavigator() {
                 setUser(u);
             }
         }
-
-        let l = {...list};
-        l = updateScoreCache(l, metadata);
-        setList(l);
     }, [metadata, loaded]);
 
     const [syncState, setSyncState] = useState<SyncState>(emptySyncState);
     useEffect(() => {
         newSyncState().then((v) => setSyncState(v));
-    }, [])
+    }, []);
 
     const musicsToDownload: number[] = useMemo(() => {
         if (!localSettings.downloadMusicLocally) {
@@ -162,7 +147,7 @@ function RootNavigator() {
         let mSet = new Set<number>();
         for (let tag of metadata.tags) {
             if (tag.key.startsWith("user_library:")) {
-                let uId = parseInt(tag.key.substring("user_library:".length));
+                let uId = parseInt(tag.key.substring("user_library:".length), 10);
                 if (uSet.has(uId)) {
                     mSet.add(tag.music_id);
                 }
@@ -177,16 +162,16 @@ function RootNavigator() {
             return;
         }
         let cpy = loll;
-        let curTimeout: any = undefined;
+        let curTimeout: any;
         const f = async () => {
             const release = await fetchMutex.acquire();
-            if (cpy != loll) {
+            if (cpy !== loll) {
                 release();
                 return;
             }
             const changed = await syncIter(metadata, syncState, musicsToDownload);
             release();
-            if (cpy != loll) {
+            if (cpy !== loll) {
                 return;
             }
             if (!changed) {
@@ -200,8 +185,8 @@ function RootNavigator() {
             if (curTimeout) {
                 clearTimeout(curTimeout);
             }
-        }
-    }, [syncState, localSettings, apiURL, metadata, setSyncState]);
+        };
+    }, [syncState, localSettings, apiURL, metadata, setSyncState, musicsToDownload]);
 
     const setUserDrawer = useCallback((u: number | undefined) => {
         setUser(u);
@@ -210,11 +195,11 @@ function RootNavigator() {
             filters: {
                 ...searchForm.filters,
                 user: u,
-            }
-        })
-    }, [setUser, setSearchForm, searchForm])
+            },
+        });
+    }, [setUser, setSearchForm, searchForm]);
 
-    const controls = useMemoProv<[NextTrackCallback, PrevTrackCallback, () => void]>([doNext, doPrev, doReset]);
+    const controls = useMemoProv<[NextTrackCallback, PrevTrackCallback,() => void]>([doNext, doPrev, doReset]);
     const playerr = useMemoProv<[Trackplayer, any]>([trackplayer, dispatchPlayer]);
     const userr = useMemoProv<[number | undefined, any]>([user, setUser]);
 
@@ -260,13 +245,13 @@ const MusidexDrawer = React.memo((props: MusidexDrawerProps) => {
                     drawerType: "front",
                     overlayColor: Colors.bg,
                     swipeEdgeWidth: 75,
-                }
+                };
             }} initialRouteName={props.curUser === undefined ? "Settings" : "Home"}>
             <Drawer.Screen name="Home" component={MainScreen}/>
             <Drawer.Screen name="Settings" component={SettingsScreen}/>
         </Drawer.Navigator>
-    )
-})
+    );
+});
 
 function CustomDrawerContent(d: MusidexDrawerProps, favorites: Set<number>, settings: LocalSettings, setSettings: (newv: LocalSettings) => void): (props: DrawerContentComponentProps) => any {
     return (props) => {
@@ -288,8 +273,8 @@ function CustomDrawerContent(d: MusidexDrawerProps, favorites: Set<number>, sett
                         color={lprops.isFavorite && Colors.danger}
                     />
                 </TouchableOpacity>}
-            </Pressable>
-        }
+            </Pressable>;
+        };
 
         const focusedRoute = props.state.routes[props.state.index];
 
@@ -310,7 +295,7 @@ function CustomDrawerContent(d: MusidexDrawerProps, favorites: Set<number>, sett
                     } else {
                         setSettings({
                             ...settings,
-                            favorites: settings.favorites.concat([user.id])
+                            favorites: settings.favorites.concat([user.id]),
                         });
                     }
                 }}
@@ -319,7 +304,7 @@ function CustomDrawerContent(d: MusidexDrawerProps, favorites: Set<number>, sett
                     if (user.id !== d.curUser) {
                         d.setUser(user.id);
                     }
-                }}/>
+                }}/>;
         };
 
         return (
@@ -340,7 +325,7 @@ function CustomDrawerContent(d: MusidexDrawerProps, favorites: Set<number>, sett
                                 focused={focusedRoute.name === "Settings"}/>
             </DrawerContentScrollView>
         );
-    }
+    };
 }
 
 const styles = StyleSheet.create({
@@ -367,5 +352,5 @@ const styles = StyleSheet.create({
     },
     drawer: {
         backgroundColor: Colors.fg,
-    }
-})
+    },
+});

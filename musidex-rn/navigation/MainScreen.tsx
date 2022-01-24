@@ -17,13 +17,13 @@ function Root() {
         <Header title={metadata.users.find((x) => x.id === user)?.name || "Home"}/>
         <Explorer/>
         <SmallPlayer/>
-    </SafeAreaView>)
+    </SafeAreaView>);
 }
 
 export default function MainScreen() {
     return (<Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Root" component={Root}/>
-    </Stack.Navigator>)
+    </Stack.Navigator>);
 }
 
 const styles = StyleSheet.create({

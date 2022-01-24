@@ -41,7 +41,7 @@ export default function App() {
                 return;
             }
             setMetadata(meta);
-        })
+        });
     }, [setMetadata]);
 
     const metaa: [MusidexMetadata, any] = useMemoProv([metadata, fetchMetadata]);
@@ -57,13 +57,13 @@ export default function App() {
         TrackPlayer.updateOptions({
             capabilities: cap,
         });
-    }, [localSettings, loadedSettings, isLoadingComplete])
+    }, [localSettings, loadedSettings, isLoadingComplete]);
 
     if (!isLoadingComplete || !loadedMeta || !loadedAPI || !loadedSettings) {
         return <View style={{backgroundColor: '#383838', flex: 1, alignItems: "center", justifyContent: "center"}}>
             <Image source={require('./musidex_logo.png')}/>
-            <TextFg>Loading Metadata: {loadedMeta?"ok":"..."}</TextFg>
-        </View>
+            <TextFg>Loading Metadata: {loadedMeta ? "ok" : "..."}</TextFg>
+        </View>;
     } else {
         return (
             <SafeAreaProvider>

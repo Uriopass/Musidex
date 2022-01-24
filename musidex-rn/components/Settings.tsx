@@ -6,7 +6,7 @@ import useStored from "../domain/useStored";
 import {Icon} from "react-native-elements";
 import {TextBg, TextFg} from "./StyledText";
 import API from "../common/api";
-import Colors from "../domain/colors"
+import Colors from "../domain/colors";
 import {LocalSettings} from "../domain/localsettings";
 import {MusidexMetadata} from "../common/entity";
 
@@ -27,7 +27,7 @@ function Settings() {
             }
             setConnectivity("error");
         });
-    }
+    };
 
     useEffect(testConnectivity, [apiUrl]);
 
@@ -37,20 +37,20 @@ function Settings() {
 
     switch (connectivity) {
         case "pending":
-            icon = "pending"
-            message = "testing connectivity..."
+            icon = "pending";
+            message = "testing connectivity...";
             color = Colors.alert;
-            break
+            break;
         case "ok":
-            icon = "check-circle"
-            message = "connection ok"
+            icon = "check-circle";
+            message = "connection ok";
             color = Colors.success;
-            break
+            break;
         case "error":
-            icon = "error"
-            message = "could not connect :("
+            icon = "error";
+            message = "could not connect :(";
             color = Colors.danger;
-            break
+            break;
     }
 
     return <ScrollView style={styles.container}>
@@ -83,7 +83,7 @@ function Settings() {
             localSettings.downloadMusicLocally &&
             <DownloadUsersList settings={localSettings} setLocalSettings={setLocalSettings} metadata={metadata}/>
         }
-    </ScrollView>
+    </ScrollView>;
 }
 
 export type DownloadUsersListProps = {
@@ -108,7 +108,7 @@ function DownloadUsersList(props: DownloadUsersListProps): JSX.Element {
                         } else {
                             props.settings.downloadUsers.splice(checkedIdx, 1);
                         }
-                        props.setLocalSettings({...props.settings})
+                        props.setLocalSettings({...props.settings});
                     }}>
                     <TextFg> {v.name}</TextFg>
                 </Checkbox>;
@@ -134,6 +134,6 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
         paddingTop: 10,
     },
-})
+});
 
 export default Settings;

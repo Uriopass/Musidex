@@ -6,7 +6,7 @@ import {
     TextStyle,
     TouchableOpacity,
     View,
-    ViewStyle
+    ViewStyle,
 } from "react-native";
 import React, {useState} from "react";
 import Colors from "../domain/colors";
@@ -34,7 +34,7 @@ export function SearchInput(props: TextInputProps & { searchStyle?: StyleProp<Te
                 <Icon size={20} name="clear" color={Colors.colorfg}/>
             </TouchableOpacity>)
         }
-    </View>
+    </View>;
 }
 
 type CheckboxProps = {
@@ -52,13 +52,13 @@ export function Checkbox(props: CheckboxProps) {
               size={props.size}
               name={props.checked ? "check-box" : "check-box-outline-blank"}/>
         {props.children}
-    </TouchableOpacity>
+    </TouchableOpacity>;
 }
 
 const styles = StyleSheet.create({
     checkboxContainer: {
         flexDirection: "row",
-        alignItems: "center"
+        alignItems: "center",
     },
     clearButton: {
         position: "absolute",

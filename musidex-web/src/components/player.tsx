@@ -7,7 +7,7 @@ import {NextTrackCallback} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
 import {clamp, timeFormat, useUpdate} from "../common/utils";
 import {getTags} from "../common/entity";
-import {SelectedMusicsCtx, TracklistCtx} from "../App";
+import {TracklistCtx} from "../App";
 import {enableNoSleep} from "../index";
 
 interface PlayerProps {
@@ -21,13 +21,11 @@ const Player = (props: PlayerProps) => {
     const list = useContext(TracklistCtx);
     const [metadata,] = useContext(MetadataCtx);
     const [, forceUpdate] = useUpdate();
-    const toShow = useContext(SelectedMusicsCtx);
 
     useEffect(() => {
         trackplayer.audio.addEventListener("timeupdate", forceUpdate);
         return () => trackplayer.audio.removeEventListener("timeupdate", forceUpdate);
     }, [forceUpdate, trackplayer.audio])
-
 
     const tags = getTags(metadata, trackplayer.current);
     const curtime = trackplayer.audio.currentTime || 0;

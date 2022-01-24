@@ -45,7 +45,7 @@ export const API = {
     },
 
     async testConnection(localApiUrl: string): Promise<boolean> {
-        return fetch(parseURL(localApiUrl) + "/api/ping").then((v) => v.ok).catch(() => false)
+        return fetch(parseURL(localApiUrl) + "/api/ping").then((v) => v.ok).catch(() => false);
     },
 
     async metadataFromWSMsg(m: MessageEvent, oldMeta: MusidexMetadata): Promise<[MusidexMetadata, string]> {
@@ -53,7 +53,7 @@ export const API = {
         const s = Pako.inflateRaw(vv, {to: 'string'});
         let v: RawMusidexMetadata = JSON.parse(s);
         let newmeta = newMetadata(v, oldMeta);
-        if(v.tags?.length) {
+        if (v.tags?.length) {
             return [newmeta, s];
         }
         return [newmeta, JSON.stringify(makeRawMeta(newmeta))];

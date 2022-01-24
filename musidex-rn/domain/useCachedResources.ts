@@ -5,7 +5,7 @@ import TrackPlayer, {
     CAPABILITY_PLAY,
     CAPABILITY_SEEK_TO,
     CAPABILITY_SKIP_TO_NEXT,
-    CAPABILITY_SKIP_TO_PREVIOUS
+    CAPABILITY_SKIP_TO_PREVIOUS,
 } from 'react-native-track-player';
 import {Platform} from "react-native";
 

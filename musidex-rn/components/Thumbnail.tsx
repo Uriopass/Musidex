@@ -28,5 +28,5 @@ const styles = StyleSheet.create({
     thumbnail: {
         flexBasis: 60,
         height: 60,
-    }
+    },
 });

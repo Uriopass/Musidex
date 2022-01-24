@@ -118,8 +118,8 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
                 let uid = parseInt(v);
                 if (!isNaN(uid)) {
                     let v = meta.user_songs.get(uid);
-                    if(v === undefined) {
-                        meta.user_songs.set(uid, [tag.music_id])
+                    if (v === undefined) {
+                        meta.user_songs.set(uid, [tag.music_id]);
                     } else {
                         v.push(tag.music_id);
                     }

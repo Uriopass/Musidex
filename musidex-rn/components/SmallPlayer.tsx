@@ -18,7 +18,7 @@ function useTrackProgress(interval: number): [number, number] {
     const [position, setPosition] = useState(0);
     const [duration, setDuration] = useState(0);
     useEffect(() => {
-        let timeout: any = undefined;
+        let timeout: any;
         const f = () => {
             TrackPlayer.getPosition().then((v) => {
                 setPosition(v);
@@ -33,8 +33,8 @@ function useTrackProgress(interval: number): [number, number] {
             if (timeout) {
                 clearTimeout(timeout);
             }
-        }
-    }, [setPosition, setDuration])
+        };
+    }, [setPosition, setDuration]);
     return [position, duration];
 }
 
@@ -71,10 +71,10 @@ const SmallPlayer = (_: PlayerProps) => {
     };
 
     const onForward = () => {
-        TrackPlayer.getPosition().then((v) => TrackPlayer.seekTo(v + 10))
+        TrackPlayer.getPosition().then((v) => TrackPlayer.seekTo(v + 10));
     };
     const onBackward = () => {
-        TrackPlayer.getPosition().then((v) => TrackPlayer.seekTo(v - 10))
+        TrackPlayer.getPosition().then((v) => TrackPlayer.seekTo(v - 10));
     };
 
     const onReset = () => {
@@ -90,7 +90,7 @@ const SmallPlayer = (_: PlayerProps) => {
             if (seekID == localSeek) {
                 TrackPlayer.seekTo(v).then(() => setTimeout(() => {
                     if (seekID == localSeek) {
-                        setSeekCur(undefined)
+                        setSeekCur(undefined);
                     }
                 }, 3000));
             }
@@ -121,7 +121,7 @@ const SmallPlayer = (_: PlayerProps) => {
 
     const spin = rotateAnim.interpolate({
         inputRange: [0, 1, 2],
-        outputRange: ["0deg", "360deg", "720deg"]
+        outputRange: ["0deg", "360deg", "720deg"],
     });
 
     return (

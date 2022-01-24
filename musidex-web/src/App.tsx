@@ -7,19 +7,18 @@ import useLocalStorage from "use-local-storage";
 import PageNavigator, {Page} from "./pages/navigator";
 import Tracklist, {
     emptyTracklist,
-    updateScoreCache,
     useNextTrackCallback,
     usePrevTrackCallback
 } from "./common/tracklist";
 import {EditableCtx, useCookie} from "./components/utils";
-import {newSearchForm, SearchForm, useMusicSelect} from "./common/filters";
+import {emptyMusicSelect, MusicSelect, newSearchForm, SearchForm, useMusicSelect} from "./common/filters";
 import {MetadataCtx, useMetadata} from "./domain/metadata";
 import {Setter} from "./common/utils";
 import {firstUser} from "./common/entity";
 import ReconnectingWebSocket from "reconnecting-websocket";
 
 export const SearchFormCtx = React.createContext<[SearchForm, Setter<SearchForm>]>([newSearchForm(undefined), _ => _]);
-export const SelectedMusicsCtx = React.createContext<number[]>([]);
+export const SelectedMusicsCtx = React.createContext<MusicSelect>(emptyMusicSelect());
 export const TracklistCtx = React.createContext<Tracklist>(emptyTracklist());
 
 export const LoadBeforeApp = () => {
@@ -95,13 +94,6 @@ const App = (props: { syncProblem: boolean }) => {
             }
         }
     }, [meta, sform, list, setList, trackplayer, doNext, user, setUser, setSform]);
-
-    useEffect(() => {
-        let l = {...list};
-        l = updateScoreCache(l, meta);
-        setList(l);
-        // eslint-disable-next-line
-    }, [meta]);
 
     trackplayer.audio.volume = volume;
     useMemo(() => setupListeners(trackplayer, meta, doNext, doPrev, dispatchPlayer), [trackplayer, meta, doNext, doPrev, dispatchPlayer]);
