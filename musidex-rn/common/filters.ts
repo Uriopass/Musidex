@@ -20,11 +20,11 @@ export type SimilarityParams = {
 }
 
 export type SortByKind =
-    { kind: "similarity", keepOrder?: boolean }
+    { kind: "similarity" }
     | { kind: "creation_time" }
     | { kind: "tag", value: string }
     | { kind: "random" }
-export type SortBy = { kind: SortByKind, descending: boolean }
+export type SortBy = { kind: SortByKind, descending: boolean, similKeepOrder?: boolean }
 
 export function newSearchForm(user: number | undefined): SearchForm {
     return {
@@ -79,7 +79,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
     const isRegex = searchQry.charAt(0) === '/';
     let scoredMusicID: number | undefined = list.last_played[list.last_played.length - 1];
 
-    const similKeepOrder = search.sort.kind.kind === "similarity" && search.sort.kind.keepOrder;
+    const similKeepOrder = search.sort.kind.kind === "similarity" && search.sort.similKeepOrder;
 
     if (similKeepOrder) {
         scoredMusicID = list.last_manual_select ?? scoredMusicID;

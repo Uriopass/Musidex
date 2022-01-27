@@ -61,8 +61,6 @@ const Explorer = React.memo((props: ExplorerProps) => {
         }
     }, [searchForm, setSimilarityParam, localTemp], 50);
 
-    const keepOrderSim = searchForm.sort.kind.kind === "similarity" && searchForm.sort.kind.keepOrder;
-
     return (
         <div className={"explorer color-fg" + (props.hidden ? " hidden" : "")}>
             <div className="explorer-search">
@@ -82,10 +80,10 @@ const Explorer = React.memo((props: ExplorerProps) => {
                     <div title="Lock music order based on latest manually selected music"
                          onClick={() => {
                              list.last_manual_select = list.last_played[list.last_played.length - 1];
-                             setSortBy({...searchForm.sort, kind: {kind: "similarity", keepOrder: !keepOrderSim}})
+                             setSortBy({...searchForm.sort, similKeepOrder: !searchForm.sort.similKeepOrder})
                          }}>
 
-                        {keepOrderSim ?
+                        {searchForm.sort.similKeepOrder ?
                             <MaterialIcon name="lock" style={{paddingLeft: 1, color: "var(--primary)"}}/>
                             :
                             <MaterialIcon name="lock_open" style={{paddingLeft: 1}}/>}
