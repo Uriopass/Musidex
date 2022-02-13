@@ -2,7 +2,7 @@ import './explorer.css'
 import API from "../common/api";
 import React, {Fragment, useCallback, useContext, useState} from "react";
 import {EditableText, MaterialIcon} from "../components/utils";
-import {canPlay, getTags, Tag, User} from "../common/entity";
+import {getTags, Tag, User} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";
 import TextInput from "../components/input";
 import {PageProps} from "./navigator";
@@ -116,6 +116,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
                                   syncMetadata={syncMetadata}
                                   doNext={props.doNext}
                                   progress={progress}
+                                  playable={metadata.playable.has(id)}
                                   progressColor={progressColor}
                         />
                     )
@@ -245,12 +246,12 @@ type SongElemProps = {
     progress?: number,
     progressColor?: string;
     curUser?: number;
+    playable: boolean;
 }
 
 export const SongElem = React.memo((props: SongElemProps) => {
     let cover = props.tags?.get("compressed_thumbnail")?.text || props.tags?.get("thumbnail")?.text;
 
-    const playable = canPlay(props.tags);
     const hasYT = props.tags.get("youtube_video_id")?.text;
     const goToYT = () => {
         window.open("https://youtube.com/watch?v=" + hasYT, "_blank")?.focus();
@@ -285,7 +286,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
     const duration = props.tags.get("duration")?.integer;
 
     const onNext = () => {
-        if (!playable) {
+        if (!props.playable) {
             return;
         }
         props.doNext(props.musicID);
@@ -294,9 +295,9 @@ export const SongElem = React.memo((props: SongElemProps) => {
 
     return (
         <div
-            className={`song-elem ${playable ? "" : "song-elem-disabled"} ${(hovered && playable) ? "song-elem-hovered" : ""}`}
+            className={`song-elem ${props.playable ? "" : "song-elem-disabled"} ${(hovered && props.playable) ? "song-elem-hovered" : ""}`}
             style={{background: grad}}>
-            <Thumbnail playable={playable} onClick={onNext} setHovered={setHovered} cover={cover}/>
+            <Thumbnail playable={props.playable} onClick={onNext} setHovered={setHovered} cover={cover}/>
             <div style={{paddingLeft: "10px"}}>
                 <b>
                     <EditableText text={title.text || ""}
@@ -309,7 +310,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
                     {duration && " • " + timeFormat(duration)}
                 </span>
             </div>
-            <div className={`${playable ? "song-elem-playable" : ""}`}
+            <div className={`${props.playable ? "song-elem-playable" : ""}`}
                  style={{flexBasis: 0, flexGrow: 1, flexShrink: 1, height: "100%", minHeight: 60}} onClick={onNext}
                  onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
             </div>

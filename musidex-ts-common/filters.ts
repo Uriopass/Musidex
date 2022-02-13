@@ -1,4 +1,4 @@
-import {getTags, MusidexMetadata, canPlay, Vector} from "./entity";
+import {getTags, MusidexMetadata, Vector} from "./entity";
 import {prng, retain, dot} from "./utils";
 import Tracklist from "./tracklist";
 import {useMemo} from "react";
@@ -85,11 +85,17 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
         scoredMusicID = list.last_manual_select ?? scoredMusicID;
     }
 
+    let consideredMusic: number[] = useMemo(() => {
+        let musics = metadata.musics.slice();
+        applyFilters(search.filters, musics, metadata);
+        return musics;
+    }, [metadata, search.filters]);
+
     const scoremap: Map<number, number> = useMemo(() => {
         if (scoredMusicID === undefined) {
             return new Map();
         }
-        return scoreCache(metadata, scoredMusicID);
+        return scoreCache(metadata, consideredMusic, scoredMusicID);
     }, [metadata, scoredMusicID]);
 
     const temp = search.similarityParams.temperature;
@@ -110,7 +116,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
     }, [list, similKeepOrder]);
 
     const best_tracks = useMemo(() => {
-        const l = metadata.musics.slice();
+        const l = consideredMusic.slice();
         if (scoremap.size === 0) {
             return l;
         }
@@ -160,27 +166,22 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
                 case "similarity":
                     toShow = best_tracks.slice();
                     if (curTrack === undefined) {
-                        toShow = metadata.musics.slice();
-                        toShow.reverse();
+                        toShow = consideredMusic.slice();
                     }
-                    applyFilters(search.filters, toShow, metadata);
                     break;
                 case "creation_time":
-                    toShow = metadata.musics.slice();
-                    applyFilters(search.filters, toShow, metadata);
+                    toShow = consideredMusic.slice();
                     toShow.reverse();
                     break;
                 case "tag":
                     const v = sortBy.kind.value;
-                    toShow = metadata.musics.slice();
-                    applyFilters(search.filters, toShow, metadata);
+                    toShow = consideredMusic.slice();
                     toShow.sort((a, b) => {
                         return (getTags(metadata, a)?.get(v)?.text || "").localeCompare(getTags(metadata, b)?.get(v)?.text || "");
                     });
                     break;
                 case "random":
-                    toShow = metadata.musics.slice();
-                    applyFilters(search.filters, toShow, metadata);
+                    toShow = consideredMusic.slice();
                     toShow.sort((a, b) => {
                         return prng(seed + a)() - prng(seed + b)();
                     });
@@ -202,18 +203,14 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
     };
 }
 
-export function scoreCache(metadata: MusidexMetadata, scoredMusic: number): Map<number, number> {
+export function scoreCache(metadata: MusidexMetadata, consideredMusic: number[], scoredMusic: number): Map<number, number> {
     const lastplayedvec = metadata.embeddings.get(scoredMusic);
     if (lastplayedvec === undefined) {
         return new Map();
     }
     let scoremap = new Map();
 
-    for (let music of metadata.musics) {
-        let tags = getTags(metadata, music);
-        if (tags === undefined || !canPlay(tags)) {
-            continue;
-        }
+    for (let music of consideredMusic) {
         let score = Math.random() * 0.0001;
         let neural = neuralScore(lastplayedvec, music, metadata);
         if (neural !== undefined) {
