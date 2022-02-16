@@ -96,7 +96,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
             return new Map();
         }
         return scoreCache(metadata, consideredMusic, scoredMusicID);
-    }, [metadata, scoredMusicID]);
+    }, [metadata, scoredMusicID, consideredMusic]);
 
     const temp = search.similarityParams.temperature;
     const alreadyplayedMalus = useMemo(() => {
@@ -128,7 +128,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
             return ((scoremap.get(b) ?? -100) + (alreadyplayedMalus.get(b) ?? 0)) - ((scoremap.get(a) ?? -100) + (alreadyplayedMalus.get(a) ?? 0)) + vc;
         });
         return l;
-    }, [metadata, scoremap, temp, alreadyplayedMalus]);
+    }, [scoremap, temp, alreadyplayedMalus, consideredMusic]);
 
     const fuse = useMemo(() => {
         return new Fuse(metadata.fuse_document, fuseOptions);
@@ -194,7 +194,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
 
         return toShow;
         /* eslint-disable */
-    }, [metadata, search, sortBy, list, best_tracks]);
+    }, [metadata, search, sortBy, list, best_tracks, consideredMusic]);
     /* eslint-enable */
 
     return {
