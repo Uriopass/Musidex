@@ -1,10 +1,22 @@
+function parseURL(url) {
+    if (!url) {
+        return "";
+    }
+    if (!url.startsWith("http")) {
+        url = "http://" + url;
+    }
+    while (url.endsWith("/")) {
+        url = url.slice(0, url.length - 1);
+    }
+    return url;
+}
+
 let glob = 0;
 
 chrome.storage.local.get(['apiurl'], (res) => {
     document.getElementById("apiURL").value = res.apiurl || "";
     onInputChange();
 });
-import {parseURL} from "./url";
 
 function onInputChange() {
     let v = document.getElementById("apiURL");
@@ -63,7 +75,7 @@ function renderUsers(meta) {
         return;
     }
 
-    udiv.innerHTML = `<div>Found users:</div>`;
+    udiv.innerHTML = "<div>Found users:</div>";
 
     for (let user of meta.users) {
         let elem = document.createElement("li");
