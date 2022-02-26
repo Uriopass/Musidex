@@ -400,7 +400,10 @@ fn set_nocors(req: &mut Response<Body>) {
 }
 
 fn set_defaultcors(origin: &str, req: &mut Response<Body>) {
-    if origin.starts_with("https://www.youtube.com") || origin.starts_with("https://youtube.com") {
+    if origin.starts_with("https://www.youtube.com")
+        || origin.starts_with("https://youtube.com")
+        || origin.starts_with("chrome-extension")
+    {
         req.headers_mut()
             .insert(ACCESS_CONTROL_ALLOW_ORIGIN, origin.parse().unwrap());
         req.headers_mut()
