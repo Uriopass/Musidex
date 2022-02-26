@@ -1,6 +1,6 @@
 {
 	"name": "Musidex YT Fetch",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Upload song to playlist directly from youtube",
 	"homepage_url": "https://github.com/Uriopass/Musidex",
 	"manifest_version": 2,
