@@ -403,6 +403,7 @@ fn set_defaultcors(origin: &str, req: &mut Response<Body>) {
     if origin.starts_with("https://www.youtube.com")
         || origin.starts_with("https://youtube.com")
         || origin.starts_with("chrome-extension")
+        || origin.starts_with("moz-extension")
     {
         req.headers_mut()
             .insert(ACCESS_CONTROL_ALLOW_ORIGIN, origin.parse().unwrap());

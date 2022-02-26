@@ -1,12 +1,21 @@
-// Don't forget to import this wherever you use it
-import optionsStorage from './options-storage.js';
-optionsStorage.syncForm('#options-form');
-import {parseURL} from "./url";
-
 let glob = 0;
 
-document.getElementById("apiURL").addEventListener('input', () => {
+chrome.storage.local.get(['apiurl'], (res) => {
+    document.getElementById("apiURL").value = res.apiurl || "";
+    onInputChange();
+});
+import {parseURL} from "./url";
+
+function onInputChange() {
     let v = document.getElementById("apiURL");
+    if(!v) {
+        return;
+    }
+
+    chrome.storage.local.set({apiurl: v.value});
+    if(v.value === "") {
+        return;
+    }
 
     glob += 1;
     let _glob = glob;
@@ -30,7 +39,7 @@ document.getElementById("apiURL").addEventListener('input', () => {
             }
             return resp.json();
         }).then((resp) => {
-            chrome.storage.sync.set({
+            chrome.storage.local.set({
                 metadata: resp,
             });
             check.style.color = "green";
@@ -46,7 +55,9 @@ document.getElementById("apiURL").addEventListener('input', () => {
             renderUsers();
         })
     }, 300);
-})
+}
+
+document.getElementById("apiURL").addEventListener('input', onInputChange);
 
 function renderUsers(meta) {
     let udiv = document.getElementById("users");

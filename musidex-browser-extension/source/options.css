@@ -1,18 +1,10 @@
 html {
-	min-width: 550px;
 	overflow-x: hidden; /* Required to hide horizontal scroll on Firefox */
 }
 
 /* For use with screen readers */
 .sr-only {
 	display: none;
-}
-
-/* Hide spinbox for number inputs */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-	-webkit-appearance: none;
-	margin: 0;
 }
 
 input[type='number'] {
@@ -62,8 +54,17 @@ input[type='text'] {
 	margin-top: 10px;
 }
 
-.user {
+#options-form {
+	background-color: white;
+	padding: 20px;
+}
 
+input[type='text'] {
+	background-color: white;
+}
+
+#apiURL {
+	border: 1px solid black;
 }
 
 @-moz-document url-prefix('') {

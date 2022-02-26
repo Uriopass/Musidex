@@ -1,11 +1,8 @@
-// eslint-disable-next-line import/no-unassigned-import
-import './options-storage.js';
-import optionsStorage from "./options-storage";
 import {parseURL} from "./url";
 
 let apiURL = "";
-optionsStorage.getAll().then((v) => {
-    apiURL = parseURL(v.api_url);
+chrome.storage.local.get(['apiurl'], (res) => {
+    apiURL = parseURL(res.apiurl);
 
     fetch(apiURL + "/api/metadata_extension").then((resp) => {
         if (!resp.ok) {
@@ -13,7 +10,7 @@ optionsStorage.getAll().then((v) => {
         }
         return resp.json();
     }).then((resp) => {
-        chrome.storage.sync.set({
+        chrome.storage.local.set({
             metadata: resp,
         });
     }).catch(() => {})

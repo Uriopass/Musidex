@@ -1,13 +1,10 @@
-import optionsStorage from './options-storage.js';
 import {parseURL} from "./url";
 
 let apiURL = "";
 let metadata;
 let selectedUser;
-optionsStorage.getAll().then((v) => {
-    apiURL = parseURL(v.api_url);
-})
-chrome.storage.sync.get(['metadata', 'selecteduser'], (res) => {
+chrome.storage.local.get(['metadata', 'selecteduser', 'apiurl'], (res) => {
+    apiURL = parseURL(res.apiurl);
     metadata = res.metadata;
     if (metadata) {
         if (selectedUser === undefined) {
@@ -23,10 +20,20 @@ function youtubeUpload(url) {
     if (apiURL === "" || selectedUser === undefined) {
         return;
     }
+    let micon = document.getElementById("musidexMusicIcon");
+    micon.setAttribute('fill', "#959595");
     return fetch(apiURL + "/api/youtube_upload", {
         method: "post",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({url: url, uid: selectedUser.id}),
+    }).then((resp) => {
+        if(!resp.ok && resp.status !== 409) {
+            micon.setAttribute('fill', "#ce3d3d");
+        }
+        micon.setAttribute('fill', "#71c771");
+    }).catch((e) => {
+        console.log(e);
+        micon.setAttribute('fill', "#ce3d3d");
     });
 }
 
@@ -35,7 +42,7 @@ function musidexOnClick() {
 }
 
 let musicIcon = `
-<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ad70bd"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 5v8.55c-.94-.54-2.1-.75-3.33-.32-1.34.48-2.37 1.67-2.61 3.07-.46 2.74 1.86 5.08 4.59 4.65 1.96-.31 3.35-2.11 3.35-4.1V7h2c1.1 0 2-.9 2-2s-.9-2-2-2h-2c-1.1 0-2 .9-2 2z"/></svg>`;
+<svg id="musidexMusicIcon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ad70bd"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 5v8.55c-.94-.54-2.1-.75-3.33-.32-1.34.48-2.37 1.67-2.61 3.07-.46 2.74 1.86 5.08 4.59 4.65 1.96-.31 3.35-2.11 3.35-4.1V7h2c1.1 0 2-.9 2-2s-.9-2-2-2h-2c-1.1 0-2 .9-2 2z"/></svg>`;
 
 function musidexChangeUser() {
     let d = document.getElementById("musidexUserSelect");
@@ -46,7 +53,7 @@ function musidexChangeUser() {
     for (let user of metadata.users) {
         if (user.id === id) {
             selectedUser = user;
-            chrome.storage.sync.set({
+            chrome.storage.local.set({
                 selecteduser: user,
             });
             break;
@@ -54,14 +61,16 @@ function musidexChangeUser() {
     }
 }
 
-let retries = 0;
 let showDiv = () => {
-    retries += 1;
+    if(metadata === undefined || selectedUser === undefined) {
+        return;
+    }
+    setTimeout(showDiv, 1000);
+    if (document.getElementById("musidexDiv")) {
+        return;
+    }
     let elem = document.getElementById("top-level-buttons-computed");
-    if (!elem || metadata === undefined || selectedUser === undefined) {
-        if (retries < 10) {
-            setTimeout(showDiv, 1000);
-        }
+    if (!elem) {
         return;
     }
 
@@ -69,6 +78,7 @@ let showDiv = () => {
     outerDiv.style.display = "flex";
     outerDiv.style.alignItems = "center";
     outerDiv.style.cursor = "pointer";
+    outerDiv.id = "musidexDiv";
 
     let musicIconDiv = document.createElement("div");
     musicIconDiv.innerHTML = musicIcon;
