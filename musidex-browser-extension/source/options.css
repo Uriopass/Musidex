@@ -62,6 +62,10 @@ input[type='text'] {
 	margin-top: 10px;
 }
 
+.user {
+
+}
+
 @-moz-document url-prefix('') {
 	.only-firefox {
 		display: block;

@@ -1,20 +1,7 @@
 // Don't forget to import this wherever you use it
 import optionsStorage from './options-storage.js';
-
 optionsStorage.syncForm('#options-form');
-
-function parseURL(url) {
-    if (url === "") {
-        return "";
-    }
-    if (!url.startsWith("http")) {
-        url = "http://" + url;
-    }
-    while (url.endsWith("/")) {
-        url = url.slice(0, url.length - 1);
-    }
-    return url;
-}
+import {parseURL} from "./url";
 
 let glob = 0;
 
@@ -31,23 +18,50 @@ document.getElementById("apiURL").addEventListener('input', () => {
         check.style.color = "gray";
         check.innerText = "Checking...";
         let url = parseURL(v.value);
-        fetch(url + "/api/ping").then((resp) => {
+        fetch(url + "/api/metadata_extension").then((resp) => {
             if (_glob !== glob) {
                 return;
             }
             if (!resp.ok) {
                 check.style.color = "red";
                 check.innerText = "Could not connect :(";
+                renderUsers();
                 return;
             }
+            return resp.json();
+        }).then((resp) => {
+            chrome.storage.sync.set({
+                metadata: resp,
+            });
             check.style.color = "green";
             check.innerText = "Connected! :)";
-        }).catch(() => {
+            renderUsers(resp);
+        }).catch((e) => {
             if (_glob !== glob) {
                 return;
             }
+            console.log(e);
             check.style.color = "red";
             check.innerText = "Could not connect :(";
+            renderUsers();
         })
     }, 300);
 })
+
+function renderUsers(meta) {
+    let udiv = document.getElementById("users");
+    if(meta === undefined) {
+        udiv.innerHTML = "";
+        return;
+    }
+    udiv.innerHTML = `
+    <div>Found users:</div>
+    `;
+    for (let user of meta.users) {
+        udiv.innerHTML += `
+        <li class="user">
+            ${user.name}
+        </li>
+        `;
+    }
+}
