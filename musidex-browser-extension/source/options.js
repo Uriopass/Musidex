@@ -32,10 +32,7 @@ function onInputChange() {
                 return;
             }
             if (!resp.ok || resp.status === 404) {
-                check.style.color = "red";
-                check.innerText = "Could not connect :(";
-                renderUsers();
-                return;
+                throw "Network error";
             }
             return resp.json();
         }).then((resp) => {
