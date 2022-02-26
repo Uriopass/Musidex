@@ -69,7 +69,14 @@ let showDiv = () => {
     if (document.getElementById("musidexDiv")) {
         return;
     }
-    let elem = document.getElementById("top-level-buttons-computed");
+    let elems = document.querySelectorAll("#top-level-buttons-computed");
+    let elem;
+    for (let ielem of elems) {
+        if(ielem.childElementCount === 5) {
+            elem = ielem;
+            break;
+        }
+    }
     if (!elem) {
         return;
     }
