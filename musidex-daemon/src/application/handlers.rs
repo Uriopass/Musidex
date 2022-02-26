@@ -31,6 +31,22 @@ pub async fn metadata_compressed(req: Request<Body>) -> Result<Response<Body>> {
     Ok(Response::new(Body::from(compressed)))
 }
 
+#[derive(SerJson)]
+struct ExtData {
+    users: Vec<User>,
+}
+
+pub async fn metadata_extension(req: Request<Body>) -> Result<Response<Body>> {
+    let db = req.state::<Db>();
+    let c = db.get().await;
+
+    let users = User::list(&c).context("failed fetching users")?;
+
+    Ok(Response::new(Body::from(
+        ExtData { users }.serialize_json(),
+    )))
+}
+
 pub async fn ping(_: Request<Body>) -> Result<Response<Body>> {
     Ok(Response::new(Body::empty()))
 }

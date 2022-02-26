@@ -60,6 +60,7 @@ async fn start() -> anyhow::Result<()> {
             }
         })
         .get("/api/metadata", handlers::metadata)
+        .get("/api/metadata_extension", handlers::metadata_extension)
         .get("/api/metadata/compressed", handlers::metadata_compressed)
         .get("/api/ping", handlers::ping)
         .get("/api/metadata/ws", handlers::subscribe_sync)
