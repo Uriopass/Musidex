@@ -62,10 +62,10 @@ function musidexChangeUser() {
 }
 
 let showDiv = () => {
+    setTimeout(showDiv, 1000);
     if(metadata === undefined || selectedUser === undefined) {
         return;
     }
-    setTimeout(showDiv, 1000);
     if (document.getElementById("musidexDiv")) {
         return;
     }
