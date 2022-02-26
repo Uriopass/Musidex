@@ -31,7 +31,7 @@ function onInputChange() {
             if (_glob !== glob) {
                 return;
             }
-            if (!resp.ok) {
+            if (!resp.ok || resp.status === 404) {
                 check.style.color = "red";
                 check.innerText = "Could not connect :(";
                 renderUsers();
