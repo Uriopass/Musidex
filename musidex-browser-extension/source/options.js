@@ -62,14 +62,13 @@ function renderUsers(meta) {
         udiv.innerHTML = "";
         return;
     }
-    udiv.innerHTML = `
-    <div>Found users:</div>
-    `;
+
+    udiv.innerHTML = `<div>Found users:</div>`;
+
     for (let user of meta.users) {
-        udiv.innerHTML += `
-        <li class="user">
-            ${user.name}
-        </li>
-        `;
+        let elem = document.createElement("li");
+        elem.className = "user";
+        elem.innerText = user.name;
+        udiv.append(elem);
     }
 }

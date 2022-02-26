@@ -104,11 +104,13 @@ let showDiv = () => {
     select.onchange = musidexChangeUser;
     select.id = "musidexUserSelect";
 
-    let html = "";
     for (let user of metadata.users) {
-        html += `<option ${user.id === selectedUser.id ? "selected" : ""} value="${user.id}">${user.name}</option>`;
+        let option = document.createElement('option');
+        option.selected = user.id === selectedUser.id;
+        option.value = user.id.toString(10);
+        option.innerText = user.name;
+        select.appendChild(option);
     }
-    select.innerHTML = html;
     outerDiv.appendChild(select);
 
     elem.appendChild(outerDiv);
