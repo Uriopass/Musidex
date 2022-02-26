@@ -58,6 +58,10 @@ input[type='text'] {
 	display: none;
 }
 
+#loading {
+	margin-top: 10px;
+}
+
 @-moz-document url-prefix('') {
 	.only-firefox {
 		display: block;

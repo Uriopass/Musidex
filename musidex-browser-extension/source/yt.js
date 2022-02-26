@@ -1,4 +1,3 @@
-console.log("I was loaded! 2");
 import optionsStorage from './options-storage.js';
 
 function parseURL(url) {
