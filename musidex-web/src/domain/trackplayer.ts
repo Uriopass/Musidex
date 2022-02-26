@@ -9,6 +9,7 @@ type TrackPlayer = {
     duration: number;
     paused: boolean;
     loading: boolean;
+    loop: boolean;
     audio: HTMLAudioElement;
 }
 
@@ -22,6 +23,7 @@ export function newTrackPlayer(): TrackPlayer {
         audio: audio,
         duration: 0,
         paused: true,
+        loop: false,
         loading: false,
     }
 }
@@ -30,7 +32,12 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
     trackplayer.audio.onloadeddata = () => dispatch({action: "audioTick"});
     trackplayer.audio.onplaying = () => dispatch({action: "audioTick"});
     trackplayer.audio.onpause = () => dispatch({action: "audioTick"});
-    trackplayer.audio.onended = () => doNext();
+    trackplayer.audio.onended = () => {
+        if (trackplayer.loop) {
+            return;
+        }
+        doNext();
+    }
     trackplayer.audio.oncanplay = () => {
         trackplayer.loading = false;
         if (!trackplayer.paused) {
@@ -57,7 +64,7 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
         let artwork = [];
         let thumb = curtags?.get("thumbnail")?.text;
         if (thumb) {
-            artwork.push({ src: "storage/"+thumb,   type: 'image/jpeg' });
+            artwork.push({src: "storage/" + thumb, type: 'image/jpeg'});
         }
         let title = curtags?.get("title")?.text || "No Title";
         trackplayer.audio.title = title;
@@ -134,6 +141,12 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
                 duration: duration || 0,
                 loading: true,
                 paused: false,
+            }
+        case "loop":
+            trackplayer.audio.loop = action.shouldLoop;
+            return {
+                ...trackplayer,
+                loop: action.shouldLoop,
             }
         case "setTime":
             trackplayer.audio.currentTime = action.time;

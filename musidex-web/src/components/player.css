@@ -93,6 +93,22 @@
     to   { transform: rotate(360deg); }
 }
 
+.loop-button {
+    background-color: transparent;
+    border: transparent;
+    color: var(--color-fg);
+    display: inline-flex;
+}
+
+.loop-button:hover * {
+    transition: 0.2s;
+    transform: scale(1.2);
+}
+
+.loop-button-enabled {
+    color: var(--primary);
+}
+
 .player-button {
     background-color: transparent;
     border: transparent;

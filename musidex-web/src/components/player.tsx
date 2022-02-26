@@ -1,7 +1,7 @@
 import {MaterialIcon, ProgressBar} from "./utils";
 import './player.css'
 import {TrackplayerCtx} from "../domain/trackplayer";
-import React, {useCallback, useContext, useEffect} from "react";
+import React, {useCallback, useContext, useEffect, useState} from "react";
 import {PlayButton} from "./playbutton";
 import {NextTrackCallback} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
@@ -74,12 +74,21 @@ const Player = (props: PlayerProps) => {
         enableNoSleep();
     }, [doNext]);
 
+    const [loop, setLoop] = useState(false);
+    const clickLoop = useCallback(() => {
+        setLoop(!loop);
+        dispatch({
+            action: "loop",
+            shouldLoop: !loop,
+        });
+    }, [loop, setLoop, dispatch]);
+
     let buffered: [number, number][] = [];
     if (trackplayer.duration > 1) {
         buffered = Array(trackplayer.audio.buffered.length).fill(0).map((_, idx) => {
-            const s = Math.max(0,trackplayer.audio.buffered.start(idx) / trackplayer.duration);
+            const s = Math.max(0, trackplayer.audio.buffered.start(idx) / trackplayer.duration);
             const e = Math.min(1, trackplayer.audio.buffered.end(idx) / trackplayer.duration);
-            return [s, e-s];
+            return [s, e - s];
         })
     }
 
@@ -91,7 +100,8 @@ const Player = (props: PlayerProps) => {
                 {
                     (thumbnail !== "") &&
                     <div className="player-current-track-thumbnail">
-                        <img src={"storage/" + thumbnail} alt="song cover" style={{animationPlayState: trackplayer.paused ? "paused" : "running"}}/>
+                        <img src={"storage/" + thumbnail} alt="song cover"
+                             style={{animationPlayState: trackplayer.paused ? "paused" : "running"}}/>
                     </div>
                 }
                 <div className="player-current-track-title">
@@ -104,14 +114,20 @@ const Player = (props: PlayerProps) => {
             </div>
             <div className="player-central-menu">
                 <div className="player-controls">
+                    <div className="player-button">
+                    </div>
                     <button className="player-button" onClick={props.onPrev} disabled={!canPrev} title="Previous Track">
                         <MaterialIcon size={20}
                                       name="skip_previous"/>
                     </button>
                     <PlayButton musicID={trackplayer.current} doNext={props.doNext} size={26}/>
-                    <button className=" player-button" onClick={clickNext} title="Next Track">
+                    <button className="player-button" onClick={clickNext} title="Next Track">
                         <MaterialIcon size={20}
-                                      name=" skip_next"/>
+                                      name="skip_next"/>
+                    </button>
+                    <button className={"loop-button " + (loop ? "loop-button-enabled" : "")} onClick={clickLoop} title="Loop this music">
+                        <MaterialIcon size={20}
+                                      name="repeat_one"/>
                     </button>
                 </div>
                 <div className="player-track-bar">

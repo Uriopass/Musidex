@@ -7,6 +7,7 @@ export type TrackPlayerAction =
     { action: "play", id: number, tags?: Tags }
     | { action: "audioTick" }
     | { action: "setTime", time: number }
+    | { action: "loop", shouldLoop: boolean }
     | { action: "reset" }
 
 type Tracklist = {
