@@ -5,10 +5,6 @@ use hyper::StatusCode;
 use rusqlite::Connection;
 
 pub async fn youtube_upload(c: &mut Connection, url: String, uid: UserID) -> Result<StatusCode> {
-    if Tag::by_text(&c, &url)?.len() > 0 {
-        return Ok(StatusCode::CONFLICT);
-    }
-
     let metadata = ytdl_run_with_args(vec!["--no-playlist", "-J", "--", &url])
         .await
         .context("error downloading metadata")?;
