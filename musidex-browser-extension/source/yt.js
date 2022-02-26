@@ -72,7 +72,7 @@ let showDiv = () => {
     let elems = document.querySelectorAll("#top-level-buttons-computed");
     let elem;
     for (let ielem of elems) {
-        if(ielem.childElementCount === 5) {
+        if(ielem.childElementCount >= 5 && ielem.childElementCount <= 7) {
             elem = ielem;
             break;
         }
