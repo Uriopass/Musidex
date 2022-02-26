@@ -1,5 +1,5 @@
 export function parseURL(url) {
-    if (url === "") {
+    if (!url) {
         return "";
     }
     if (!url.startsWith("http")) {
