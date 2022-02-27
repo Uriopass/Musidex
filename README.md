@@ -27,9 +27,9 @@ Choose a starting point and let it choose the next song for you!
 - [x] Docker build
 - [x] iOS App
 - [x] Local download for apps
+- [x] Browser extension to add YT videos to library directly from youtube
 - [ ] Tag filtering
 - [ ] Playlists through tags/Tag editor
-- [ ] Chrome extension to add YT videos to library
 - [ ] Basic authentication
 - [ ] CD
 - [ ] MP3 import
