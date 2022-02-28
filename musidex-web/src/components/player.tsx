@@ -1,7 +1,7 @@
 import {MaterialIcon, ProgressBar} from "./utils";
 import './player.css'
 import {TrackplayerCtx} from "../domain/trackplayer";
-import React, {useCallback, useContext, useEffect, useState} from "react";
+import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
 import {PlayButton} from "./playbutton";
 import {NextTrackCallback} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
@@ -83,6 +83,25 @@ const Player = (props: PlayerProps) => {
         });
     }, [loop, setLoop, dispatch]);
 
+    const [timerEnabled, setTimerEnabled] = useState(false);
+    const [timerChooseDuration, setTimerChooseDuration] = useState(false);
+    const timerGlobal = useRef(0);
+
+    const timerClick = useCallback(() => {
+        if (!timerEnabled && !timerChooseDuration) {
+            setTimerChooseDuration(true);
+        }
+        if (timerEnabled) {
+            setTimerEnabled(false);
+            setTimerChooseDuration(false);
+            timerGlobal.current += 1;
+            dispatch({
+                action: "pause",
+                pauseAtEnd: false,
+            });
+        }
+    }, [timerEnabled, setTimerEnabled, timerChooseDuration, setTimerChooseDuration, dispatch]);
+
     let buffered: [number, number][] = [];
     if (trackplayer.duration > 1) {
         buffered = Array(trackplayer.audio.buffered.length).fill(0).map((_, idx) => {
@@ -92,9 +111,52 @@ const Player = (props: PlayerProps) => {
         })
     }
 
+    const chooseTime = useCallback((time: number, musicends: boolean) => {
+        timerGlobal.current += 1;
+        let tim = timerGlobal.current;
+        dispatch({
+            action: "pause",
+            pauseAtEnd: false,
+        });
+        setTimeout(() => {
+            if(timerGlobal.current !== tim) {
+                return;
+            }
+            if(!musicends) {
+                setTimerEnabled(false);
+            }
+            dispatch({
+                action: "pause",
+                pauseAtEnd: musicends ? true : undefined,
+            });
+        }, time * 1000);
+        setTimerEnabled(true);
+    }, [dispatch, timerGlobal, setTimerEnabled]);
+
     const canPrev = list.last_played.length > 1;
 
-    return (
+    return <>
+        {
+            timerChooseDuration && (
+                <div className="choose-duration-outer" onClick={() => setTimerChooseDuration(false)}>
+                    <div className="choose-duration" onClick={() => {}}>
+                        Sleep in:
+                        <div className="duration-button" onClick={() => chooseTime(10 * 60, false)}>
+                            10 minutes
+                        </div>
+                        <div className="duration-button" onClick={() => chooseTime(30 * 60, false)}>
+                            30 minutes
+                        </div>
+                        <div className="duration-button" onClick={() => chooseTime(0, true)}>
+                            When music ends
+                        </div>
+                        <div className="duration-button duration-button-cancel" onClick={() => setTimerChooseDuration(false)}>
+                            Cancel
+                        </div>
+                    </div>
+                </div>
+            )
+        }
         <div className="player fg color-fg">
             <div className="player-current-track">
                 {
@@ -125,7 +187,8 @@ const Player = (props: PlayerProps) => {
                         <MaterialIcon size={20}
                                       name="skip_next"/>
                     </button>
-                    <button className={"loop-button " + (loop ? "loop-button-enabled" : "")} onClick={clickLoop} title="Loop this music">
+                    <button className={"loop-button " + (loop ? "loop-button-enabled" : "")} onClick={clickLoop}
+                            title="Loop this music">
                         <MaterialIcon size={20}
                                       name="repeat_one"/>
                     </button>
@@ -141,6 +204,11 @@ const Player = (props: PlayerProps) => {
                 </div>
             </div>
             <div className="player-global-controls">
+                <button className={"loop-button moon-timer-button " + (timerEnabled ? "loop-button-enabled" : "")} onClick={timerClick}
+                        title="Set a sleep timer">
+                    <MaterialIcon size={17}
+                                  name="nightlight_round"/>
+                </button>
                 <div className="player-volume">
                     <span className="player-track-info">
                         <MaterialIcon size={15} name={volumeIcon}/>
@@ -150,7 +218,7 @@ const Player = (props: PlayerProps) => {
                 </div>
             </div>
         </div>
-    )
+    </>
 }
 
 export default Player;

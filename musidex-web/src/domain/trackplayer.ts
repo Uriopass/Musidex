@@ -10,6 +10,7 @@ type TrackPlayer = {
     paused: boolean;
     loading: boolean;
     loop: boolean;
+    pauseatend: boolean;
     audio: HTMLAudioElement;
 }
 
@@ -24,6 +25,7 @@ export function newTrackPlayer(): TrackPlayer {
         duration: 0,
         paused: true,
         loop: false,
+        pauseatend: false,
         loading: false,
     }
 }
@@ -33,7 +35,7 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
     trackplayer.audio.onplaying = () => dispatch({action: "audioTick"});
     trackplayer.audio.onpause = () => dispatch({action: "audioTick"});
     trackplayer.audio.onended = () => {
-        if (trackplayer.loop) {
+        if (trackplayer.loop || trackplayer.pauseatend) {
             return;
         }
         doNext();
@@ -141,6 +143,19 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
                 duration: duration || 0,
                 loading: true,
                 paused: false,
+            }
+        case "pause":
+            if(action.pauseAtEnd !== undefined ) {
+                return {
+                    ...trackplayer,
+                    pauseatend: action.pauseAtEnd,
+                }
+            }
+            trackplayer.audio.pause();
+            return {
+                ...trackplayer,
+                paused: true,
+                pauseatend: false,
             }
         case "loop":
             trackplayer.audio.loop = action.shouldLoop;

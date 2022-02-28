@@ -5,6 +5,7 @@ import {useCallback, useRef} from "react";
 
 export type TrackPlayerAction =
     { action: "play", id: number, tags?: Tags }
+    | { action: "pause", pauseAtEnd?: boolean }
     | { action: "audioTick" }
     | { action: "setTime", time: number }
     | { action: "loop", shouldLoop: boolean }
