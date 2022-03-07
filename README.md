@@ -13,6 +13,14 @@ Let Musidex handle it for you, a neural network analyses your musics and checks 
 to provide semantic autoplaying.  
 Choose a starting point and let it choose the next song for you!
 
+### Demo
+
+Try the demo at:
+
+https://demo.douady.paris/
+
+Please don't mess it up. :)
+
 ### Roadmap
 
 
