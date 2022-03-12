@@ -87,6 +87,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
 
     let consideredMusic: number[] = useMemo(() => {
         let musics = metadata.musics.slice();
+        musics.reverse();
         applyFilters(search.filters, musics, metadata);
         return musics;
     }, [metadata, search.filters]);
@@ -171,7 +172,6 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
                     break;
                 case "creation_time":
                     toShow = consideredMusic.slice();
-                    toShow.reverse();
                     break;
                 case "tag":
                     const v = sortBy.kind.value;
