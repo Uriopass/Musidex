@@ -67,9 +67,9 @@ const App = (props: { syncProblem: boolean }) => {
     const [userStr, setUserStr] = useCookie("cur_user", undefined);
     const user = parseInt(userStr || "undefined") || undefined;
     const setUser = useCallback((v: number) => setUserStr(v.toString()), [setUserStr]);
-    const _sform = useLocalStorage<SearchForm>("searchform_v2", newSearchForm(user));
+    const _sform = useLocalStorage<SearchForm>("searchform_v2", newSearchForm(user), {syncData: false});
     const [sform, setSform] = _sform;
-    const [volume, setVolume] = useLocalStorage("volume", 1);
+    const [volume, setVolume] = useLocalStorage("volume", 1, {syncData: false});
     const tp = useReducer(applyTrackPlayer, newTrackPlayer());
     const [trackplayer, dispatchPlayer] = tp;
     const [curPage, setCurPage] = useState<Page>({path: "explorer", submit: false});
