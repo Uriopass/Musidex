@@ -5,6 +5,16 @@
     display: flex;
     flex-flow: column;
     align-items: center;
+    flex-grow: 1;
+}
+
+.explorer-search-form {
+    width: calc(100% - 20px);
+}
+
+.explorer-musics {
+    width: 100%;
+    flex-grow: 1;
 }
 
 .song-elem {
@@ -15,7 +25,7 @@
     margin-top: 5px;
     align-items: center;
     overflow: hidden;
-    width: calc(100% - 20px);
+    width: calc(100% - 10px);
 }
 
 .song-elem-playable {

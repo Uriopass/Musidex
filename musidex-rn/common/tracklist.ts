@@ -33,7 +33,6 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
     f.current = (id) => {
         let list = {
             ...curlist,
-            last_manual_select: id || curlist.last_manual_select,
         };
 
         if (id === undefined) {
