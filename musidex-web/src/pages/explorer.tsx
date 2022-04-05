@@ -106,6 +106,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
                               width={width}
                               itemCount={toShow.list.length}
                               itemSize={65}
+                              overscanCount={10}
                         >
                             {({index, style}) => {
                                 let id = toShow.list[index] || -1;
