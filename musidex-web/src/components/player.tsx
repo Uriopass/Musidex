@@ -7,7 +7,7 @@ import {NextTrackCallback} from "../common/tracklist";
 import {MetadataCtx} from "../domain/metadata";
 import {clamp, timeFormat, useUpdate} from "../common/utils";
 import {getTags} from "../common/entity";
-import {TracklistCtx} from "../App";
+import {SelectedMusicsCtx, TracklistCtx} from "../App";
 import {enableNoSleep} from "../index";
 
 interface PlayerProps {
@@ -21,6 +21,7 @@ const Player = (props: PlayerProps) => {
     const list = useContext(TracklistCtx);
     const [metadata,] = useContext(MetadataCtx);
     const [, forceUpdate] = useUpdate();
+    const selected = useContext(SelectedMusicsCtx);
 
     useEffect(() => {
         trackplayer.audio.addEventListener("timeupdate", forceUpdate);
@@ -119,10 +120,10 @@ const Player = (props: PlayerProps) => {
             pauseAtEnd: false,
         });
         setTimeout(() => {
-            if(timerGlobal.current !== tim) {
+            if (timerGlobal.current !== tim) {
                 return;
             }
-            if(!musicends) {
+            if (!musicends) {
                 setTimerEnabled(false);
             }
             dispatch({
@@ -135,11 +136,22 @@ const Player = (props: PlayerProps) => {
 
     const canPrev = list.last_played.length > 1;
 
+    const onRandom = () => {
+        if (selected.list.length === 0) {
+            return;
+        }
+        let r = Math.floor(Math.random() * selected.list.length);
+        let v = selected.list[r];
+        if (v !== undefined) {
+            props.doNext(v);
+        }
+    };
+
     return <>
         {
             timerChooseDuration && (
                 <div className="choose-duration-outer" onClick={() => setTimerChooseDuration(false)}>
-                    <div className="choose-duration" onClick={() => {}}>
+                    <div className="choose-duration">
                         Sleep in:
                         <div className="duration-button" onClick={() => chooseTime(10 * 60, false)}>
                             10 minutes
@@ -150,7 +162,8 @@ const Player = (props: PlayerProps) => {
                         <div className="duration-button" onClick={() => chooseTime(0, true)}>
                             When music ends
                         </div>
-                        <div className="duration-button duration-button-cancel" onClick={() => setTimerChooseDuration(false)}>
+                        <div className="duration-button duration-button-cancel"
+                             onClick={() => setTimerChooseDuration(false)}>
                             Cancel
                         </div>
                     </div>
@@ -176,8 +189,11 @@ const Player = (props: PlayerProps) => {
             </div>
             <div className="player-central-menu">
                 <div className="player-controls">
-                    <div className="player-button">
-                    </div>
+                    <button className="player-button" onClick={onRandom} disabled={selected.list.length === 0}
+                            title="Random track">
+                        <MaterialIcon size={20}
+                                      name="casino"/>
+                    </button>
                     <button className="player-button" onClick={props.onPrev} disabled={!canPrev} title="Previous Track">
                         <MaterialIcon size={20}
                                       name="skip_previous"/>
@@ -204,7 +220,8 @@ const Player = (props: PlayerProps) => {
                 </div>
             </div>
             <div className="player-global-controls">
-                <button className={"loop-button moon-timer-button " + (timerEnabled ? "loop-button-enabled" : "")} onClick={timerClick}
+                <button className={"loop-button moon-timer-button " + (timerEnabled ? "loop-button-enabled" : "")}
+                        onClick={timerClick}
                         title="Set a sleep timer">
                     <MaterialIcon size={17}
                                   name="nightlight_round"/>
