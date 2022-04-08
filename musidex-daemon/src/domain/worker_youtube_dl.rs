@@ -63,8 +63,18 @@ impl YoutubeDLWorker {
             format!("{}.{}", metadata.id, ext),
         )?;
         add_tag_opt(TagKey::Thumbnail, metadata.thumbnail_filename)?;
+
+        let mut should_add_title = true;
+        if let Some(dur) = metadata.duration {
+            if dur > 20.0 * 60.0 {
+                should_add_title = false;
+            }
+        }
+
         add_tag_opt(TagKey::Artist, metadata.artist)?;
-        add_tag_opt(TagKey::Title, metadata.track)?;
+        if should_add_title {
+            add_tag_opt(TagKey::Title, metadata.track)?;
+        }
         add_tag(TagKey::YoutubeDLWorkerTreated, s!("true"))?;
 
         if let Some(v) = metadata.duration {

@@ -79,6 +79,11 @@ lazy_static::lazy_static! {
 
 // Returns title and artist from title
 fn parse_title(title: &str, v: &SingleVideo) -> (String, Option<String>) {
+    if let Some(d) = v.duration {
+        if d > 20.0 * 60.0 {
+            return (String::from(title), None);
+        }
+    }
     if let (Some(track), Some(artist)) = (&v.track, &v.artist) {
         return (track.clone(), Some(artist.clone()));
     }
