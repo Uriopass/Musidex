@@ -5,3 +5,4 @@ storage
 storage2
 mdx-daemon
 *.pyc
+backup*
