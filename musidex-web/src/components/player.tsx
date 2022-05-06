@@ -57,11 +57,11 @@ const Player = (props: PlayerProps) => {
         if (p < 0.02) {
             p = 0;
         }
-        props.onVolumeChange(p);
+        props.onVolumeChange(p * p);
     }
 
     let volumeIcon = "volume_up";
-    const v = trackplayer.audio.volume;
+    const v = Math.sqrt(trackplayer.audio.volume);
     if (v <= 0.5) {
         volumeIcon = "volume_down";
     }
@@ -230,7 +230,7 @@ const Player = (props: PlayerProps) => {
                     <span className="player-track-info">
                         <MaterialIcon size={15} name={volumeIcon}/>
                     </span>
-                    <ProgressBar onMouseMove={volumeOnMove} progress={trackplayer.audio.volume}/>
+                    <ProgressBar onMouseMove={volumeOnMove} progress={v}/>
                     <div style={{flex: 1}}/>
                 </div>
             </div>
