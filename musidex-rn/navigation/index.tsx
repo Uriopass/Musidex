@@ -67,7 +67,7 @@ function RootNavigator() {
         let timeout: any = {t: undefined};
         const last = list.last_played[list.last_played.length - 1];
         const duration = getTags(metadata, last)?.get("duration")?.integer;
-        if (duration === undefined || duration < 30 * 60) {
+        if (duration === undefined || duration < 20 * 60) {
             return;
         }
         let update = async () => {
