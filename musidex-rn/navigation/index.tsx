@@ -56,7 +56,7 @@ function RootNavigator() {
     const [list, setList, loadedListe] = useStored<Tracklist>("tracklist", emptyTracklist());
     const [user, setUser, loadedUser] = useStored<number | undefined>("user", firstUser(metadata));
     const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm", newSearchForm(user));
-    const [lastPosition, updateLastPosition, loadedPosition] = useStoredRef<PositionStorage>("last_position_v2", {positions: {}});
+    const [lastPosition, updateLastPosition, loadedPosition] = useStoredRef<PositionStorage>("last_position_v3", {positions: {}});
 
     const loaded = loadedListe && loadedUser && loadedSF && loadedPosition;
 
@@ -74,6 +74,13 @@ function RootNavigator() {
             const pos = await TrackPlayer.getPosition();
             if (pos === 0) {
                 timeout.t = setTimeout(update, 5000);
+                return;
+            }
+            if (pos > duration - 60) {
+                timeout.t = setTimeout(update, 5000);
+                updateLastPosition((v) => {
+                    delete v.current.positions[last];
+                });
                 return;
             }
             updateLastPosition((v) => {
