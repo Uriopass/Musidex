@@ -1,4 +1,12 @@
-import {Animated, FlatList, StyleSheet, TouchableOpacity, View} from "react-native";
+import {
+    ActivityIndicator,
+    Animated,
+    FlatList,
+    StyleSheet,
+    TouchableHighlight,
+    TouchableOpacity,
+    View
+} from "react-native";
 import React, {useCallback, useContext, useMemo, useRef, useState} from "react";
 import {getTags, Tag} from "../common/entity";
 import {TextBg, TextFg, TextFgGray, TextPrimary, TextSecondary} from "./StyledText";
@@ -13,15 +21,14 @@ import Thumbnail from "./Thumbnail";
 import {isMusicSynced, isThumbSynced} from "../domain/sync";
 import {Icon} from "react-native-elements";
 import {timeFormat} from "../common/utils";
+import {SwipeListView} from "react-native-swipe-list-view";
+import API from "../common/api";
 
 export default function Explorer() {
-    const [metadata] = useContext(Ctx.Metadata);
     const [user] = useContext(Ctx.User);
     const tracklist = useContext(Ctx.Tracklist);
-    const [doNext] = useContext(Ctx.Controls);
     const [searchForm, setSearchForm] = useContext(Ctx.SearchForm);
     const toShow = useContext(Ctx.SelectedMusics);
-    const syncState = useContext(Ctx.SyncState);
 
     const setSortBy = useCallback((s: SortBy) => setSearchForm({...searchForm, sort: s}), [setSearchForm, searchForm]);
     const setSearchQry = useCallback((s: string) => setSearchForm({
@@ -49,16 +56,16 @@ export default function Explorer() {
                       hasSimilarity={curTrack !== undefined}/>
         <FilterBySelect user={user} filters={searchForm.filters} setFilters={setFilters}/>
         {isSimilarity(searchForm) &&
-        <View style={styles.temperatureView}>
-            <Icon style={styles.temperatureIcon} color={Colors.colorbg} size={20} name="casino"/>
-            <Slider style={styles.temperatureSlider}
-                    minimumTrackTintColor={Colors.primary}
-                    thumbTintColor={Colors.colorfg}
-                    tapToSeek={true}
-                    maximumTrackTintColor={Colors.colorbg}
-                    value={firstV} minimumValue={0} maximumValue={100}
-                    onValueChange={vChange}/>
-        </View>}
+            <View style={styles.temperatureView}>
+                <Icon style={styles.temperatureIcon} color={Colors.colorbg} size={20} name="casino"/>
+                <Slider style={styles.temperatureSlider}
+                        minimumTrackTintColor={Colors.primary}
+                        thumbTintColor={Colors.colorfg}
+                        tapToSeek={true}
+                        maximumTrackTintColor={Colors.colorbg}
+                        value={firstV} minimumValue={0} maximumValue={100}
+                        onValueChange={vChange}/>
+            </View>}
     </>;
 
     return (
@@ -113,7 +120,7 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
     return <View style={styles.sortFilterSelect}>
         <Icon size={20} name="sort" color={Colors.colorbg}/>
         {props.hasSimilarity &&
-        <SortByElem sort={{kind: "similarity"}} name="Similarity"/>
+            <SortByElem sort={{kind: "similarity"}} name="Similarity"/>
         }
         <SortByElem sort={{kind: "tag", value: "title"}} name="Title"/>
         <SortByElem sort={{kind: "creation_time"}} name="Last added"/>
@@ -150,6 +157,9 @@ const FilterBySelect = React.memo((props: FilterBySelectProps) => {
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
+const hiddenOpacity = new Animated.Value(0);
+let prevRow: string;
+
 function SongList(props: {
     musics: MusicSelect,
     topComp: any,
@@ -162,7 +172,7 @@ function SongList(props: {
 
     const [refreshing, setRefreshing] = useState(false);
 
-    const flatRef = useRef<FlatList>(null);
+    let flatRef = useRef<FlatList>(null);
     const topOpacity = useRef(new Animated.Value(0)).current;
     const [hidden, setHidden] = useState(true);
 
@@ -204,34 +214,85 @@ function SongList(props: {
         flatRef.current?.scrollToOffset({offset: 0, animated: true});
     };
 
+    const objRef = useRef();
+
     return <>
-        <FlatList data={props.musics.list}
-                  refreshing={refreshing}
-                  onRefresh={() => {
-                      setRefreshing(true);
-                      fetchMetadata().then(() => setRefreshing(false));
-                  }}
-                  keyboardShouldPersistTaps={"handled"}
-                  ref={flatRef}
-                  ListHeaderComponent={props.topComp}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={renderSong}
-                  onScroll={onScroll}
-                  maxToRenderPerBatch={5}
-                  initialNumToRender={10}
-                  windowSize={5}
-                  keyExtractor={(item) => item.toString()}
-                  style={styles.musiclist}/>
+        <SwipeListView
+            ref={objRef}
+            useFlatList={true}
+            data={props.musics.list}
+            refreshing={refreshing}
+            onRefresh={() => {
+                setRefreshing(true);
+                fetchMetadata().then(() => setRefreshing(false));
+            }}
+            keyboardShouldPersistTaps={"handled"}
+            listViewRef={(view: any) => flatRef.current = view}
+            renderHiddenItem={(rowData, rowMap) => {
+                return <SongElemHiddenItem userID={searchForm.filters.user || -1} musicID={rowData.item} fetchMetadata={fetchMetadata}/>;
+            }}
+            renderItem={renderSong}
+            ListHeaderComponent={props.topComp}
+            showsVerticalScrollIndicator={false}
+            onScroll={onScroll}
+            disableRightSwipe={true}
+            rightOpenValue={-50}
+            stopRightSwipe={-50}
+            maxToRenderPerBatch={5}
+            directionalDistanceChangeThreshold={10}
+            initialNumToRender={10}
+            windowSize={5}
+            onRowOpen={(rowKey) => {
+                hiddenOpacity.setValue(1);
+                prevRow = rowKey;
+            }}
+            onRowClose={(_, rowMap) => {
+                hiddenOpacity.setValue(0);
+                if (prevRow) {
+                    let cpy = prevRow;
+                    prevRow = "";
+                    rowMap[cpy]?.closeRow();
+                }
+            }}
+            keyExtractor={(item) => item.toString()}
+            style={styles.musiclist}/>
         {!hidden &&
-        <AnimatedTouchable
-            style={[styles.arrowUp, {opacity: topOpacity}]}
-            onPress={onGoToTop}>
-            <Icon size={20} name="arrow-upward" color="black"/>
-        </AnimatedTouchable>
+            <AnimatedTouchable
+                style={[styles.arrowUp, {opacity: topOpacity}]}
+                onPress={onGoToTop}>
+                <Icon size={20} name="arrow-upward" color="black"/>
+            </AnimatedTouchable>
         }
     </>;
 }
 
+type SongElemHiddenItemProps = {
+    musicID: number;
+    userID: number;
+    fetchMetadata: () => void;
+};
+
+const SongElemHiddenItem = (props: SongElemHiddenItemProps) => {
+    let [loading, setLoading] = useState(false);
+    return <TouchableOpacity activeOpacity={0.2}
+                             style={styles.hiddenItem}
+                             onPress={() => {
+                                 setLoading(true);
+                                 API.deleteMusicUser(props.musicID, props.userID).then(() => props.fetchMetadata());
+                             }}>
+        <Animated.View style={{
+            paddingHorizontal: 10,
+            width: 50,
+            display: "flex",
+            height: "100%",
+            justifyContent: "center",
+            backgroundColor: "#bb4c4c",
+            opacity: hiddenOpacity
+        }}>
+            {loading ? <ActivityIndicator/> : <Icon name="remove-circle"/>}
+        </Animated.View>
+    </TouchableOpacity>;
+};
 
 type SongElemProps = {
     musicID: number;
@@ -243,13 +304,13 @@ type SongElemProps = {
     thumbSynced: boolean;
 }
 
-const SongElem = React.memo((props: SongElemProps) => {
+const SongElem = React.memo(React.forwardRef((props: SongElemProps, ref) => {
     const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = props.tags.get("artist");
     const duration = props.tags.get("duration")?.integer;
 
     return (
-        <TouchableOpacity style={styles.item} onPress={() => props.doNext(props.musicID)}>
+        <TouchableOpacity activeOpacity={0.5} style={styles.item} onPress={() => props.doNext(props.musicID)}>
             {
                 props.progress !== undefined &&
                 (
@@ -263,17 +324,18 @@ const SongElem = React.memo((props: SongElemProps) => {
                 <Thumbnail tags={props.tags} local={props.thumbSynced}/>
                 <View style={styles.trackInfo}>
                     <TextFg numberOfLines={2}>{title?.text} </TextFg>
-                    <TextFgGray numberOfLines={1}>{artist?.text} {duration && ("• " + timeFormat(duration))}</TextFgGray>
+                    <TextFgGray
+                        numberOfLines={1}>{artist?.text} {duration && ("• " + timeFormat(duration))}</TextFgGray>
                 </View>
             </View>
             <View style={styles.trackIcons}>
                 {props.isSynced &&
-                <Icon name="cloud-done" color={Colors.colorbg} size={11}/>
+                    <Icon name="cloud-done" color={Colors.colorbg} size={11}/>
                 }
             </View>
         </TouchableOpacity>
     );
-});
+}));
 
 const styles = StyleSheet.create({
     sortFilterSelect: {
@@ -333,6 +395,18 @@ const styles = StyleSheet.create({
         marginVertical: 4,
         marginHorizontal: 5,
         borderRadius: 5,
+        overflow: "hidden",
+    },
+    hiddenItem: {
+        position: "relative",
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        borderRadius: 5,
+        marginVertical: 4,
+        marginHorizontal: 5,
+        height: 60,
         overflow: "hidden",
     },
     musiclist: {

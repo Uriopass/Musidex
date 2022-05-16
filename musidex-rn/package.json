@@ -11,7 +11,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "~1.15.0",
+    "@react-native-async-storage/async-storage": "^1.17.3",
     "@react-native-community/slider": "^4.1.12",
     "@react-navigation/drawer": "^6.1.8",
     "@react-navigation/native": "^6.0.4",
@@ -26,8 +26,9 @@
     "react-native-reanimated": "^2.2.3",
     "react-native-safe-area-context": "^3.3.2",
     "react-native-screens": "^3.8.0",
+    "react-native-swipe-list-view": "^3.2.9",
     "react-native-track-player": "^1.2.7",
-    "react-native-windows": "^0.66.3",
+    "react-native-windows": "^0.66.18",
     "reconnecting-websocket": "^4.4.0",
     "rn-fetch-blob": "^0.12.0"
   },

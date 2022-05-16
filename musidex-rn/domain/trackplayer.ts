@@ -142,7 +142,7 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                 if (q.length > 0) {
                     await TrackPlayer.skipToNext();
                 }
-                if (seekAt) {
+                if (seekAt && duration && seekAt < duration - 60) {
                     await TrackPlayer.seekTo(seekAt);
                 }
                 await TrackPlayer.play();

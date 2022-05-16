@@ -342,17 +342,17 @@ pub async fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
     log::info!("running yt dl with args: {}", args.join(" "));
 
     tokio::task::spawn_blocking(move || {
-        let mut child = Command::new("youtube-dl")
+        let mut child = Command::new("yt-dlp")
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .args(args)
             .spawn()
-            .context("error starting youtube-dl, did you install it?")?;
+            .context("error starting yt-dlp, did you install it?")?;
         // Continually read from stdout so that it does not fill up with large output and hang forever.
         // We don't need to do this for stderr since only stdout has potentially giant JSON.
         let mut stdout = Vec::new();
         let child_stdout = child.stdout.take();
-        copy(&mut child_stdout.unwrap(), &mut stdout).context("error reading youtube-dl output")?;
+        copy(&mut child_stdout.unwrap(), &mut stdout).context("error reading yt-dlp output")?;
 
         let exit_code = child.wait().context("error while waiting for youtube-dl")?;
 
@@ -360,7 +360,7 @@ pub async fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
             let out = String::from_utf8_lossy(stdout.as_slice());
             let out = out.trim();
             let justtype: JustType = nanoserde::DeJson::deserialize_json(out)
-                .context("error decoding youtubedl json")?;
+                .context("error decoding yt-dlp json")?;
 
             let is_playlist = justtype._type.as_deref() == Some("playlist");
             if is_playlist {
@@ -382,7 +382,7 @@ pub async fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
             }
             let stderr = String::from_utf8(stderr).unwrap_or_default();
             Err(anyhow!(
-                "error using youtubedl: {} {}",
+                "error using yt-dlp: {} {}",
                 exit_code.code().unwrap_or(1),
                 stderr,
             ))

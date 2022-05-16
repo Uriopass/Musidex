@@ -113,6 +113,13 @@ export const API = {
         });
     },
 
+    async deleteMusicUser(id: number, userid: number): Promise<Response> {
+        return fetch(apiURL + "/api/music/" + id, {
+            method: "delete",
+            headers: {'Cookie': `cur_user=${userid}`},
+        });
+    },
+
     async deleteMusic(id: number): Promise<Response> {
         return fetch(apiURL + "/api/music/" + id, {
             method: "delete",
