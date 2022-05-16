@@ -25,7 +25,7 @@ RUN apt-get update
 RUN apt-get install -y python3 ffmpeg
 RUN apt-get install -y python3-pip
 RUN apt-get clean
-RUN python3 -m pip install youtube_dl
+RUN python3 -m pip install -U yt-dlp
 
 ADD musidex-neuralembed ./musidex-neuralembed
 
