@@ -54,9 +54,11 @@ impl NeuralEmbedWorker {
                 if exit_code.is_some() {
                     break;
                 }
+                std::thread::sleep(Duration::from_secs(1));
             }
 
             if exit_code.is_none() {
+                log::error!("timeouted vectorizing... killing python");
                 child.kill().context("failed killing python")?;
                 return Ok(());
             }
