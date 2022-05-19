@@ -32,7 +32,8 @@ for tag in conn.execute("SELECT * FROM tags WHERE key='local_mp3';"):
     names.append("storage/"+str(value))
     ids.append(id)
 
-for id, name, (taggram, labels, features) in zip(ids, names, extractor(names, model="MTT_musicnn")):
+for id, name in zip(ids, names):
+    (taggram, labels, features) = next(extractor([name], model="MTT_musicnn"))
     vector = np.mean(features["penultimate"], axis=0)
     blob = vecToBlob(vector)
 
