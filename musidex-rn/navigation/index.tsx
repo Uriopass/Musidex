@@ -72,19 +72,20 @@ function RootNavigator() {
         }
         let update = async () => {
             const pos = await TrackPlayer.getPosition();
-            if (pos === 0) {
+            const lastid = parseInt(await TrackPlayer.getCurrentTrack());
+            if (pos === 0 || isNaN(lastid)) {
                 timeout.t = setTimeout(update, 5000);
                 return;
             }
             if (pos > duration - 60) {
                 timeout.t = setTimeout(update, 5000);
                 updateLastPosition((v) => {
-                    delete v.current.positions[last];
+                    delete v.current.positions[lastid];
                 });
                 return;
             }
             updateLastPosition((v) => {
-                v.current.positions[last] = pos;
+                v.current.positions[lastid] = pos;
             });
             timeout.t = setTimeout(update, 5000);
         };

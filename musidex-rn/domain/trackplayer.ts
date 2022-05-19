@@ -124,7 +124,7 @@ export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAc
                 }
 
                 const track: Track = {
-                    id: url,
+                    id: `${action.id}`,
                     url: url,
                     artist: artist || "",
                     title: title || "Unknown Title",

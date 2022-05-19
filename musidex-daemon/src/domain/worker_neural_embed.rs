@@ -48,9 +48,20 @@ impl NeuralEmbedWorker {
                 .spawn()
                 .context("error starting youtube-dl, did you install it?")?;
 
-            let exit_code = child.wait().context("error while waiting for python")?;
+            let mut exit_code = None;
+            for _ in 0..5 * 60 {
+                exit_code = child.try_wait().context("error while waiting for python")?;
+                if exit_code.is_some() {
+                    break;
+                }
+            }
 
-            if exit_code.success() {
+            if exit_code.is_none() {
+                child.kill().context("failed killing python")?;
+                return Ok(());
+            }
+
+            if exit_code.unwrap().success() {
                 Ok(())
             } else {
                 let mut stderr = vec![];
@@ -60,7 +71,7 @@ impl NeuralEmbedWorker {
                 let stderr = String::from_utf8(stderr).unwrap_or_default();
                 Err(anyhow!(
                     "error using python: code: {} stderr:\n{}",
-                    exit_code.code().unwrap_or(1),
+                    exit_code.unwrap().code().unwrap_or(1),
                     stderr,
                 ))
             }
