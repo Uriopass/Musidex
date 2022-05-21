@@ -92,7 +92,7 @@ export const setCookie = (name: string, value: string, options?: cookieOptions) 
     if (!isBrowser) return;
 
     const optionsWithDefaults = {
-        days: 7,
+        days: 365*5,
         path: '/',
         ...options,
     };
