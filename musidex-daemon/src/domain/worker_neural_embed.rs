@@ -94,6 +94,9 @@ pub fn needs_embedding(c: &Connection) -> Result<bool> {
     AND
         (SELECT COUNT(1) FROM tags 
          WHERE music_id = id AND key='local_mp3') = 1
+    AND
+        (SELECT COUNT(1) FROM tags 
+         WHERE music_id = id AND key='duration' AND integer>30*60) = 0
     LIMIT 1;
     ",
     )?;

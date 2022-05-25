@@ -14,6 +14,11 @@ def has_embedding(id):
     cur.execute("SELECT COUNT(1) FROM tags WHERE music_id=? AND key='embedding';", (id,))
     return cur.fetchone()[0] == 1
 
+def is_too_long(id):
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(1) FROM tags WHERE music_id=? AND key='duration' AND integer>30*60;", (id,))
+    return cur.fetchone()[0] == 1
+
 names = []
 ids = []
 
@@ -28,6 +33,8 @@ for tag in conn.execute("SELECT * FROM tags WHERE key='local_mp3';"):
     id = tag[0]
     value = tag[2]
     if has_embedding(id):
+        continue
+    if is_too_long(id):
         continue
     names.append("storage/"+str(value))
     ids.append(id)
