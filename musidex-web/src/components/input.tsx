@@ -1,5 +1,5 @@
 import './input.css'
-import React from "react";
+import React, {CSSProperties} from "react";
 
 type TextInputProps = {
     name: string;
@@ -10,13 +10,14 @@ type TextInputProps = {
     withLabel?: boolean;
     pattern?: string;
     title?: string;
+    style?: CSSProperties,
 }
 
 const TextInput = React.memo((props: TextInputProps) => {
         let id = "form_id_" + props.name.toLowerCase();
         const showl = props.withLabel === true;
         return <div className={"form_group field " + (showl ? " form_show_label" : "")}
-                    style={{minWidth: props.minWidth || 0}}>
+                    style={{...props.style, minWidth: props.minWidth || 0}}>
             <input type="search"
                    onChange={(ev) => {
                        props.onChange(ev.target.value);

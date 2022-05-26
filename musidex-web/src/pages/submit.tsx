@@ -116,19 +116,18 @@ const YTSubmit = (props: YTSubmitProps) => {
 
     return (
         <>
-            <span className="title" style={{borderColor: props.titleColor}}>
-                {props.title}
-            </span>
-            <form style={{color: "var(--color-bg)"}}>
+            <form style={{display: "flex", alignItems: "flex-end", color: "var(--color-bg)"}}>
                 <TextInput value={url}
                            onChange={onYTInputChange}
                            name={props.placeholder}
+                           style={{flexGrow: 1}}
                            title="Input is not a valid youtube URL"
                            withLabel={true}/>
                 {props.showNth &&
                     <>
-                        <br/>
+                        <span style={{paddingBottom: 7}}>
                     Playlist index:&nbsp;&nbsp;
+                        </span>
                         <input ref={refIndexStart} type="number" placeholder="start" className="form_field" min="0" style={{width: "5rem"}} />
                         &nbsp;-&nbsp;
                         <input ref={refIndexStop} type="number" placeholder="stop" className="form_field" min="0" style={{width: "5rem"}} />
