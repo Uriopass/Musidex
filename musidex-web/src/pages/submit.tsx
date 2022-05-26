@@ -27,6 +27,7 @@ type YTSendState =
     | { type: "sending" }
     | { type: "zero_accept" }
     | { type: "accepted_unk" }
+    | { type: "accepted_conflict" }
     | { type: "accepted", count: number }
     | { type: "error", message?: string };
 
@@ -57,7 +58,7 @@ const YTSubmit = (props: YTSubmitProps) => {
                 return res.text();
             }
             if (res.status === 409) {
-                setSendState({type: "error", message: "track already in library"});
+                setSendState({type: "accepted_conflict"});
                 return;
             }
             console.log("not ok", res);
@@ -108,6 +109,11 @@ const YTSubmit = (props: YTSubmitProps) => {
         case "accepted_unk":
             icon = "done"
             message = "Music(s) successfully added to your library. Download will begin shortly"
+            color = "var(--success)";
+            break;
+        case "accepted_conflict":
+            icon = "done"
+            message = "Track already in library"
             color = "var(--success)";
             break;
         case "zero_accept":
