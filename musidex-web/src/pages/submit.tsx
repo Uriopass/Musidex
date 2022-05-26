@@ -26,7 +26,7 @@ type YTSendState =
     { type: "waiting_for_url" }
     | { type: "sending" }
     | { type: "zero_accept" }
-    | { type: "accepted_unk"}
+    | { type: "accepted_unk" }
     | { type: "accepted", count: number }
     | { type: "error", message?: string };
 
@@ -87,6 +87,9 @@ const YTSubmit = (props: YTSubmitProps) => {
     let color: string = "var(--color-fg)";
     switch (sendState.type) {
         case "waiting_for_url":
+            icon = "upload";
+            message = "Paste a URL to begin download";
+            color = "var(--color-bg)";
             break;
         case "error":
             icon = "error";
@@ -117,6 +120,9 @@ const YTSubmit = (props: YTSubmitProps) => {
     return (
         <>
             <form style={{display: "flex", alignItems: "flex-end", color: "var(--color-bg)"}}>
+                <span title={message} style={{color: color, paddingRight: 10}}>
+                    <MaterialIcon name={icon} size="25px"/>
+                </span>
                 <TextInput value={url}
                            onChange={onYTInputChange}
                            name={props.placeholder}
@@ -128,21 +134,14 @@ const YTSubmit = (props: YTSubmitProps) => {
                         <span style={{paddingBottom: 7}}>
                     Playlist index:&nbsp;&nbsp;
                         </span>
-                        <input ref={refIndexStart} type="number" placeholder="start" className="form_field" min="0" style={{width: "5rem"}} />
+                        <input ref={refIndexStart} type="number" placeholder="start" className="form_field" min="0"
+                               style={{width: "5rem"}}/>
                         &nbsp;-&nbsp;
-                        <input ref={refIndexStop} type="number" placeholder="stop" className="form_field" min="0" style={{width: "5rem"}} />
-                </>
+                        <input ref={refIndexStop} type="number" placeholder="stop" className="form_field" min="0"
+                               style={{width: "5rem"}}/>
+                    </>
                 }
             </form>
-            {(message !== "") ?
-            <p style={{fontSize: "20px", display: "flex", alignItems: "center", color: color}}>
-                <MaterialIcon name={icon} size="25px"/>
-                &nbsp;                &nbsp;
-                {message}
-                <span style={{color: "gray"}} onClick={() => setSendState({type: "waiting_for_url"})}>&nbsp;⨯ </span>
-            </p> :
-                <br/>
-            }
         </>
     )
 }
