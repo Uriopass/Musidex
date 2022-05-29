@@ -48,10 +48,27 @@
     cursor: pointer;
 }
 
+.user-card-favorite {
+    padding-left: 5px;
+    color: var(--color-bg);
+}
+
+.user-card-favorite .material-icons:hover {
+    color: #646f8c;
+}
+
+.is-favorite {
+    color: var(--danger);
+}
+
+.is-favorite .material-icons:hover {
+    color: #ce6262;
+}
+
 .user-card-info {
     position: relative;
     cursor: pointer;
-    padding-left: 15px;
+    padding-left: 5px;
     flex-basis: 80px;
     text-align: left;
     font-size: 0.9rem;

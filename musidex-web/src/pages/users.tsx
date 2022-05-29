@@ -1,5 +1,5 @@
 import './users.css'
-import React, {useContext, useMemo, useState} from "react";
+import React, {useCallback, useContext, useMemo, useState} from "react";
 import {User} from "../common/entity";
 import {Page, PageProps} from "./navigator";
 import {EditableText, MaterialIcon} from "../components/utils";
@@ -9,6 +9,7 @@ import {MetadataCtx} from "../domain/metadata";
 import {Setter} from "../../../musidex-ts-common/utils";
 import {SearchFormCtx} from "../App";
 import {timeFormatHour} from "../common/utils";
+import useLocalStorage from "use-local-storage";
 
 export interface UsersProps extends PageProps {
     onSetUser: (id: number) => void;
@@ -21,6 +22,9 @@ const Users = (props: UsersProps) => {
     const [meta, metaSync] = useContext(MetadataCtx);
     const [sform, setSform] = useContext(SearchFormCtx);
     const [newName, setNewName] = useState("");
+    const [favorites, setFavorites] = useLocalStorage<number[]>("favorites", []);
+
+    let favset = new Set(favorites);
 
     const userTime = useMemo(() => {
         let userTime = new Map();
@@ -63,16 +67,42 @@ const Users = (props: UsersProps) => {
         })
     };
 
+    const onToggleFavorite = useCallback((userid: number) => {
+        if (favset.has(userid)) {
+            favset.delete(userid);
+        } else {
+            favset.add(userid);
+        }
+        setFavorites([...favset.values()]);
+        // eslint-disable-next-line
+    }, [setFavorites]);
+
+    const metaUsersCpy = useMemo(() => {
+        const cpy = meta.users.slice();
+        cpy.sort((a, b) => {
+            let ha = favset.has(a.id);
+            let hb = favset.has(b.id);
+            if (ha === hb) {
+                return a.name.localeCompare(b.name);
+            }
+            return ha > hb ? -1 : 1;
+        });
+        return cpy;
+        // eslint-disable-next-line
+    }, [meta, favorites]);
+
     return (
         <>
             <div className={"users color-fg " + (props.hidden ? " hidden" : "")}>
                 {
-                    meta.users.map((user) => {
+                    metaUsersCpy.map((user) => {
                         return <UserCard key={user.id}
                                          user={user}
                                          nSongs={meta.user_songs.get(user.id)?.length || 0}
                                          timeSongs={userTime.get(user.id) || 0}
                                          isCurrent={props.curUser === user.id}
+                                         isFavorite={favset.has(user.id)}
+                                         toggleFavorite={onToggleFavorite}
                                          onSelect={onSelectUser}
                                          onDelete={onDelete}
                                          onRename={onRename}/>;
@@ -96,12 +126,20 @@ type UserCardProps = {
     onDelete: (id: number) => void;
     onRename: (id: number, newName: string) => void;
     isCurrent: boolean;
+    isFavorite: boolean;
+    toggleFavorite: (userid: number) => void;
 }
 
 const UserCard = (props: UserCardProps) => {
     return <div className={"user-card " + (props.isCurrent ? " user-card-current" : "")}
                 onClick={() => props.onSelect(props.user.id)}
     >
+        <div className={"user-card-favorite " + (props.isFavorite ? " is-favorite" : "")}>
+            <MaterialIcon name="favorite" onClick={(e: React.MouseEvent) => {
+                props.toggleFavorite(props.user.id);
+                e.stopPropagation();
+            }} size={20}/>
+        </div>
         <div className="user-card-info">
             <div>
                 {props.nSongs} songs
