@@ -1,6 +1,6 @@
 import './explorer.css'
 import API from "../common/api";
-import React, {useCallback, useContext, useState} from "react";
+import React, {useCallback, useContext, useRef, useState} from "react";
 import {EditableText, MaterialIcon} from "../components/utils";
 import {getTags, Tag, User} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";
@@ -9,7 +9,7 @@ import {PageProps} from "./navigator";
 import Filters, {isSimilarity, SimilarityParams, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {MetadataCtx} from "../domain/metadata";
 import {SearchFormCtx, SelectedMusicsCtx, TracklistCtx} from "../App";
-import {clamp, timeFormat, useDebouncedEffect} from "../common/utils";
+import {clamp, timeFormat, useDebouncedEffect, useUpdate} from "../common/utils";
 import noCoverImg from "../no_cover.jpg";
 import {enableNoSleep} from "../index";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -26,6 +26,29 @@ const Explorer = React.memo((props: ExplorerProps) => {
     const [searchForm, setSearchForm] = useContext(SearchFormCtx);
     const toShow = useContext(SelectedMusicsCtx);
     const list = useContext(TracklistCtx);
+
+    const [deleteUpdate, setDeleteUpdate] = useUpdate();
+    const deleteSet = useRef<Set<number>>(new Set());
+    const onDelete = useCallback((musicID: number) => {
+        deleteSet.current.add(musicID);
+        setDeleteUpdate();
+    }, [setDeleteUpdate]);
+    const cancelDelete = useCallback((musicID: number) => {
+        deleteSet.current.delete(musicID);
+        setDeleteUpdate();
+    }, [setDeleteUpdate]);
+
+    useDebouncedEffect(() => {
+        if (deleteSet.current.size === 0) {
+            return;
+        }
+        let futs = [];
+        for (let music of deleteSet.current.values()) {
+            futs.push(API.deleteMusic(music));
+        }
+        Promise.all(futs).then(syncMetadata);
+        deleteSet.current.clear();
+    }, [deleteUpdate, syncMetadata], 5000);
 
     const setFilters = useCallback((f: Filters) => setSearchForm({
         ...searchForm,
@@ -124,7 +147,10 @@ const Explorer = React.memo((props: ExplorerProps) => {
                                     <SongElem musicID={id}
                                               tags={tags}
                                               curUser={props.curUser}
+                                              deleting={deleteSet.current.has(id)}
                                               syncMetadata={syncMetadata}
+                                              onDelete={onDelete}
+                                              cancelDelete={cancelDelete}
                                               doNext={props.doNext}
                                               progress={progress}
                                               playable={metadata.playable.has(id)}
@@ -251,7 +277,10 @@ type SongElemProps = {
     tags: Map<string, Tag>;
     doNext: NextTrackCallback;
     syncMetadata: () => void;
-    progress?: number,
+    onDelete: (musicID: number) => void;
+    cancelDelete: (musicID: number) => void;
+    deleting: boolean;
+    progress?: number;
     progressColor?: string;
     curUser?: number;
     playable: boolean;
@@ -274,11 +303,11 @@ export const SongElem = React.memo((props: SongElemProps) => {
     const grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
 
     const onDelete = () => {
-        API.deleteMusic(props.musicID).then((res) => {
-            if (res.ok && res.status === 200) {
-                props.syncMetadata()
-            }
-        })
+        props.onDelete(props.musicID);
+    };
+
+    const onCancel = () => {
+        props.cancelDelete(props.musicID);
     };
 
     const onAddToLibrary = () => {
@@ -335,8 +364,12 @@ export const SongElem = React.memo((props: SongElemProps) => {
                         <img src="yt_icon.png" width={20} height={20} alt="Go to Youtube"/>
                     </button>
                 }
-                <button className="player-button" onClick={onDelete} title="Remove from library">
-                    <MaterialIcon name="delete"/>
+                <button className={"player-button " + (props.deleting ? "deleting" : "")} onClick={props.deleting ? onCancel : onDelete} title="Remove from library">
+                    {
+                        props.deleting ?
+                            "Cancel" :
+                            <MaterialIcon name="delete"/>
+                    }
                 </button>
             </div>
         </div>

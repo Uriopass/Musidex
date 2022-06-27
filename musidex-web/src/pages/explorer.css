@@ -28,6 +28,65 @@
     width: calc(100% - 10px);
 }
 
+.deleting:before {
+    content: "";
+    background-image: conic-gradient(
+        var(--primary) 20deg,
+        transparent 120deg
+    );
+    width: 300%;
+    height: 300%;
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    overflow: hidden;
+    z-index: 1;
+    animation: rotating 1s linear infinite;
+}
+
+@keyframes rotating {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.deleting {
+    position: relative;
+    overflow: hidden;
+    border-radius: 5px;
+    color: var(--color-fg);
+    z-index: 2;
+}
+
+.deleting:after {
+    content:"Cancel";
+    position: absolute;
+    background-color: var(--fg);
+    z-index: 1;
+    color: var(--color-fg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+    top: 4%;
+    left: 3%;
+    width: 94%;
+    height: 92%;
+    border-radius: 4px;
+}
+
+.deleting:hover:after {
+    background-color: #724b88;
+
+}
+
+.deleting .material-icons {
+    z-index: 2;
+}
+
 .song-elem-playable {
     cursor: pointer;
 }

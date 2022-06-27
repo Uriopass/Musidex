@@ -84,6 +84,7 @@ const App = (props: { syncProblem: boolean }) => {
         if (musicId) {
             doNext(musicId);
         }
+        // eslint-disable-next-line
     }, [])
 
     useEffect(() => {
