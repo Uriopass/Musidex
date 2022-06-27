@@ -4,7 +4,7 @@ import {Dispatch} from "./utils";
 import {useCallback, useRef} from "react";
 
 export type TrackPlayerAction =
-    { action: "play", id: number, tags?: Tags }
+    { action: "play", id: number, tags?: Tags, seek?: number }
     | { action: "pause", pauseAtEnd?: boolean }
     | { action: "audioTick" }
     | { action: "setTime", time: number }
@@ -25,12 +25,12 @@ export function emptyTracklist(): Tracklist {
     };
 }
 
-export type NextTrackCallback = (id?: number) => void;
+export type NextTrackCallback = (id?: number, seek?: number) => void;
 export type PrevTrackCallback = () => void;
 
 export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Tracklist) => void, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, sform: SearchForm, selectedMusics: MusicSelect): NextTrackCallback {
     let f = useRef<NextTrackCallback | null>(null);
-    f.current = (id) => {
+    f.current = (id, seek) => {
         let list = {
             ...curlist,
         };
@@ -58,9 +58,9 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
             setList(list);
         }
 
-        dispatch({action: "play", id: id, tags: getTags(metadata, id)});
+        dispatch({action: "play", id: id, tags: getTags(metadata, id), seek: seek});
     };
-    return useCallback((id) => f.current?.(id), [f]);
+    return useCallback((id, seek) => f.current?.(id, seek), [f]);
 }
 
 export function useResetCallback(setList: (newv: Tracklist) => void): NextTrackCallback {

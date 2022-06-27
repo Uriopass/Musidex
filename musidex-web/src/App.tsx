@@ -81,8 +81,12 @@ const App = (props: { syncProblem: boolean }) => {
 
     useEffect(() => {
         const musicId = parseInt(new URLSearchParams(window.location.search).get("m") || "");
+        let seek: number | undefined = parseInt(new URLSearchParams(window.location.search).get("t") || "");
         if (musicId) {
-            doNext(musicId);
+            if(!seek) {
+                seek = undefined;
+            }
+            doNext(musicId, seek);
         }
         // eslint-disable-next-line
     }, [])
