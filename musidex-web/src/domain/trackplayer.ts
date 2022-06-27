@@ -134,6 +134,10 @@ export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAc
                     paused: !trackplayer.paused,
                 }
             }
+            let url = new URL(window.location.href);
+            url.searchParams.set("music_id", action.id.toString());
+            window.history.replaceState({}, "", url.toString());
+
             trackplayer.audio.src = API.getStreamSrc(action.id);
             trackplayer.audio.load();
             const duration = action.tags?.get("duration")?.integer;

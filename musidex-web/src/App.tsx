@@ -80,6 +80,13 @@ const App = (props: { syncProblem: boolean }) => {
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, meta);
 
     useEffect(() => {
+        const musicId = parseInt(new URLSearchParams(window.location.search).get("music_id") || "");
+        if (musicId) {
+            doNext(musicId);
+        }
+    }, [])
+
+    useEffect(() => {
         if (user === undefined || !meta.users.some((u) => u.id === user)) {
             const u = firstUser(meta);
             if (u !== undefined) {
