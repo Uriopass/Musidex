@@ -80,7 +80,7 @@ const App = (props: { syncProblem: boolean }) => {
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, meta);
 
     useEffect(() => {
-        const musicId = parseInt(new URLSearchParams(window.location.search).get("music_id") || "");
+        const musicId = parseInt(new URLSearchParams(window.location.search).get("m") || "");
         if (musicId) {
             doNext(musicId);
         }
