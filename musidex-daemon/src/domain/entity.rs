@@ -214,7 +214,7 @@ pub fn reconstruct(x: Vec<u8>) -> Option<Vector> {
     if x.len() % 4 != 0 {
         return None;
     }
-    let mut res = Vec::with_capacity(x.len() % 4);
+    let mut res = Vec::with_capacity(x.len() / 4);
     for a in x.chunks_exact(4) {
         let a: [u8; 4] = <[u8; 4]>::try_from(a).unwrap();
         let lol = f32::from_le_bytes(a);
