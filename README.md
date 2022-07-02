@@ -36,7 +36,7 @@ Please don't mess it up. :)
 - [x] iOS App
 - [x] Local download for apps
 - [x] Browser extension to add YT videos to library directly from youtube
-- [ ] Tag filtering
+- [x] Tag filtering
 - [ ] Playlists through tags/Tag editor
 - [ ] Basic authentication
 - [ ] CD
