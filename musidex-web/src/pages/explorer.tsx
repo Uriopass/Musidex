@@ -336,7 +336,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
             className={`song-elem ${props.playable ? "" : "song-elem-disabled"} ${(hovered && props.playable) ? "song-elem-hovered" : ""}`}
             style={{background: grad}}>
             <Thumbnail playable={props.playable} onClick={onNext} setHovered={setHovered} cover={cover}/>
-            <div style={{paddingLeft: "10px"}}>
+            <div style={{paddingLeft: "10px", flexGrow: 1, flexShrink: 1, flexBasis: "auto"}}>
                 <b>
                     <EditableText text={title.text || ""}
                                   onRename={(v) => API.insertTag({...title, text: v})}/>
