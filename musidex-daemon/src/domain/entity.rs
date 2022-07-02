@@ -145,6 +145,7 @@ tag_key! {
     Embedding => "embedding",
     ;
     nested UserLibrary => "user_library",
+    nested UserTag => "user_tag",
 }
 
 impl TagKey {
