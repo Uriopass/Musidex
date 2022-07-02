@@ -54,8 +54,8 @@ export function applyFilters(filters: Filters, list: number[], metadata: Musidex
 
 const fuseOptions = {
     includeScore: true,
-    keys: ['title', 'artist'],
-    threshold: 0.4,
+    keys: ['title', 'artist', 'usertags'],
+    threshold: 0.3,
 };
 
 export const seed = Math.floor(Math.random() * 10000000);

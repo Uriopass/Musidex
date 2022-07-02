@@ -26,6 +26,7 @@ export type IndexedMusic = {
     id: number;
     title: string;
     artist: string;
+    usertags: string;
 }
 
 export type MusidexMetadata = {
@@ -134,10 +135,19 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
     });
 
     for (let [id, tags] of meta.music_tags_idx.entries()) {
+        let user_tags = [];
+
+        for (let key of tags.keys()) {
+            if (key.startsWith("user_tag:")) {
+                user_tags.push(key.substring("user_tag:".length));
+            }
+        }
+
         meta.fuse_document.push({
             id: id,
             title: tags.get("title")?.text || "",
             artist: tags.get("artist")?.text || "",
+            usertags: user_tags.join(" "),
         });
     }
 
