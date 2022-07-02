@@ -102,6 +102,14 @@ export const API = {
         });
     },
 
+    async deleteTag(tag: Tag): Promise<Response> {
+        return fetch(apiURL + `/api/tag`, {
+            method: "delete",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(tag),
+        });
+    },
+
     async updateSettings(key: string, value: string): Promise<Response> {
         return fetch(apiURL + "/api/config/update", {
             method: "post",

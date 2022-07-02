@@ -106,6 +106,56 @@
     justify-content: space-evenly;
 }
 
+
+.user-tags {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    max-width: 500px;
+    overflow: auto;
+}
+
+.tag-elem {
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    padding: 2px 5px;
+    color: black;
+}
+
+.tag-elem-text {
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+}
+
+.tag-elem-delete {
+    padding-top: 2px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.new-label-button:hover {
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.small-pad-left {
+    padding-left: 4px;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+}
+
+.add-label-input {
+    height: 20px;
+    background-color: var(--fg);
+    color: var(--color-fg);
+}
+
 .cover-image-container {
     width: 60px;
     height: 60px;

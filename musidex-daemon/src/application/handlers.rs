@@ -3,7 +3,7 @@ use std::convert::TryInto;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
 
-use crate::domain::entity::{MusicID, Tag, User, UserID};
+use crate::domain::entity::{MusicID, Tag, TagKey, User, UserID};
 use crate::domain::music::delete_music;
 use crate::domain::sync::{compress_meta, serve_sync_websocket, SyncBroadcastSubscriber};
 use crate::domain::{stream, sync, upload};
@@ -74,6 +74,23 @@ pub async fn create_tag(mut req: Request<Body>) -> Result<Response<Body>> {
     let c = db.get().await;
 
     Tag::insert(&c, tag)?;
+
+    Ok(Response::new(Body::empty()))
+}
+
+#[derive(DeJson)]
+pub struct DeleteTag {
+    pub music_id: MusicID,
+    pub key: TagKey,
+}
+
+pub async fn delete_tag(mut req: Request<Body>) -> Result<Response<Body>> {
+    let tag: DeleteTag = parse_body(&mut req).await?;
+
+    let db = req.state::<Db>();
+    let c = db.get().await;
+
+    Tag::remove(&c, tag.music_id, tag.key)?;
 
     Ok(Response::new(Body::empty()))
 }

@@ -1,6 +1,6 @@
 import './explorer.css'
 import API from "../common/api";
-import React, {useCallback, useContext, useRef, useState} from "react";
+import React, {useCallback, useContext, useMemo, useRef, useState} from "react";
 import {EditableText, MaterialIcon} from "../components/utils";
 import {getTags, Tag, User} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";
@@ -9,7 +9,7 @@ import {PageProps} from "./navigator";
 import Filters, {isSimilarity, SimilarityParams, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {MetadataCtx} from "../domain/metadata";
 import {SearchFormCtx, SelectedMusicsCtx, TracklistCtx} from "../App";
-import {clamp, timeFormat, useDebouncedEffect, useUpdate} from "../common/utils";
+import {clamp, prng, timeFormat, useDebouncedEffect, useUpdate} from "../common/utils";
 import noCoverImg from "../no_cover.jpg";
 import {enableNoSleep} from "../index";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -76,7 +76,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
             new RegExp(searchForm.filters.searchQry.substr(1));
         }
     } catch (e) {
-        isRegexpInvalid = e;
+        isRegexpInvalid = e as any;
     }
 
     useDebouncedEffect(() => {
@@ -99,29 +99,32 @@ const Explorer = React.memo((props: ExplorerProps) => {
                     filters={searchForm.filters}
                     setFilters={setFilters}/>
                 {isSimilarity(searchForm) && list.last_played.length > 0 &&
-                <>
-                    <div className="temperature-pick" title="Random amount">
-                        {searchForm.sort.kind.kind === "similarity" &&
-                        <div title="Lock music order based on latest manually selected music"
-                             onClick={() => {
-                                 list.last_manual_select = list.last_played[list.last_played.length - 1];
-                                 setSortBy({...searchForm.sort, similKeepOrder: !searchForm.sort.similKeepOrder})
-                             }}>
+                    <>
+                        <div className="temperature-pick" title="Random amount">
+                            {searchForm.sort.kind.kind === "similarity" &&
+                                <div title="Lock music order based on latest manually selected music"
+                                     onClick={() => {
+                                         list.last_manual_select = list.last_played[list.last_played.length - 1];
+                                         setSortBy({
+                                             ...searchForm.sort,
+                                             similKeepOrder: !searchForm.sort.similKeepOrder
+                                         })
+                                     }}>
 
-                            {searchForm.sort.similKeepOrder ?
-                                <MaterialIcon name="lock" style={{paddingLeft: 1, color: "var(--primary)"}}/>
-                                :
-                                <MaterialIcon name="lock_open" style={{paddingLeft: 1}}/>}
-                        </div>}
-                        <MaterialIcon name="casino" style={{paddingLeft: 1}}/>
-                        <input className="temperature-pick-range" type="range"
-                               value={localTemp} min={0} max={100}
-                               onChange={(v) => setLocalTemp(parseInt(v.currentTarget.value))}/>
-                    </div>
-                </>
+                                    {searchForm.sort.similKeepOrder ?
+                                        <MaterialIcon name="lock" style={{paddingLeft: 1, color: "var(--primary)"}}/>
+                                        :
+                                        <MaterialIcon name="lock_open" style={{paddingLeft: 1}}/>}
+                                </div>}
+                            <MaterialIcon name="casino" style={{paddingLeft: 1}}/>
+                            <input className="temperature-pick-range" type="range"
+                                   value={localTemp} min={0} max={100}
+                                   onChange={(v) => setLocalTemp(parseInt(v.currentTarget.value))}/>
+                        </div>
+                    </>
                 }
                 {isRegexpInvalid &&
-                <span>Regex is invalid: {"" + isRegexpInvalid}</span>}
+                    <span>Regex is invalid: {"" + isRegexpInvalid}</span>}
             </div>
             <div className="explorer-musics">
                 <AutoSizer>
@@ -245,7 +248,7 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
     return <div className="sortfilter-select">
         <MaterialIcon name="sort"/>
         {props.hasSimilarity &&
-        <SortByElem sort={{kind: "similarity"}} name="Similarity"/>
+            <SortByElem sort={{kind: "similarity"}} name="Similarity"/>
         }
         <SortByElem sort={{kind: "tag", value: "title"}} name="Title"/>
         <SortByElem sort={{kind: "creation_time"}} name="Last added"/>
@@ -287,10 +290,51 @@ type SongElemProps = {
     playable: boolean;
 }
 
-export const SongElem = React.memo((props: SongElemProps) => {
-    let cover = props.tags?.get("compressed_thumbnail")?.text || props.tags?.get("thumbnail")?.text;
+function hashCode(str: string) {
+    let hash = 0;
+    for (let i = 0, len = str.length; i < len; i++) {
+        let chr = str.charCodeAt(i);
+        hash = (hash << 5) - hash + chr;
+        hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+}
 
-    const hasYT = props.tags.get("youtube_video_id")?.text;
+function randomHTMLColor(seed: number): string {
+    let rng = prng(seed);
+
+    let rand1: number = rng();
+
+    let hue = rand1 * 360;
+    let saturation = 60;
+    let lightness = 30;
+
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+const colorCache: Map<string, string> = new Map();
+
+function TagComp(props: { onDelete: () => void, tag: string }) {
+    let color = colorCache.get(props.tag);
+    if (color === undefined) {
+        color = randomHTMLColor(hashCode(props.tag));
+        colorCache.set(props.tag, color);
+    }
+
+    return <div className="tag-elem" style={{backgroundColor: color}}>
+        <div className="tag-elem-text">{props.tag}</div>
+        <div className="tag-elem-delete" onClick={props.onDelete}>
+            <MaterialIcon name="close" size={10}/>
+        </div>
+    </div>
+}
+
+export const SongElem = React.memo((props: SongElemProps) => {
+    const tags = props.tags;
+
+    let cover = tags?.get("compressed_thumbnail")?.text || tags?.get("thumbnail")?.text;
+
+    const hasYT = tags.get("youtube_video_id")?.text;
     const goToYT = () => {
         window.open("https://youtube.com/watch?v=" + hasYT, "_blank")?.focus();
     };
@@ -317,11 +361,22 @@ export const SongElem = React.memo((props: SongElemProps) => {
         }
         API.insertTag({music_id: props.musicID, key: "user_library:" + props.curUser}).then(() => props.syncMetadata());
     }
-    const showAddToLibrary = props.curUser !== undefined && !props.tags.has("user_library:" + props.curUser);
+    const showAddToLibrary = props.curUser !== undefined && !tags.has("user_library:" + props.curUser);
 
-    const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
-    const artist = props.tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
-    const duration = props.tags.get("duration")?.integer;
+    const title = tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
+    const artist = tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
+    const duration = tags.get("duration")?.integer;
+
+    const userTags: string[] = useMemo(() => {
+        let ret: string[] = [];
+        for (let k of tags.keys()) {
+            if (k.startsWith("user_tag:")) {
+                let tag = k.substring("user_tag:".length);
+                ret.push(tag);
+            }
+        }
+        return ret;
+    }, [tags]);
 
     const onNext = () => {
         if (!props.playable) {
@@ -341,12 +396,37 @@ export const SongElem = React.memo((props: SongElemProps) => {
                     <EditableText text={title.text || ""}
                                   onRename={(v) => API.insertTag({...title, text: v})}/>
                 </b>
-                <br/>
-                <span className="small gray-fg">
+                <div className="small gray-fg" style={{display: "flex", alignItems: "center", flexShrink: 1}}>
                     <EditableText text={artist.text || ""}
                                   onRename={(v) => API.insertTag({...artist, text: v})}/>
-                    {duration && " • " + timeFormat(duration)}
-                </span>
+                    {duration &&
+                        <div className="small-pad-left flex-center">
+                            • {timeFormat(duration)}
+                        </div>
+                    }
+                    <div className="small-pad-left flex-center">
+                        <AddTag onAdd={(tag) => {
+                            API.insertTag({
+                                music_id: props.musicID,
+                                key: "user_tag:"+tag,
+                            }).then(() => props.syncMetadata());
+                        }}/>
+                    </div>
+                    <div className="user-tags">
+                        {
+                            userTags.map((tag) => {
+                                    return <div key={tag} className="small-pad-left">
+                                        <TagComp tag={tag} onDelete={() => {
+                                            API.deleteTag({
+                                                music_id: props.musicID,
+                                                key: "user_tag:" + tag
+                                            }).then(() => props.syncMetadata());
+                                        }}/>
+                                    </div>
+                                })
+                        }
+                    </div>
+                </div>
             </div>
             <div className={`${props.playable ? "song-elem-playable" : ""}`}
                  style={{flexBasis: 0, flexGrow: 1, flexShrink: 1, height: "100%", minHeight: 60}} onClick={onNext}
@@ -365,7 +445,8 @@ export const SongElem = React.memo((props: SongElemProps) => {
                         <img src="yt_icon.png" width={20} height={20} alt="Go to Youtube"/>
                     </button>
                 }
-                <button className={"player-button " + (props.deleting ? "deleting" : "")} onClick={props.deleting ? onCancel : onDelete} title="Remove from library">
+                <button className={"player-button " + (props.deleting ? "deleting" : "")}
+                        onClick={props.deleting ? onCancel : onDelete} title="Remove from library">
                     {
                         props.deleting ?
                             "Cancel" :
@@ -376,5 +457,51 @@ export const SongElem = React.memo((props: SongElemProps) => {
         </div>
     )
 })
+
+export const AddTag = (props: {
+    onAdd: (tag: string) => void;
+}): JSX.Element => {
+    const inp = useRef<HTMLInputElement>(null);
+    const onAdd = useCallback(() => {
+        const tag: string | undefined = inp.current?.value;
+        if (tag && tag.length > 0) {
+            props.onAdd(tag);
+        }
+    }, [props]);
+    const [adding, setAdding] = useState(false);
+
+    return (
+        <>
+            {
+                !adding &&
+                <span className="new-label-button flex-center" onClick={() => setAdding(true)}>
+                    <MaterialIcon name="new_label" size={15} oncl/>
+                </span>
+            }
+            {
+                adding &&
+                <input type="text"
+                       className={"add-label-input"}
+                       autoFocus={true}
+                       placeholder="Add tag"
+                       ref={inp}
+                       onBlur={(e) => {
+                           setAdding(false);
+                           onAdd();
+                       }}
+                       onKeyDown={(ev) => {
+                           if (ev.code === "Enter") {
+                               ev.preventDefault();
+                               ev.currentTarget.blur();
+                           }
+                           if (ev.code === "Escape") {
+                               setAdding(false);
+                           }
+                       }}
+                />
+            }
+        </>
+    )
+}
 
 export default Explorer;
