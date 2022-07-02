@@ -74,7 +74,7 @@ const App = (props: { syncProblem: boolean }) => {
     const [trackplayer, dispatchPlayer] = tp;
     const [curPage, setCurPage] = useState<Page>({path: "explorer", submit: false});
     const [list, setList] = useState<Tracklist>(emptyTracklist());
-    const editableSt = useState(false);
+    const editableSt = useLocalStorage<boolean>("editable", false, {syncData: false});
     const selectedMusics = useMusicSelect(meta, sform, list);
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, meta, sform, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, meta);
