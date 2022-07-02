@@ -474,7 +474,7 @@ export const AddTag = (props: {
         <>
             {
                 !adding &&
-                <span className="new-label-button flex-center" onClick={() => setAdding(true)}>
+                <span className="new-label-button flex-center" onClick={() => setAdding(true)} title="Add tag">
                     <MaterialIcon name="new_label" size={15} oncl/>
                 </span>
             }
