@@ -2,7 +2,7 @@ import './explorer.css'
 import API from "../common/api";
 import React, {useCallback, useContext, useMemo, useRef, useState} from "react";
 import {EditableText, MaterialIcon} from "../components/utils";
-import {getTags, Tag, User} from "../common/entity";
+import {getTags, MusidexMetadata, Tag, User} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";
 import TextInput from "../components/input";
 import {PageProps} from "./navigator";
@@ -159,6 +159,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
                                               progress={progress}
                                               playable={metadata.playable.has(id)}
                                               progressColor={progressColor}
+                                              metadata={metadata}
                                     />
                                 </div>
 
@@ -288,6 +289,7 @@ type SongElemProps = {
     progressColor?: string;
     curUser?: number;
     playable: boolean;
+    metadata: MusidexMetadata;
 }
 
 function hashCode(str: string) {
@@ -405,25 +407,27 @@ export const SongElem = React.memo((props: SongElemProps) => {
                         </div>
                     }
                     <div className="small-pad-left flex-center">
-                        <AddTag onAdd={(tag) => {
-                            API.insertTag({
-                                music_id: props.musicID,
-                                key: "user_tag:"+tag,
-                            }).then(() => props.syncMetadata());
-                        }}/>
+                        <AddTag
+                            metadata={props.metadata}
+                            onAdd={(tag) => {
+                                API.insertTag({
+                                    music_id: props.musicID,
+                                    key: "user_tag:" + tag,
+                                }).then(() => props.syncMetadata());
+                            }}/>
                     </div>
                     <div className="user-tags">
                         {
                             userTags.map((tag) => {
-                                    return <div key={tag} className="small-pad-left">
-                                        <TagComp tag={tag} onDelete={() => {
-                                            API.deleteTag({
-                                                music_id: props.musicID,
-                                                key: "user_tag:" + tag
-                                            }).then(() => props.syncMetadata());
-                                        }}/>
-                                    </div>
-                                })
+                                return <div key={tag} className="small-pad-left">
+                                    <TagComp tag={tag} onDelete={() => {
+                                        API.deleteTag({
+                                            music_id: props.musicID,
+                                            key: "user_tag:" + tag
+                                        }).then(() => props.syncMetadata());
+                                    }}/>
+                                </div>
+                            })
                         }
                     </div>
                 </div>
@@ -460,15 +464,37 @@ export const SongElem = React.memo((props: SongElemProps) => {
 
 export const AddTag = (props: {
     onAdd: (tag: string) => void;
+    metadata: MusidexMetadata;
 }): JSX.Element => {
-    const inp = useRef<HTMLInputElement>(null);
-    const onAdd = useCallback(() => {
-        const tag: string | undefined = inp.current?.value;
-        if (tag && tag.length > 0) {
-            props.onAdd(tag);
+    const [text, setText] = useState("");
+
+    const onAdd = useCallback((val?: string) => {
+        if (val && val.length > 0) {
+            props.onAdd(val);
         }
     }, [props]);
     const [adding, setAdding] = useState(false);
+
+    const propositions = useMemo(() => {
+        if (text.length <= 0) {
+            return [];
+        }
+
+        const propositions = [];
+
+        for (let tag of props.metadata.unique_user_tags) {
+            if (tag.startsWith(text)) {
+                propositions.push(tag);
+                if (propositions.length >= 3) {
+                    break;
+                }
+            }
+        }
+
+        return propositions;
+    }, [text, props.metadata.unique_user_tags]);
+
+    const [curFocus, setCurFocus] = useState(0);
 
     return (
         <>
@@ -480,25 +506,61 @@ export const AddTag = (props: {
             }
             {
                 adding &&
-                <input type="text"
-                       className={"add-label-input"}
-                       autoFocus={true}
-                       placeholder="Add tag"
-                       ref={inp}
-                       onBlur={(e) => {
-                           setAdding(false);
-                           onAdd();
-                       }}
-                       onKeyDown={(ev) => {
-                           if (ev.code === "Enter") {
-                               ev.preventDefault();
-                               ev.currentTarget.blur();
-                           }
-                           if (ev.code === "Escape") {
+                <div style={{display: "flex", position: "relative", overflow: "visible"}}>
+                    <input type="text"
+                           className={"add-label-input"}
+                           autoFocus={true}
+                           autoComplete="false"
+                           placeholder="Add tag"
+                           onChange={(e) => {
+                               setText(e.target.value);
+                           }}
+                           onBlur={() => {
                                setAdding(false);
-                           }
-                       }}
-                />
+                           }}
+                           onKeyDown={(ev) => {
+                               if (ev.code === "Enter") {
+                                   ev.preventDefault();
+                                   setAdding(false);
+                                   if (curFocus === 0) {
+                                       onAdd(ev.currentTarget.value);
+                                   } else {
+                                       onAdd(propositions[curFocus - 1]);
+                                   }
+                               }
+                               if (ev.code === "Escape") {
+                                   setAdding(false);
+                               }
+                               if (ev.code == "ArrowUp") {
+                                   if (curFocus > 0) {
+                                       setCurFocus(curFocus - 1);
+                                   }
+                               }
+                               if (ev.code == "ArrowDown") {
+                                   if (curFocus < propositions.length) {
+                                       setCurFocus(curFocus + 1);
+                                   }
+                               }
+                           }}
+                    />
+                    {
+                        (propositions.length > 0) &&
+                        <div className="add-tag-propositions">
+                            {
+                                propositions.map((tag, i) => {
+                                    return <div
+                                        className={"add-tag-proposition " + ((i + 1 === curFocus) ? "add-tag-focused" : "")}
+                                        onMouseDown={() => {
+                                            onAdd(tag);
+                                            setAdding(false);
+                                        }}>
+                                        {tag}
+                                    </div>
+                                })
+                            }
+                        </div>
+                    }
+                </div>
             }
         </>
     )

@@ -40,6 +40,7 @@ export type MusidexMetadata = {
     user_songs: Map<number, number[]>;
     playable: Set<number>;
     fuse_document: IndexedMusic[];
+    unique_user_tags: Set<string>;
 }
 
 export function getTags(meta: MusidexMetadata, id: number | undefined): Tags | undefined {
@@ -74,6 +75,7 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
         fuse_document: [],
         tags: raw.tags || previous?.tags || [],
         playable: new Set(),
+        unique_user_tags: new Set(),
     };
 
     if (raw.patches) {
@@ -139,7 +141,9 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
 
         for (let key of tags.keys()) {
             if (key.startsWith("user_tag:")) {
-                user_tags.push(key.substring("user_tag:".length));
+                let tag = key.substring("user_tag:".length);
+                user_tags.push(tag);
+                meta.unique_user_tags.add(tag);
             }
         }
 

@@ -24,7 +24,6 @@
     border-radius: 0.3rem;
     margin-top: 5px;
     align-items: center;
-    overflow: hidden;
     width: calc(100% - 10px);
 }
 
@@ -115,6 +114,41 @@
     overflow: auto;
 }
 
+.add-tag-propositions {
+    display: flex;
+    flex-flow: column;
+    width: 100%;
+    z-index: 1;
+    align-items: center;
+    position: absolute;
+    top: 30px;
+    left: 0;
+    border-bottom: 1px solid var(--bg);
+}
+
+.add-tag-proposition {
+    display: flex;
+    align-items: center;
+    z-index: 1;
+    width: calc(100% - 14px);
+    background-color: var(--fg);
+    padding: 7px;
+    border-top: 1px solid var(--bg);
+    border-left: 1px solid var(--bg);
+    border-right: 1px solid var(--bg);
+}
+
+.add-tag-proposition:hover {
+    background-color: var(--primary);
+    color: var(--bg);
+    cursor: pointer;
+}
+
+.add-tag-focused {
+    background-color: var(--primary);
+    color: var(--bg);
+}
+
 .tag-elem {
     display: flex;
     align-items: center;
@@ -165,6 +199,8 @@
     object-fit: cover;
     width: 60px;
     height: 60px;
+    border-bottom-left-radius: 0.3rem;
+    border-top-left-radius: 0.3rem;
 }
 
 .sortfilter-select {
