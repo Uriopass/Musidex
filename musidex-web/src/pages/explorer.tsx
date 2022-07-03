@@ -531,12 +531,12 @@ export const AddTag = (props: {
                                if (ev.code === "Escape") {
                                    setAdding(false);
                                }
-                               if (ev.code == "ArrowUp") {
+                               if (ev.code === "ArrowUp") {
                                    if (curFocus > 0) {
                                        setCurFocus(curFocus - 1);
                                    }
                                }
-                               if (ev.code == "ArrowDown") {
+                               if (ev.code === "ArrowDown") {
                                    if (curFocus < propositions.length) {
                                        setCurFocus(curFocus + 1);
                                    }
