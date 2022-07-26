@@ -49,7 +49,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
         Promise.all(futs).then(syncMetadata);
         deleteSet.current.clear();
         setDeleteUpdate();
-    }, [deleteUpdate, setDeleteUpdate, syncMetadata], 5000);
+    }, [deleteUpdate, setDeleteUpdate, syncMetadata], 4000);
 
     const setFilters = useCallback((f: Filters) => setSearchForm({
         ...searchForm,

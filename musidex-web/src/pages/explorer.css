@@ -29,9 +29,10 @@
 
 .deleting:before {
     content: "";
+    --a: 0deg;
     background-image: conic-gradient(
-        var(--primary) 20deg,
-        transparent 120deg
+        var(--primary) var(--a),
+        transparent calc(var(--a) + 1deg)
     );
     width: 300%;
     height: 300%;
@@ -40,15 +41,21 @@
     left: -100%;
     overflow: hidden;
     z-index: 1;
-    animation: rotating 1s linear infinite;
+    animation: filling 4s linear;
 }
 
-@keyframes rotating {
+@property --a{
+    syntax: '<angle>'; /* its type */
+    inherits: false;
+    initial-value: 0deg; /* the initial value */
+}
+
+@keyframes filling {
     0% {
-        transform: rotate(0deg);
+        --a: 0deg;
     }
     100% {
-        transform: rotate(360deg);
+        --a: 359deg;
     }
 }
 
