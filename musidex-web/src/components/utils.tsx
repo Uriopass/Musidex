@@ -59,6 +59,9 @@ export const EditableText = (props: EditableTextProps) => {
     }
 
     return <span contentEditable={true}
+                 onPaste={(e) => {
+                     e.stopPropagation();
+                 }}
                  onBlur={(v: FormEvent<HTMLSpanElement>) => {
                      if (v.currentTarget.innerText !== props.text) {
                          props.onRename(v.currentTarget.innerText)

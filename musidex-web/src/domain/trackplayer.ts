@@ -3,6 +3,7 @@ import API from "../common/api";
 import {NextTrackCallback, PrevTrackCallback, TrackPlayerAction} from "../common/tracklist";
 import {getTags, MusidexMetadata} from "../common/entity";
 import {Dispatch} from "../common/utils";
+import {onYTInputChange, YTSendState} from "../pages/submit";
 
 type TrackPlayer = {
     current: number | undefined;
@@ -30,7 +31,9 @@ export function newTrackPlayer(): TrackPlayer {
     }
 }
 
-export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetadata, doNext: NextTrackCallback, doPrev: PrevTrackCallback, dispatch: Dispatch<TrackPlayerAction>) {
+let lastPaste = 0;
+
+export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetadata, doNext: NextTrackCallback, doPrev: PrevTrackCallback, dispatch: Dispatch<TrackPlayerAction>, setPasteYTUploadState: (state: YTSendState) => void) {
     trackplayer.audio.onloadeddata = () => dispatch({action: "audioTick"});
     trackplayer.audio.onplaying = () => dispatch({action: "audioTick"});
     trackplayer.audio.onpause = () => dispatch({action: "audioTick"});
@@ -116,7 +119,23 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
             dispatch({action: "setTime", time: trackplayer.audio.currentTime - 5});
         }
     };
+    document.body.onpaste = (e) => {
+        if (Date.now() - lastPaste < 1000) {
+            return;
+        }
+        lastPaste = Date.now();
+        // @ts-ignore
+        if (e.target?.tagName?.toUpperCase() === 'INPUT') {
+            return;
+        }
+        if (e.clipboardData?.types.includes("text/plain")) {
+            let text = e.clipboardData.getData("text/plain");
+            onYTInputChange(text, () => {
+            }, setPasteYTUploadState, API.youtubeUpload);
+        }
+    };
 }
+
 
 export function applyTrackPlayer(trackplayer: TrackPlayer, action: TrackPlayerAction): TrackPlayer {
     switch (action.action) {

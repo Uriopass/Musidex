@@ -22,7 +22,7 @@ const Submit = () => {
     )
 }
 
-type YTSendState =
+export type YTSendState =
     { type: "waiting_for_url" }
     | { type: "sending" }
     | { type: "zero_accept" }
@@ -45,92 +45,23 @@ const YTSubmit = (props: YTSubmitProps) => {
     const refIndexStart = useRef<HTMLInputElement | null>(null);
     const refIndexStop = useRef<HTMLInputElement | null>(null);
 
-    const onYTInputChange = (v: string) => {
-        setURL(v);
-        if (v === "") {
-            setSendState({type: "waiting_for_url"});
-            return;
-        }
-        setSendState({type: "sending"});
-        props.uploadAPI(v, parseInt(refIndexStart.current?.value || "0"), parseInt(refIndexStop.current?.value || "0")).then((res: Response) => {
-            setURL("");
-            if (res.ok) {
-                return res.text();
-            }
-            if (res.status === 409) {
-                setSendState({type: "accepted_conflict"});
-                return;
-            }
-            console.log("not ok", res);
-            setSendState({type: "error"});
-        }).then((v) => {
-            if (v === undefined) {
-                return;
-            }
-            if (v === "") {
-                setSendState({type: "accepted_unk"});
-                return;
-            }
-            const c = parseInt(v);
-            if (!c) {
-                setSendState({type: "zero_accept"});
-                return;
-            }
-            setSendState({type: "accepted", count: c});
-        }).catch((e) => {
-            console.log(e);
-            setSendState({type: "error"});
-        });
-    }
-
-    let icon: string = "";
-    let message: string = "";
-    let color: string = "var(--color-fg)";
-    switch (sendState.type) {
-        case "waiting_for_url":
-            icon = "upload";
-            message = "Paste a URL to begin download";
-            color = "var(--color-bg)";
-            break;
-        case "error":
-            icon = "error";
-            message = sendState.message || "Server/Network error";
-            color = "var(--danger)";
-            break;
-        case "sending":
-            icon = "pending";
-            color = "var(--alert)";
-            break;
-        case "accepted":
-            icon = "done"
-            message = sendState.count + " musics successfully added to your library. Download will begin shortly"
-            color = "var(--success)";
-            break;
-        case "accepted_unk":
-            icon = "done"
-            message = "Music(s) successfully added to your library. Download will begin shortly"
-            color = "var(--success)";
-            break;
-        case "accepted_conflict":
-            icon = "done"
-            message = "Track already in library"
-            color = "var(--success)";
-            break;
-        case "zero_accept":
-            icon = "error"
-            message = "No music found"
-            color = "var(--alert)";
-            break;
+    const onYTChange = (v: string) => {
+        return onYTInputChange(v,
+            setURL,
+            setSendState,
+            (v: string) => {
+                return props.uploadAPI(v,
+                    parseInt(refIndexStart.current?.value || "0"),
+                    parseInt(refIndexStop.current?.value || "0"));
+            });
     }
 
     return (
         <>
             <form style={{display: "flex", alignItems: "flex-end", color: "var(--color-bg)"}}>
-                <span title={message} style={{color: color, paddingRight: 10}}>
-                    <MaterialIcon name={icon} size="25px"/>
-                </span>
+                <YTSendStateIcon state={sendState}/>
                 <TextInput value={url}
-                           onChange={onYTInputChange}
+                           onChange={onYTChange}
                            name={props.placeholder}
                            style={{flexGrow: 1}}
                            title="Input is not a valid youtube URL"
@@ -150,6 +81,90 @@ const YTSubmit = (props: YTSubmitProps) => {
             </form>
         </>
     )
+}
+
+export function onYTInputChange(v: string, setURL: (v: string) => void, setSendState: (v: YTSendState) => void, uploadAPI: (url: string) => Promise<Response>) {
+    setURL(v);
+    if (v === "") {
+        setSendState({type: "waiting_for_url"});
+        return;
+    }
+    setSendState({type: "sending"});
+    uploadAPI(v).then((res: Response) => {
+        setURL("");
+        if (res.ok) {
+            return res.text();
+        }
+        if (res.status === 409) {
+            setSendState({type: "accepted_conflict"});
+            return;
+        }
+        console.log("not ok", res);
+        setSendState({type: "error"});
+    }).then((v) => {
+        if (v === undefined) {
+            return;
+        }
+        if (v === "") {
+            setSendState({type: "accepted_unk"});
+            return;
+        }
+        const c = parseInt(v);
+        if (!c) {
+            setSendState({type: "zero_accept"});
+            return;
+        }
+        setSendState({type: "accepted", count: c});
+    }).catch((e) => {
+        console.log(e);
+        setSendState({type: "error"});
+    });
+}
+
+export const YTSendStateIcon = (props: {state: YTSendState}): JSX.Element => {
+    let icon: string = "";
+    let message: string = "";
+    let color: string = "var(--color-fg)";
+    switch (props.state.type) {
+        case "waiting_for_url":
+            icon = "upload";
+            message = "Paste a URL to begin download";
+            color = "var(--color-bg)";
+            break;
+        case "error":
+            icon = "error";
+            message = props.state.message || "Server/Network error";
+            color = "var(--danger)";
+            break;
+        case "sending":
+            icon = "pending";
+            color = "var(--alert)";
+            break;
+        case "accepted":
+            icon = "done"
+            message = props.state.count + " musics successfully added to your library. Download will begin shortly"
+            color = "var(--success)";
+            break;
+        case "accepted_unk":
+            icon = "done"
+            message = "Music(s) successfully added to your library. Download will begin shortly"
+            color = "var(--success)";
+            break;
+        case "accepted_conflict":
+            icon = "done"
+            message = "Track already in library"
+            color = "var(--success)";
+            break;
+        case "zero_accept":
+            icon = "error"
+            message = "No music found"
+            color = "var(--alert)";
+            break;
+    }
+
+    return  <span title={message} style={{color: color, paddingRight: 10}}>
+                <MaterialIcon name={icon} size="25px"/>
+            </span>
 }
 
 

@@ -4,12 +4,14 @@ import React from "react";
 import {User} from "../common/entity";
 import {Page} from "../pages/navigator";
 import {Setter} from "../common/utils";
+import {YTSendState, YTSendStateIcon} from "../pages/submit";
 
 interface NavbarProps {
     page: Page,
     setCurPage: Setter<Page>;
     syncProblem: boolean;
     curUser?: User;
+    uploadState: YTSendState;
 }
 
 const Navbar = React.memo((props: NavbarProps) => {
@@ -30,12 +32,17 @@ const Navbar = React.memo((props: NavbarProps) => {
                         <MaterialIcon name="explore" size={25}/>
                     </button>
                     {
+                        (props.uploadState.type !== "waiting_for_url") &&
+                        <YTSendStateIcon state={props.uploadState}/>
+                    }
+                    {
                         props.syncProblem &&
                         <div style={{color: "var(--danger)", display: "flex", padding: "0 6px"}}>
                             <MaterialIcon name="sync_problem" size={25}
                                           title="There is a problem connecting to the server"/>
                         </div>
                     }
+
                 </div>
                 <div style={{display: "flex"}}>
                     <button className="navbar-button" onClick={() => setPath("users")} title="Manage users">

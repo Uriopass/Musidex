@@ -5,6 +5,7 @@ import Player from "./components/player";
 import {applyTrackPlayer, newTrackPlayer, setupListeners, TrackplayerCtx} from "./domain/trackplayer";
 import useLocalStorage from "use-local-storage";
 import PageNavigator, {Page} from "./pages/navigator";
+import {YTSendState} from "./pages/submit";
 import Tracklist, {
     emptyTracklist,
     useNextTrackCallback,
@@ -78,7 +79,8 @@ const App = (props: { syncProblem: boolean }) => {
     const selectedMusics = useMusicSelect(meta, sform, list);
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, meta, sform, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, meta);
-
+    let [pasteUploadYTState, setPasteUploadYTState] = useState<YTSendState>({type: "waiting_for_url"})
+    
     useEffect(() => {
         const musicId = parseInt(new URLSearchParams(window.location.search).get("m") || "");
         let seek: number | undefined = parseInt(new URLSearchParams(window.location.search).get("t") || "");
@@ -108,10 +110,11 @@ const App = (props: { syncProblem: boolean }) => {
     }, [meta, sform, list, setList, trackplayer, doNext, user, setUser, setSform]);
 
     trackplayer.audio.volume = volume;
-    useMemo(() => setupListeners(trackplayer, meta, doNext, doPrev, dispatchPlayer), [trackplayer, meta, doNext, doPrev, dispatchPlayer]);
+    useMemo(() => setupListeners(trackplayer, meta, doNext, doPrev, dispatchPlayer, setPasteUploadYTState), [trackplayer, meta, doNext, doPrev, dispatchPlayer, setPasteUploadYTState]);
     return (
         <>
             <Navbar syncProblem={props.syncProblem}
+                    uploadState={pasteUploadYTState}
                     page={curPage} setCurPage={setCurPage}
                     curUser={meta.users.find((x) => x.id === user)}/>
             <EditableCtx.Provider value={editableSt}>
