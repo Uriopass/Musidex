@@ -270,7 +270,8 @@ export const Thumbnail = (props: ThumbnailProps) => {
                 onMouseEnter={() => props.setHovered?.(true)} onMouseLeave={() => props.setHovered?.(false)}>
         {
             (props.cover) ?
-                <img src={"storage/" + props.cover} alt="album or video cover" loading="lazy"/> :
+                // @ts-ignore
+                <img src={"storage/" + props.cover} alt="album or video cover" loading="lazy" fetchpriority="low" /> :
                 <img src={noCoverImg} alt="album or video cover"/>
         }
     </div>

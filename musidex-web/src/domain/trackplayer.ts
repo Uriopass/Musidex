@@ -20,6 +20,8 @@ export function newTrackPlayer(): TrackPlayer {
     let audio = new Audio();
     audio.preload = "auto";
     audio.autoplay = true;
+    // @ts-ignore
+    audio.fetchpriority = 'high';
     return {
         current: undefined,
         audio: audio,
