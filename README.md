@@ -67,11 +67,10 @@ Only GNU/Linux distros are supported at the moment.
 You can run the `prepare.sh` script after cloning to run all of the following commands,
 or run them yourself with an explanation.
 
-[Youtube-dl](http://ytdl-org.github.io/youtube-dl/download.html) to add music from youtube URLs.
+[Youtube-dl](https://github.com/yt-dlp/yt-dlp/wiki/Installation#with-pip) to add music from youtube URLs.
 
 ```bash
-sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
-sudo chmod a+rx /usr/local/bin/youtube-dl
+python3 -m pip install -U yt-dlp
 ```
 
 Ffmpeg so that the downloaded audio files are converted to more friendly formats. (as advised by youtube-dl).  
