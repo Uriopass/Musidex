@@ -16,7 +16,7 @@ impl NeuralEmbedWorker {
     }
 
     pub fn start(mut self) {
-        let _ = tokio::spawn(async move {
+        tokio::spawn(async move {
             loop {
                 tokio::time::sleep(Duration::from_secs(5)).await;
                 let v = self

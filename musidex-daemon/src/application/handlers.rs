@@ -3,7 +3,7 @@ use std::convert::TryInto;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
 
-use crate::domain::entity::{MusicID, Tag, TagKey, User, UserID};
+use crate::domain::entity::{Music, MusicID, Tag, TagKey, User, UserID};
 use crate::domain::music::delete_music;
 use crate::domain::sync::{compress_meta, serve_sync_websocket, SyncBroadcastSubscriber};
 use crate::domain::{stream, sync, upload};
@@ -74,6 +74,20 @@ pub async fn create_tag(mut req: Request<Body>) -> Result<Response<Body>> {
     let c = db.get().await;
 
     Tag::insert(&c, tag)?;
+
+    Ok(Response::new(Body::empty()))
+}
+
+pub async fn put_on_top(req: Request<Body>) -> Result<Response<Body>> {
+    let id = req.params().get("id").context("no id in url")?;
+    let id: i32 = id.parse().context("invalid id")?;
+
+    let db = req.state::<Db>();
+    let mut c = db.get().await;
+
+    if !Music::put_on_top(&mut c, MusicID(id))? {
+        return Ok(res_status(StatusCode::NOT_FOUND));
+    }
 
     Ok(Response::new(Body::empty()))
 }

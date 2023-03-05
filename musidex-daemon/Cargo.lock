@@ -627,7 +627,7 @@ dependencies = [
  "regex",
  "route-recognizer",
  "rusqlite",
- "test-env-log",
+ "test-log",
  "tokio",
  "webp",
 ]
@@ -944,10 +944,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "test-env-log"
-version = "0.2.8"
+name = "test-log"
+version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "877189d680101869f65ef94168105d6c188b3a143c13a2d42cf8a09c4c704f8a"
+checksum = "38f0c854faeb68a048f0f2dc410c5ddae3bf83854ef0e4977d58306a5edef50e"
 dependencies = [
  "proc-macro2",
  "quote",

@@ -3,7 +3,7 @@ use crate::domain::entity::{Music, Tag, TagKey, User};
 use crate::domain::sync::fetch_metadata;
 use anyhow::{Context, Result};
 
-#[test_env_log::test(tokio::test)]
+#[test_log::test(tokio::test)]
 pub async fn test_crd_user() -> Result<()> {
     let db = mk_db().await?;
     let c = db.get().await;
@@ -24,7 +24,7 @@ pub async fn test_crd_user() -> Result<()> {
     Ok(())
 }
 
-#[test_env_log::test(tokio::test)]
+#[test_log::test(tokio::test)]
 pub async fn test_update_user() -> Result<()> {
     let db = mk_db().await?;
     let c = db.get().await;
@@ -41,7 +41,7 @@ pub async fn test_update_user() -> Result<()> {
     Ok(())
 }
 
-#[test_env_log::test(tokio::test)]
+#[test_log::test(tokio::test)]
 pub async fn test_delete_userlibrary() -> Result<()> {
     let db = mk_db().await?;
     let c = db.get().await;
@@ -60,7 +60,7 @@ pub async fn test_delete_userlibrary() -> Result<()> {
     Ok(())
 }
 
-#[test_env_log::test(tokio::test)]
+#[test_log::test(tokio::test)]
 pub async fn test_sorted_users() -> Result<()> {
     let db = mk_db().await?;
     let c = db.get().await;

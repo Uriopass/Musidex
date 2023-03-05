@@ -4,7 +4,7 @@ use crate::domain::music::delete_music;
 use crate::domain::sync::fetch_metadata;
 use anyhow::Result;
 
-#[test_env_log::test(tokio::test)]
+#[test_log::test(tokio::test)]
 pub async fn test_mk_music() -> Result<()> {
     let db = mk_db().await?;
     let c = db.get().await;
@@ -16,7 +16,24 @@ pub async fn test_mk_music() -> Result<()> {
     Ok(())
 }
 
-#[test_env_log::test(tokio::test)]
+#[test_log::test(tokio::test)]
+pub async fn test_update_cascade() -> Result<()> {
+    let db = mk_db().await?;
+    let mut c = db.get().await;
+    let id = Music::mk(&c)?;
+    Tag::insert(&c, Tag::new_text(id, TagKey::Duration, s!("v")))?;
+
+    Music::put_on_top(&mut c, id)?;
+    let meta = fetch_metadata(&c)?;
+
+    assert_eq!(meta.musics.len(), 1);
+    assert_eq!(meta.tags.unwrap().len(), 1);
+    assert_eq!(meta.users.len(), 1);
+
+    Ok(())
+}
+
+#[test_log::test(tokio::test)]
 pub async fn test_delete_cascade() -> Result<()> {
     let db = mk_db().await?;
     let c = db.get().await;
@@ -33,7 +50,7 @@ pub async fn test_delete_cascade() -> Result<()> {
     Ok(())
 }
 
-#[test_env_log::test(tokio::test)]
+#[test_log::test(tokio::test)]
 pub async fn test_delete_request_zero_user() -> Result<()> {
     let db = mk_db().await?;
     let c = db.get().await;
@@ -50,7 +67,7 @@ pub async fn test_delete_request_zero_user() -> Result<()> {
     Ok(())
 }
 
-#[test_env_log::test(tokio::test)]
+#[test_log::test(tokio::test)]
 pub async fn test_delete_request_one_user() -> Result<()> {
     let db = mk_db().await?;
     let c = db.get().await;
@@ -68,7 +85,7 @@ pub async fn test_delete_request_one_user() -> Result<()> {
     Ok(())
 }
 
-#[test_env_log::test(tokio::test)]
+#[test_log::test(tokio::test)]
 pub async fn test_delete_request_two_user() -> Result<()> {
     let db = mk_db().await?;
     let c = db.get().await;

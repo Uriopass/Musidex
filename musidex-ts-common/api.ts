@@ -94,6 +94,12 @@ export const API = {
         });
     },
 
+    async putOnTop(id: number): Promise<Response> {
+        return fetch(apiURL + "/api/putontop/" + id, {
+            method: "put",
+        });
+    },
+
     async insertTag(tag: Tag): Promise<Response> {
         return fetch(apiURL + "/api/tag/create", {
             method: "post",

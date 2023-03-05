@@ -26,6 +26,23 @@ impl Music {
             .context("error executing delete music")
             .map(|x| x == 1)
     }
+
+    pub fn put_on_top(c: &mut Connection, id: MusicID) -> Result<bool> {
+        let t = c.transaction().context("transaction begin failed")?;
+
+        let m = Music::mk(&t)?;
+
+        t.prepare_cached("UPDATE tags SET music_id = ?1 WHERE music_id = ?2;")
+            .context("error preparing put on top music")?
+            .execute([&m.0, &id.0])
+            .context("error executing put on top music")?;
+
+        let song_exists = Music::delete(&t, id)?;
+
+        t.commit().context("transaction commit failed")?;
+
+        Ok(song_exists)
+    }
 }
 
 pub fn delete_music(c: &Connection, uid: UserID, id: MusicID) -> Result<StatusCode> {

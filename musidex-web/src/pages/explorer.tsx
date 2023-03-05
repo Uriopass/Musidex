@@ -160,6 +160,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
                                               playable={metadata.playable.has(id)}
                                               progressColor={progressColor}
                                               metadata={metadata}
+                                              curSortBy={searchForm.sort}
                                     />
                                 </div>
 
@@ -291,6 +292,7 @@ type SongElemProps = {
     curUser?: number;
     playable: boolean;
     metadata: MusidexMetadata;
+    curSortBy: SortBy;
 }
 
 function hashCode(str: string) {
@@ -364,7 +366,12 @@ export const SongElem = React.memo((props: SongElemProps) => {
         }
         API.insertTag({music_id: props.musicID, key: "user_library:" + props.curUser}).then(() => props.syncMetadata());
     }
+    const onPutOnTop = () => {
+        API.putOnTop(props.musicID).then(() => props.syncMetadata());
+    };
+
     const showAddToLibrary = props.curUser !== undefined && !tags.has("user_library:" + props.curUser);
+    const showPutOnTop = props.curSortBy.kind.kind === "creation_time";
 
     const title = tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
@@ -442,6 +449,12 @@ export const SongElem = React.memo((props: SongElemProps) => {
                     showAddToLibrary &&
                     <button className="player-button" onClick={onAddToLibrary} title="Add to library">
                         <MaterialIcon name="add"/>
+                    </button>
+                }
+                {
+                    showPutOnTop &&
+                    <button className="player-button" onClick={onPutOnTop} title="Put back on top">
+                        <MaterialIcon name="vertical_align_top"/>
                     </button>
                 }
                 {

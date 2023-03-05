@@ -114,7 +114,7 @@ impl Router {
     }
 
     /// Register a handler for PUT requests
-    pub fn put<H>(&mut self, path: &str, handler: H)
+    pub fn put<H>(&mut self, path: &str, handler: H) -> &mut Self
     where
         H: Handler,
     {
@@ -123,6 +123,7 @@ impl Router {
             .entry(Method::PUT)
             .or_insert_with(InnerRouter::new);
         entry.add(path, Box::new(handler));
+        self
     }
 
     /// Register a handler for DELETE requests
