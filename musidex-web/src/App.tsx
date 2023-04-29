@@ -80,7 +80,11 @@ const App = (props: { syncProblem: boolean }) => {
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, meta, sform, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, meta);
     let [pasteUploadYTState, setPasteUploadYTState] = useState<YTSendState>({type: "waiting_for_url"})
-    
+
+    if (sform.sort.similKeepOrder && list.last_manual_select === undefined) {
+        sform.sort.similKeepOrder = false;
+    }
+
     useEffect(() => {
         const musicId = parseInt(new URLSearchParams(window.location.search).get("m") || "");
         let seek: number | undefined = parseInt(new URLSearchParams(window.location.search).get("t") || "");
