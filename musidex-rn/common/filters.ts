@@ -193,6 +193,14 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
             }
         }
 
+        if (list.queue.length > 0) {
+            toShow = toShow.filter((v) => !list.queue.includes(v));
+
+            if (list.queue.length > 0) {
+                toShow = list.queue.concat(toShow);
+            }
+        }
+
         return toShow;
         /* eslint-disable */
     }, [metadata, search, sortBy, list, best_tracks, consideredMusic]);

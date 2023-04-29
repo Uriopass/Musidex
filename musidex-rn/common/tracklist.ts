@@ -15,6 +15,7 @@ type Tracklist = {
     last_played: number[];
     last_played_maxsize: number;
     last_manual_select: number | undefined;
+    queue: number[];
 }
 
 export function emptyTracklist(): Tracklist {
@@ -22,6 +23,7 @@ export function emptyTracklist(): Tracklist {
         last_played: [],
         last_played_maxsize: 30,
         last_manual_select: undefined,
+        queue: [],
     };
 }
 
@@ -36,15 +38,21 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
         };
 
         if (id === undefined) {
-            let best_id = selectedMusics.list[0];
-            const curp = list.last_played[list.last_played.length - 1];
-            if (curp) {
-                const v = selectedMusics.list.indexOf(curp);
-                if (v !== -1) {
-                    best_id = selectedMusics.list[(v + 1) % selectedMusics.list.length];
+            if (list.queue.length > 0) {
+                id = list.queue[0];
+                list.queue = list.queue.slice(1);
+                setList(list);
+            } else {
+                let best_id = selectedMusics.list[0];
+                const curp = list.last_played[list.last_played.length - 1];
+                if (curp) {
+                    const v = selectedMusics.list.indexOf(curp);
+                    if (v !== -1) {
+                        best_id = selectedMusics.list[(v + 1) % selectedMusics.list.length];
+                    }
                 }
+                id = best_id;
             }
-            id = best_id;
         }
         if (id === undefined) {
             return;

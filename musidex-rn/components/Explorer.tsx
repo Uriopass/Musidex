@@ -89,7 +89,7 @@ const SortBySelect = React.memo((props: SortBySelectProps) => {
             if (is_same) {
                 new_desc = !props.sortBy.descending;
             }
-            props.setSortBy({kind: props2.sort, descending: new_desc});
+            props.setSortBy({kind: props2.sort, descending: new_desc, similKeepOrder: true});
         };
 
         return <TouchableOpacity style={[styles.sortByElem]}
@@ -165,7 +165,7 @@ function SongList(props: {
     topComp: any,
 }) {
     const [metadata, fetchMetadata] = useContext(Ctx.Metadata);
-    const [doNext] = useContext(Ctx.Controls);
+    const [doNext, _, _2, addToQueue] = useContext(Ctx.Controls);
     const tracklist = useContext(Ctx.Tracklist);
     const [searchForm] = useContext(Ctx.SearchForm);
     const syncState = useContext(Ctx.SyncState);
@@ -183,6 +183,10 @@ function SongList(props: {
         let progress = props.musics.scoremap.get(item);
         if (item === curTrack) {
             color = "#1d2f23";
+            progress = 1.0;
+        }
+        if (tracklist.queue.includes(item)) {
+            color = "#462243";
             progress = 1.0;
         }
         return <SongElem musicID={item}
@@ -230,14 +234,22 @@ function SongList(props: {
             keyboardShouldPersistTaps={"handled"}
             listViewRef={(view: any) => flatRef.current = view}
             renderHiddenItem={(rowData, rowMap) => {
-                return <SongElemHiddenItem userID={searchForm.filters.user || -1} musicID={rowData.item} fetchMetadata={fetchMetadata}/>;
+                return <SongElemHiddenItem
+                    userID={searchForm.filters.user || -1}
+                    musicID={rowData.item}
+                    isInQueue={tracklist.queue.includes(rowData.item)}
+                    addToQueue={(id) => {
+                        addToQueue(id);
+                        rowMap[rowData.item]?.closeRow();
+                    }}
+                    fetchMetadata={fetchMetadata}/>;
             }}
             renderItem={renderSong}
             ListHeaderComponent={props.topComp}
             showsVerticalScrollIndicator={false}
             onScroll={onScroll}
-            disableRightSwipe={true}
             rightOpenValue={-50}
+            leftOpenValue={50}
             stopRightSwipe={-50}
             maxToRenderPerBatch={5}
             directionalDistanceChangeThreshold={10}
@@ -271,28 +283,55 @@ type SongElemHiddenItemProps = {
     musicID: number;
     userID: number;
     fetchMetadata: () => void;
+    addToQueue: (musicID: number) => void;
+    isInQueue: boolean;
 };
 
 const SongElemHiddenItem = (props: SongElemHiddenItemProps) => {
     let [loading, setLoading] = useState(false);
-    return <TouchableOpacity activeOpacity={0.2}
-                             style={styles.hiddenItem}
-                             onPress={() => {
-                                 setLoading(true);
-                                 API.deleteMusicUser(props.musicID, props.userID).then(() => props.fetchMetadata());
-                             }}>
-        <Animated.View style={{
-            paddingHorizontal: 10,
-            width: 50,
-            display: "flex",
-            height: "100%",
-            justifyContent: "center",
-            backgroundColor: "#bb4c4c",
-            opacity: hiddenOpacity
-        }}>
-            {loading ? <ActivityIndicator/> : <Icon name="remove-circle"/>}
-        </Animated.View>
-    </TouchableOpacity>;
+    return <View style={styles.hiddenItem}>
+        <TouchableOpacity activeOpacity={0.2}
+         onPress={() => {
+             props.addToQueue(props.musicID);
+         }}
+        >
+            <Animated.View style={{
+                paddingHorizontal: 10,
+                width: 50,
+                display: "flex",
+                height: "100%",
+                justifyContent: "center",
+                backgroundColor: "#7d638a",
+                opacity: hiddenOpacity
+            }}>
+                {
+                    props.isInQueue ?
+                        <Icon name="remove-from-queue"/> :
+                        <Icon name="queue-play-next"/>
+                }
+            </Animated.View>
+        </TouchableOpacity>
+        <TouchableOpacity
+            activeOpacity={0.2}
+            onPress={() => {
+                setLoading(true);
+                API.deleteMusicUser(props.musicID, props.userID).then(() => props.fetchMetadata());
+            }}
+        >
+            <Animated.View style={{
+                paddingHorizontal: 10,
+                width: 50,
+                display: "flex",
+                height: "100%",
+                justifyContent: "center",
+                backgroundColor: "#bb4c4c",
+                opacity: hiddenOpacity
+            }}
+           >
+                {loading ? <ActivityIndicator/> : <Icon name="remove-circle"/>}
+            </Animated.View>
+        </TouchableOpacity>
+    </View>;
 };
 
 type SongElemProps = {
@@ -314,13 +353,11 @@ const SongElem = React.memo(React.forwardRef((props: SongElemProps, ref) => {
     return (
         <TouchableOpacity activeOpacity={0.5} style={styles.item} onLongPress={() => {
             props.tracklist.last_manual_select = props.musicID;
-            console.log("long");
             props.doNext(props.musicID);
         }} onPress={() => {
             if (props.tracklist.last_manual_select === undefined) {
                 props.tracklist.last_manual_select = props.musicID;
             }
-            console.log("press");
             props.doNext(props.musicID);
         }}>
             {
@@ -414,7 +451,7 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "flex-end",
+        justifyContent: "space-between",
         borderRadius: 5,
         marginVertical: 4,
         marginHorizontal: 5,

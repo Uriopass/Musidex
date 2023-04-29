@@ -53,9 +53,9 @@ function RootNavigator() {
     const [apiURL] = useContext(Ctx.APIUrl);
     const [localSettings] = useContext(Ctx.LocalSettings);
 
-    const [list, setList, loadedListe] = useStored<Tracklist>("tracklist", emptyTracklist());
+    const [list, setList, loadedListe] = useStored<Tracklist>("tracklist2", emptyTracklist());
     const [user, setUser, loadedUser] = useStored<number | undefined>("user", firstUser(metadata));
-    const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm2", newSearchForm(user));
+    const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm3", newSearchForm(user));
     const [lastPosition, updateLastPosition, loadedPosition] = useStoredRef<PositionStorage>("last_position_v3", {positions: {}});
 
     const loaded = loadedListe && loadedUser && loadedSF && loadedPosition;
@@ -110,6 +110,20 @@ function RootNavigator() {
     const doNext = useNextTrackCallback(list, setList, dispatchPlayer, metadata, searchForm, selectedMusics);
     const doPrev = usePrevTrackCallback(list, setList, dispatchPlayer, metadata);
     const doReset = useResetCallback(setList);
+    const addToQueue = useCallback((musicId: number) => {
+        if (list.queue.includes(musicId)) {
+            setList({
+                ...list,
+                queue: list.queue.filter((v) => v !== musicId),
+            });
+            return;
+        }
+        setList({
+                ...list,
+                queue: [...list.queue, musicId],
+            }
+        );
+    }, [list, setList]);
 
     useSetupListeners(trackplayer, dispatchPlayer, doNext, doPrev);
 
@@ -205,7 +219,7 @@ function RootNavigator() {
         });
     }, [setUser, setSearchForm, searchForm]);
 
-    const controls = useMemoProv<[NextTrackCallback, PrevTrackCallback,() => void]>([doNext, doPrev, doReset]);
+    const controls = useMemoProv<[NextTrackCallback, PrevTrackCallback,() => void, (musicID: number) => void]>([doNext, doPrev, doReset, addToQueue]);
     const playerr = useMemoProv<[Trackplayer, any]>([trackplayer, dispatchPlayer]);
     const userr = useMemoProv<[number | undefined, any]>([user, setUser]);
 
