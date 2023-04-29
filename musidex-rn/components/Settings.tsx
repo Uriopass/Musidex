@@ -11,7 +11,7 @@ import {LocalSettings} from "../domain/localsettings";
 import {MusidexMetadata} from "../common/entity";
 
 function Settings() {
-    const [metadata] = useContext(Ctx.Metadata);
+    const [metadata, fetchMetadata] = useContext(Ctx.Metadata);
     const [apiUrl, setAPIUrl] = useContext(Ctx.APIUrl);
     const [localSettings, setLocalSettings] = useContext(Ctx.LocalSettings);
     const [localApiUrl, setLocalAPIUrl] = useStored("local_api_url", apiUrl);
@@ -57,6 +57,7 @@ function Settings() {
         <SearchInput value={localApiUrl} onChangeText={(t) => setLocalAPIUrl(t)}
                      onBlur={() => {
                          setAPIUrl(localApiUrl);
+                         fetchMetadata();
                      }}
                      placeholder="Enter API Url"/>
         <View style={styles.connectivityContainer}>

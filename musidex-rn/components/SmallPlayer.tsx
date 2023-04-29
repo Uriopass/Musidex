@@ -46,7 +46,7 @@ const SmallPlayer = (_: PlayerProps) => {
     const [player, dispatch] = useContext(Ctx.Trackplayer);
     const list = useContext(Ctx.Tracklist);
     const syncState = useContext(Ctx.SyncState);
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(true);
 
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
     const tags = getTags(metadata, curTrack);

@@ -35,6 +35,7 @@ export function newSearchForm(user: number | undefined): SearchForm {
         sort: {
             kind: {kind: "similarity"},
             descending: true,
+            similKeepOrder: true,
         },
         similarityParams: {
             temperature: 0.0,

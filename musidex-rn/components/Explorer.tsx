@@ -190,6 +190,7 @@ function SongList(props: {
                          thumbSynced={isThumbSynced(syncState, metadata, item)}
                          tags={getTags(metadata, item) || new Map()}
                          doNext={doNext}
+                         tracklist={tracklist}
                          progress={progress}
                          progressColor={color}/>;
     }, [metadata, doNext, tracklist, curTrack, searchForm.sort.kind.kind, searchForm.filters.searchQry]);
@@ -297,6 +298,7 @@ const SongElemHiddenItem = (props: SongElemHiddenItemProps) => {
 type SongElemProps = {
     musicID: number;
     tags: Map<string, Tag>;
+    tracklist: Tracklist;
     doNext: NextTrackCallback;
     progress: number | undefined;
     progressColor: string;
@@ -310,7 +312,17 @@ const SongElem = React.memo(React.forwardRef((props: SongElemProps, ref) => {
     const duration = props.tags.get("duration")?.integer;
 
     return (
-        <TouchableOpacity activeOpacity={0.5} style={styles.item} onPress={() => props.doNext(props.musicID)}>
+        <TouchableOpacity activeOpacity={0.5} style={styles.item} onLongPress={() => {
+            props.tracklist.last_manual_select = props.musicID;
+            console.log("long");
+            props.doNext(props.musicID);
+        }} onPress={() => {
+            if (props.tracklist.last_manual_select === undefined) {
+                props.tracklist.last_manual_select = props.musicID;
+            }
+            console.log("press");
+            props.doNext(props.musicID);
+        }}>
             {
                 props.progress !== undefined &&
                 (

@@ -55,7 +55,7 @@ function RootNavigator() {
 
     const [list, setList, loadedListe] = useStored<Tracklist>("tracklist", emptyTracklist());
     const [user, setUser, loadedUser] = useStored<number | undefined>("user", firstUser(metadata));
-    const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm", newSearchForm(user));
+    const [searchForm, setSearchForm, loadedSF] = useStored<SearchForm>("searchForm2", newSearchForm(user));
     const [lastPosition, updateLastPosition, loadedPosition] = useStoredRef<PositionStorage>("last_position_v3", {positions: {}});
 
     const loaded = loadedListe && loadedUser && loadedSF && loadedPosition;
@@ -100,12 +100,9 @@ function RootNavigator() {
     }, [metadata, list, lastPosition, updateLastPosition, loaded]);
 
     useEffect(() => {
-        avoidFirst += 1;
-        if (avoidFirst === 1) {
-            return;
+        if (metadata.users.length === 0 && apiURL !== undefined && apiURL !== "") {
+            fetchMetadata();
         }
-        console.log("fetching metadata");
-        fetchMetadata();
     }, [apiURL]);
 
     const [trackplayer, dispatchPlayer] = useReducer(applyTrackPlayer, newTrackPlayer(lastPosition));
