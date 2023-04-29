@@ -104,6 +104,7 @@ function RootNavigator() {
         if (avoidFirst === 1) {
             return;
         }
+        console.log("fetching metadata");
         fetchMetadata();
     }, [apiURL]);
 
