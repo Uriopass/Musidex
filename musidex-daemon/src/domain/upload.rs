@@ -125,7 +125,7 @@ pub async fn youtube_upload_playlist(
     uid: UserID,
 ) -> Result<(StatusCode, usize)> {
     let start = index_start.unwrap_or(0);
-    let stop = index_stop.unwrap_or(0);
+    let stop = index_stop.unwrap_or(50);
     if stop < start {
         return Ok((StatusCode::OK, 0));
     }
