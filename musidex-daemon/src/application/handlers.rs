@@ -109,6 +109,27 @@ pub async fn delete_tag(mut req: Request<Body>) -> Result<Response<Body>> {
     Ok(Response::new(Body::empty()))
 }
 
+#[derive(DeJson)]
+pub struct MergeMusic {
+    id1: MusicID,
+    id2: MusicID,
+}
+
+pub async fn merge_music(mut req: Request<Body>) -> Result<Response<Body>> {
+    let MergeMusic { id1, id2 } = parse_body(&mut req).await?;
+
+    if id1 == id2 {
+        return Ok(Response::new(Body::empty()));
+    }
+
+    let db = req.state::<Db>();
+    let mut c = db.get().await;
+
+    Music::merge(&mut c, id1, id2)?;
+
+    Ok(Response::new(Body::empty()))
+}
+
 pub async fn delete_music_handler(req: Request<Body>) -> Result<Response<Body>> {
     let music_id = req.params().get("id").context("missing parameter id")?;
     let db = req.state::<Db>();

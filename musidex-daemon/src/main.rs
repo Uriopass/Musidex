@@ -76,6 +76,7 @@ async fn start() -> anyhow::Result<()> {
         )
         .get("/api/stream/:musicid", handlers::stream)
         .delete("/api/music/:id", handlers::delete_music_handler)
+        .post("/api/music/merge", handlers::merge_music)
         .post("/api/tag/create", handlers::create_tag)
         .delete("/api/tag", handlers::delete_tag)
         .put("/api/putontop/:id", handlers::put_on_top)

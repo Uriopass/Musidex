@@ -17,6 +17,37 @@ pub async fn test_mk_music() -> Result<()> {
 }
 
 #[test_log::test(tokio::test)]
+pub async fn test_merge_music() -> Result<()> {
+    let db = mk_db().await?;
+    let mut c = db.get().await;
+    let v = Music::mk(&c)?;
+    let v2 = Music::mk(&c)?;
+
+    Tag::insert(&c, Tag::new_key(v, TagKey::UserLibrary(s!("0"))))?;
+    Tag::insert(&c, Tag::new_key(v2, TagKey::UserLibrary(s!("1"))))?;
+
+    Tag::insert(&c, Tag::new_text(v, TagKey::Artist, s!("a")))?;
+    Tag::insert(&c, Tag::new_text(v2, TagKey::Artist, s!("b")))?;
+
+    Music::merge(&mut c, v, v2)?;
+
+    let meta = fetch_metadata(&c)?;
+
+    assert_eq!(meta.musics.len(), 1);
+    assert_eq!(meta.users.len(), 1);
+    assert_eq!(meta.tags.as_ref().unwrap().len(), 3);
+
+    assert!(meta
+        .tags
+        .as_ref()
+        .unwrap()
+        .iter()
+        .any(|x| x.key == TagKey::Artist && x.text == Some(s!("a"))));
+
+    Ok(())
+}
+
+#[test_log::test(tokio::test)]
 pub async fn test_update_cascade() -> Result<()> {
     let db = mk_db().await?;
     let mut c = db.get().await;

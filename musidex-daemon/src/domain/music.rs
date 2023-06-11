@@ -27,6 +27,21 @@ impl Music {
             .map(|x| x == 1)
     }
 
+    pub fn merge(c: &mut Connection, id1: MusicID, id2: MusicID) -> Result<()> {
+        let t = c.transaction().context("transaction begin failed")?;
+
+        t.prepare_cached("UPDATE OR IGNORE tags SET music_id = ?1 WHERE music_id = ?2;")
+            .context("error preparing merge music")?
+            .execute([&id1.0, &id2.0])
+            .context("error executing merge music")?;
+
+        Music::delete(&t, id2)?;
+
+        t.commit().context("transaction commit failed")?;
+
+        Ok(())
+    }
+
     pub fn put_on_top(c: &mut Connection, id: MusicID) -> Result<bool> {
         let t = c.transaction().context("transaction begin failed")?;
 
