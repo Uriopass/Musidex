@@ -31,6 +31,9 @@ const Navbar = React.memo((props: NavbarProps) => {
                     <button className="navbar-button" onClick={() => setPath("music_map")} title="Show map of music embeddings">
                         <MaterialIcon name="explore" size={25}/>
                     </button>
+                    <button className="navbar-button" onClick={() => setPath("merge")} title="Merge duplicate tracks">
+                        <MaterialIcon name="call_merge" size={25}/>
+                    </button>
                     {
                         (props.uploadState.type !== "waiting_for_url") &&
                         <YTSendStateIcon state={props.uploadState}/>

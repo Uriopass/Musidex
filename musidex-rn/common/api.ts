@@ -162,6 +162,14 @@ export const API = {
         });
     },
 
+    async merge(m1: number, m2: number): Promise<Response> {
+        return fetch(apiURL + "/api/music/merge", {
+            method: "post",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({id1: m1, id2: m2}),
+        });
+    },
+
     async restartServer(): Promise<Response> {
         return fetch(apiURL + "/api/restart_server", {});
     },

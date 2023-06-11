@@ -6,8 +6,9 @@ import {Setter} from "../../../musidex-ts-common/utils";
 import React, {Suspense} from "react";
 import Submit from "./submit";
 import {ErrorBoundary} from "react-error-boundary";
+import Merge from "./merge";
 
-export type Page = { path: "explorer" | "users" | "settings" | "music_map", submit: boolean };
+export type Page = { path: "explorer" | "users" | "settings" | "music_map" | "merge", submit: boolean };
 
 interface NavigatorProps {
     page: Page;
@@ -29,6 +30,7 @@ const PageNavigator = (props: NavigatorProps) => {
             {
                 props.page.submit && <Submit/>
             }
+            <Merge hidden={props.page.path !== "merge"} doNext={props.doNext}/>
             <Explorer hidden={props.page.path !== "explorer"} curUser={props.curUser} doNext={props.doNext}/>
             <Users hidden={props.page.path !== "users"} onSetUser={props.onSetUser} curUser={props.curUser}
                    page={props.page} setCurPage={props.setCurPage}/>

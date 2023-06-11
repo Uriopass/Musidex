@@ -1,0 +1,60 @@
+.merge {
+    width: calc(100% - 20px);
+    text-align: left;
+    max-width: 980px;
+    display: flex;
+    flex-direction: column;
+}
+
+.similarity-container {
+    display: flex;
+    flex-direction: row;
+    margin-top: 20px;
+}
+
+.duplicate {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin: 10px 0;
+    padding: 5px 10px;
+    background-color: var(--fg);
+    border-radius: 5px;
+}
+
+.duplicate-side {
+    flex-basis: 50%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.duplicate-description {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 5px;
+}
+
+.duplicate-title {
+    padding: 0 5px;
+}
+
+.duplicate-left {
+    text-align: right;
+    flex-direction: row-reverse;
+}
+
+.duplicate-right {
+    text-align: left;
+}
+
+.duplicate-button {
+    flex-basis: 120px;
+    min-width: 120px;
+}
+
+.duplicate-button-right {
+    text-align: right;
+}

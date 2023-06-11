@@ -186,6 +186,11 @@
     padding-left: 4px;
 }
 
+.small-pad {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
 .flex-center {
     display: flex;
     align-items: center;
