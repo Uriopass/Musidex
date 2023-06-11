@@ -49,7 +49,7 @@ const Merge = (props: MergeProps) => {
 
     return (
         <div className={"merge " + (props.hidden ? " hidden" : "")}>
-            <div className="title color-fg">Merge tracks</div>
+            <div className="title color-fg">Merge similar tracks</div>
             <div className="similarity-container">
                 <span className="">Similarity</span>
                 <input type="range"
