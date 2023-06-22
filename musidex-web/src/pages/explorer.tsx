@@ -56,10 +56,20 @@ const Explorer = React.memo((props: ExplorerProps) => {
         filters: f
     }), [setSearchForm, searchForm]);
     const setSortBy = useCallback((s: SortBy) => setSearchForm({...searchForm, sort: s}), [setSearchForm, searchForm]);
-    const setSearchQry = useCallback((s: string) => setSearchForm({
-        ...searchForm,
-        filters: {...searchForm.filters, searchQry: s}
-    }), [setSearchForm, searchForm]);
+    const setSearchQry = useCallback((s: string) => {
+        let url = new URL(window.location.href);
+        if (s === "") {
+            url.searchParams.delete("q");
+        } else {
+            url.searchParams.set("q", s);
+        }
+        window.history.replaceState({}, "", url.toString());
+
+        setSearchForm({
+            ...searchForm,
+            filters: {...searchForm.filters, searchQry: s}
+        })
+    }, [setSearchForm, searchForm]);
     const setSimilarityParam = useCallback((s: SimilarityParams) => setSearchForm({
         ...searchForm,
         similarityParams: s

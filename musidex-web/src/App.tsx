@@ -88,11 +88,21 @@ const App = (props: { syncProblem: boolean }) => {
     useEffect(() => {
         const musicId = parseInt(new URLSearchParams(window.location.search).get("m") || "");
         let seek: number | undefined = parseInt(new URLSearchParams(window.location.search).get("t") || "");
+        let searchQry: string | null = new URLSearchParams(window.location.search).get("q");
         if (musicId) {
             if(!seek) {
                 seek = undefined;
             }
             doNext(musicId, seek);
+        }
+        if (searchQry) {
+            setSform({
+                ...sform,
+                filters: {
+                    ...sform.filters,
+                    searchQry: searchQry,
+                }
+            });
         }
         // eslint-disable-next-line
     }, [])
