@@ -30,6 +30,10 @@ const SettingsPage = (props: PageProps) => {
         );
     };
 
+    let onRetryFailedSongs = () => {
+        API.retryFailedSongs();
+    };
+
     return (
         <div className={"settings color-fg "+ (props.hidden ? " hidden" : "")}>
             <div className="title">
@@ -40,6 +44,12 @@ const SettingsPage = (props: PageProps) => {
                     <MaterialIcon name={restartStatus}
                                   size={25}/>&nbsp;Restart
                     server
+                </button>
+            </div>
+            <div className="settings-item">
+                <button className="navbar-button" onClick={onRetryFailedSongs}>
+                    <MaterialIcon name={'restart_alt'}
+                                  size={25}/>&nbsp;Retry all failed songs
                 </button>
             </div>
             <div className="settings-item">

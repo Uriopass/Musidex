@@ -362,7 +362,10 @@ export const SongElem = React.memo((props: SongElemProps) => {
         c = "#28222f";
     }
     const p = clamp(100 * (props.progress || 0), 0, 100);
-    const grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
+    let grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
+    if (isError) {
+        grad = '#3b1919'
+    }
 
     const onDelete = () => {
         props.onDelete(props.musicID);
@@ -410,7 +413,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
 
     return (
         <div
-            className={`song-elem ${props.playable ? "" : "song-elem-disabled"} ${(hovered && props.playable) ? "song-elem-hovered" : ""} ${isError ? "song-elem-error" : ""}`}
+            className={`song-elem ${props.playable ? "" : "song-elem-disabled"} ${(hovered && props.playable) ? "song-elem-hovered" : ""}`}
             style={{background: grad}}>
             <Thumbnail playable={props.playable} onClick={onNext} setHovered={setHovered} cover={cover}/>
             <div style={{paddingLeft: "10px", flexGrow: 1, flexShrink: 1, flexBasis: "auto"}}>
