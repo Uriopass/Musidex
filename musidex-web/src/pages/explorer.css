@@ -105,6 +105,10 @@
     opacity: 0.6;
 }
 
+.song-elem-error {
+    background: #3b1919;
+}
+
 .song-elem-buttons {
     flex: 2 0 100px;
     max-width: 100px;

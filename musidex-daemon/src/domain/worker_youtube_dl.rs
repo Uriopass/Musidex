@@ -1,7 +1,7 @@
 use crate::domain::entity::{MusicID, Tag, TagKey};
 use crate::infrastructure::db::Db;
 use crate::infrastructure::youtube_dl::{ytdl_run_with_args, SingleVideo, YoutubeDlOutput};
-use anyhow::{Context, Error, Result};
+use anyhow::{Context, Result};
 use image::ImageFormat;
 use rusqlite::Connection;
 use std::time::Duration;

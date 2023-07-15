@@ -361,9 +361,6 @@ export const SongElem = React.memo((props: SongElemProps) => {
     if (c === undefined) {
         c = "#28222f";
     }
-    if (isError) {
-        c = "#3b2020";
-    }
     const p = clamp(100 * (props.progress || 0), 0, 100);
     const grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;
 
@@ -413,7 +410,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
 
     return (
         <div
-            className={`song-elem ${props.playable ? "" : "song-elem-disabled"} ${(hovered && props.playable) ? "song-elem-hovered" : ""}`}
+            className={`song-elem ${props.playable ? "" : "song-elem-disabled"} ${(hovered && props.playable) ? "song-elem-hovered" : ""} ${isError ? "song-elem-error" : ""}`}
             style={{background: grad}}>
             <Thumbnail playable={props.playable} onClick={onNext} setHovered={setHovered} cover={cover}/>
             <div style={{paddingLeft: "10px", flexGrow: 1, flexShrink: 1, flexBasis: "auto"}}>
@@ -455,7 +452,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
                     </div>
                 </div>
             </div>
-            <div className={`${props.playable ? "song-elem-playable" : ""}`}
+            <div className={`${props.playable ? "song-elem-playable" : ""} `}
                  style={{flexBasis: 0, flexGrow: 1, flexShrink: 1, height: "100%", minHeight: 60}} onClick={onNext}
                  onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
             </div>
