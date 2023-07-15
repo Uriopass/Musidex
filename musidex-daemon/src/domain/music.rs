@@ -66,17 +66,17 @@ pub fn delete_music(c: &Connection, uid: UserID, id: MusicID) -> Result<StatusCo
         .iter()
         .filter_map(|x| x.key.as_user_library())
         .collect();
-    let mut removed_owner = false;
-    if owners.contains(&&*uid.to_string()) {
-        Tag::remove(&c, id, TagKey::UserLibrary(uid.to_string()))?;
-        removed_owner = true;
-    } else if owners.len() >= 1 {
-        return Ok(StatusCode::UNAUTHORIZED);
-    }
-
-    if owners.len() == 0 || (owners.len() == 1 && removed_owner) {
-        Music::delete(&c, id).context("couldn't delete music from db")?;
-    }
+    match owners.len() {
+        1 | 0 => {
+            Music::delete(&c, id).context("couldn't delete music from db")?;
+        },
+        _ => {
+            if !owners.contains(&&*uid.to_string()) {
+                return Ok(StatusCode::FORBIDDEN);
+            }
+            Tag::remove(&c, id, TagKey::UserLibrary(uid.to_string()))?;
+        },
+    };
 
     Ok(StatusCode::OK)
 }
