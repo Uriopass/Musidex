@@ -1,7 +1,7 @@
 use crate::domain::entity::{MusicID, Tag, TagKey};
 use crate::infrastructure::db::Db;
 use crate::infrastructure::youtube_dl::{ytdl_run_with_args, SingleVideo, YoutubeDlOutput};
-use anyhow::{Context, Result};
+use anyhow::{Context, Error, Result};
 use image::ImageFormat;
 use rusqlite::Connection;
 use std::time::Duration;
@@ -39,9 +39,18 @@ impl YoutubeDLWorker {
 
     pub async fn youtube_dl_work(db: &Db, (id, vid_url): (MusicID, String)) -> Result<()> {
         log::info!("{}", vid_url);
-        let metadata = download(&vid_url)
+        let metadata = match download(&vid_url)
             .await
-            .context("error downloading metadata")?;
+            .context("error downloading metadata") {
+            Ok(v) => v,
+            Err(e) => {
+                log::error!("{:?}", e);
+                let c = db.get().await;
+                Tag::insert(&c, Tag::new_text(id, TagKey::YoutubeDLWorkerTreated, s!("error")))?;
+                drop(c);
+                return Ok(());
+            }
+        };
         log::info!("downloaded metadata");
 
         let mut c = db.get().await;

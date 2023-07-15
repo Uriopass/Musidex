@@ -347,7 +347,9 @@ function TagComp(props: { onDelete: () => void, tag: string }) {
 export const SongElem = React.memo((props: SongElemProps) => {
     const tags = props.tags;
 
-    let cover = tags?.get("compressed_thumbnail")?.text || tags?.get("thumbnail")?.text;
+    let cover = tags.get("compressed_thumbnail")?.text || tags.get("thumbnail")?.text;
+
+    const isError = tags.get("youtube_worker_treated")?.text === 'error';
 
     const hasYT = tags.get("youtube_video_id")?.text;
     const goToYT = () => {
@@ -358,6 +360,9 @@ export const SongElem = React.memo((props: SongElemProps) => {
     let c = props.progressColor;
     if (c === undefined) {
         c = "#28222f";
+    }
+    if (isError) {
+        c = "#3b2020";
     }
     const p = clamp(100 * (props.progress || 0), 0, 100);
     const grad = `linear-gradient(90deg, ${c} 0%, ${c} ${p}%, var(--fg) ${p}%, var(--fg) 100%)`;

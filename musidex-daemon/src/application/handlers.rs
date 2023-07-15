@@ -145,6 +145,15 @@ pub async fn delete_music_handler(req: Request<Body>) -> Result<Response<Body>> 
     Ok(res_status(delete_music(&c, uid, id)?))
 }
 
+pub async fn retry_on_error(req: Request<Body>) -> Result<Response<Body>> {
+    let db = req.state::<Db>();
+    let c = db.get().await;
+
+    c.execute("UPDATE tags SET text='false' WHERE text='error'", [])?;
+
+    Ok(res_status(StatusCode::OK))
+}
+
 #[derive(DeJson)]
 pub struct UploadYoutube {
     pub url: String,
