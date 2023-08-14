@@ -171,7 +171,7 @@ pub async fn serve_sync_websocket(
                     Message::Ping(v) => {
                         websocket.send(Message::Pong(v)).await?;
                     },
-                    Message::Binary(_) | Message::Pong(_) => {},
+                    Message::Binary(_) | Message::Pong(_) | Message::Frame(_) => {},
                     Message::Text(v) => {
                         if &v == "refresh" {
                             let _ = b.refresh_tx.send(()).await;

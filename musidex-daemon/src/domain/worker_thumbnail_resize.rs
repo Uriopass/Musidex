@@ -59,7 +59,7 @@ impl SmallThumbnailWorker {
         let img = img.resize(256, 256, FilterType::Lanczos3);
 
         let mut buf = vec![];
-        img.write_to(&mut buf, ImageOutputFormat::Jpeg(70))?;
+        img.write_to(&mut std::io::Cursor::new(&mut buf), ImageOutputFormat::Jpeg(70))?;
         let compressedfname = format!("compressed.{}", thumb_p);
         tokio::fs::write(&format!("storage/{}", compressedfname), &buf).await?;
 

@@ -37,20 +37,32 @@ impl YoutubeDLWorker {
         Ok(())
     }
 
+
     pub async fn youtube_dl_work(db: &Db, (id, vid_url): (MusicID, String)) -> Result<()> {
         log::info!("{}", vid_url);
-        let metadata = match download(&vid_url)
-            .await
-            .context("error downloading metadata") {
-            Ok(v) => v,
-            Err(e) => {
-                log::error!("{:?}", e);
-                let c = db.get().await;
-                Tag::insert(&c, Tag::new_text(id, TagKey::YoutubeDLWorkerTreated, s!("error")))?;
-                drop(c);
-                return Ok(());
-            }
-        };
+
+        let metadata;
+
+        let mut tries = 5;
+        loop {
+            tries -= 1;
+            metadata = match download(&vid_url)
+                .await
+                .context("error downloading metadata") {
+                Ok(v) => v,
+                Err(e) => {
+                    if tries > 0 {
+                        continue
+                    }
+                    log::error!("{:?}", e);
+                    let c = db.get().await;
+                    Tag::insert(&c, Tag::new_text(id, TagKey::YoutubeDLWorkerTreated, s!("error")))?;
+                    drop(c);
+                    return Ok(());
+                }
+            };
+            break
+        }
         log::info!("downloaded metadata");
 
         let mut c = db.get().await;

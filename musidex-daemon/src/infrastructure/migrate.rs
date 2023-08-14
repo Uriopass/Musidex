@@ -49,7 +49,7 @@ pub async fn migrate(pg: &Db, dir: &Dir<'_>) -> Result<()> {
         )
         .context("error creating migration table")?;
     }
-    let mut files: Vec<_> = dir.files().iter().collect();
+    let mut files: Vec<_> = dir.files().collect();
     if migrated.len() > files.len() {
         bail!("some migrations were deleted")
     }
