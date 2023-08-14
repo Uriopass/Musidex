@@ -30,6 +30,7 @@ const Merge = (props: MergeProps) => {
             if (v1 === undefined) {
                 continue;
             }
+            let duration = meta.music_tags_idx.get(m1)?.get("duration")?.integer;
             for (let j = i + 1; j < meta.musics.length; j++) {
                 let m2 = meta.musics[j];
                 // @ts-ignore
@@ -37,7 +38,8 @@ const Merge = (props: MergeProps) => {
                 if (s === undefined) {
                     continue;
                 }
-                if (s > similarity) {
+                let duration2 = meta.music_tags_idx.get(m2)?.get("duration")?.integer;
+                if (s > similarity && Math.abs(duration - duration2) <= 15) {
                     // @ts-ignore
                     dups.push([m1, m2, s]);
                 }
