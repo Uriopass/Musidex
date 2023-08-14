@@ -24,7 +24,7 @@ const Merge = (props: MergeProps) => {
         }
         let dups: [number, number, number][] = [];
         for (let i = 0; i < meta.musics.length; i++) {
-            let m1 = meta.musics[i];
+            let m1 = meta.musics[i] || 0;
             // @ts-ignore
             let v1 = meta.embeddings.get(m1);
             if (v1 === undefined) {
@@ -32,7 +32,7 @@ const Merge = (props: MergeProps) => {
             }
             let duration = meta.music_tags_idx.get(m1)?.get("duration")?.integer;
             for (let j = i + 1; j < meta.musics.length; j++) {
-                let m2 = meta.musics[j];
+                let m2 = meta.musics[j] || 0;
                 // @ts-ignore
                 let s = neuralScore(v1, m2, meta);
                 if (s === undefined) {
