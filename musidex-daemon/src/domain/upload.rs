@@ -145,7 +145,7 @@ pub async fn youtube_upload_playlist(
         args.push(&stops);
     }
 
-    args.extend_from_slice(&["--flat-playlist", "--yes-playlist", "-J", "--"]);
+    args.extend_from_slice(&["--flat-playlist", "--yes-playlist", "--ignore-errors", "-J", "--"]);
     args.push(&url);
 
     let metadata = ytdl_run_with_args(args)
