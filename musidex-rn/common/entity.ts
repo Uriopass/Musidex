@@ -38,6 +38,7 @@ export type MusidexMetadata = {
     settings: Map<string, string>;
     embeddings: Map<number, Vector>;
     user_songs: Map<number, number[]>;
+    user_names: Map<number, string>;
     playable: Set<number>;
     fuse_document: IndexedMusic[];
     unique_user_tags: Set<string>;
@@ -72,6 +73,7 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
         music_tags_idx: new Map(),
         embeddings: new Map(),
         user_songs: new Map(),
+        user_names: new Map(raw.users.map((u) => [u.id, u.name])),
         fuse_document: [],
         tags: raw.tags || previous?.tags || [],
         playable: new Set(),

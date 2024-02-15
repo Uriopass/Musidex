@@ -170,6 +170,12 @@ export const API = {
         });
     },
 
+    async retryFailedSongs(): Promise<Response> {
+        return fetch(apiURL + "/api/music/retry_errors", {
+            method: "post",
+        });
+    },
+
     async restartServer(): Promise<Response> {
         return fetch(apiURL + "/api/restart_server", {});
     },

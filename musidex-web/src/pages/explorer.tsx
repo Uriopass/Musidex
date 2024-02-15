@@ -403,6 +403,19 @@ export const SongElem = React.memo((props: SongElemProps) => {
         return ret;
     }, [tags]);
 
+    const userList = useMemo(() => {
+        let ret: number[] = [];
+        for (let k of tags.keys()) {
+            if (k.startsWith("user_library:")) {
+                let user = parseInt(k.substring("user_library:".length));
+                if (!isNaN(user)) {
+                    ret.push(user);
+                }
+            }
+        }
+        return ret;
+    }, [tags]);
+
     const onNext = () => {
         if (!props.playable) {
             return;
@@ -438,6 +451,11 @@ export const SongElem = React.memo((props: SongElemProps) => {
                                     key: "user_tag:" + tag,
                                 }).then(() => props.syncMetadata());
                             }}/>
+                    </div>
+                    <div className="small-pad-left flex-center" title={
+                        userList.map((u) => props.metadata.user_names.get(u)).join(", ")
+                    }>
+                    <MaterialIcon name={userList.length == 1 ? "person" : "group"} size={15}/>
                     </div>
                     <div className="user-tags">
                         {

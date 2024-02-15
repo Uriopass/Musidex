@@ -6,3 +6,4 @@ storage2
 mdx-daemon
 *.pyc
 backup*
+venv
