@@ -4,7 +4,7 @@ import {Dispatch} from "./utils";
 import {useCallback, useRef} from "react";
 
 export type TrackPlayerAction =
-    { action: "play", id: number, tags?: Tags, seek?: number }
+    { action: "play", id: number, tags?: Tags, seek?: number, force: boolean }
     | { action: "pause", pauseAtEnd?: boolean }
     | { action: "audioTick" }
     | { action: "setTime", time: number }
@@ -32,11 +32,12 @@ export type PrevTrackCallback = () => void;
 
 export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Tracklist) => void, dispatch: Dispatch<TrackPlayerAction>, metadata: MusidexMetadata, sform: SearchForm, selectedMusics: MusicSelect): NextTrackCallback {
     let f = useRef<NextTrackCallback | null>(null);
-    f.current = (id, seek) => {
+    f.current = (askedID, seek) => {
         let list = {
             ...curlist,
         };
 
+        let id = askedID;
         if (id === undefined) {
             if (list.queue.length > 0) {
                 id = list.queue[0];
@@ -66,7 +67,7 @@ export function useNextTrackCallback(curlist: Tracklist, setList: (newv: Trackli
             setList(list);
         }
 
-        dispatch({action: "play", id: id, tags: getTags(metadata, id), seek: seek});
+        dispatch({action: "play", id: id, tags: getTags(metadata, id), seek: seek, force: askedID === undefined});
     };
     return useCallback((id, seek) => f.current?.(id, seek), [f]);
 }
@@ -88,7 +89,7 @@ export function usePrevTrackCallback(curlist: Tracklist, setList: (newv: Trackli
         if (last === undefined) {
             return;
         }
-        dispatch({action: "play", id: last, tags: getTags(metadata, last)});
+        dispatch({action: "play", id: last, tags: getTags(metadata, last), force: true});
     }, [curlist, setList, metadata, dispatch]);
 }
 

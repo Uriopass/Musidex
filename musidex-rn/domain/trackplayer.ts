@@ -92,10 +92,11 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
 export function applyTrackPlayer(trackplayer: Trackplayer, action: TrackPlayerAction): Trackplayer {
     switch (action.action) {
         case "play":
+            console.log(action);
             if (action.id < 0) {
                 return trackplayer;
             }
-            if (trackplayer.current === action.id) {
+            if (trackplayer.current === action.id && !action.force) {
                 if (trackplayer.paused) {
                     console.log("playing");
                     TrackPlayer.play();

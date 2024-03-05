@@ -195,7 +195,9 @@ function SongList(props: {
                          doNext={doNext}
                          tracklist={tracklist}
                          progress={progress}
-                         progressColor={color}/>;
+                         progressColor={color}
+                         sortType={searchForm.sort.kind}
+        />;
     }, [metadata, doNext, tracklist, curTrack, searchForm.sort.kind.kind, searchForm.filters.searchQry]);
 
     const onScroll = (ev: any) => {
@@ -339,6 +341,7 @@ type SongElemProps = {
     progressColor: string;
     isSynced: boolean;
     thumbSynced: boolean;
+    sortType: SortByKind;
 }
 
 const SongElem = React.memo(React.forwardRef((props: SongElemProps, ref) => {
@@ -351,7 +354,7 @@ const SongElem = React.memo(React.forwardRef((props: SongElemProps, ref) => {
             props.tracklist.last_manual_select = props.musicID;
             props.doNext(props.musicID);
         }} onPress={() => {
-            if (props.tracklist.last_manual_select === undefined) {
+            if (props.tracklist.last_manual_select === undefined || props.sortType.kind !== "similarity") {
                 props.tracklist.last_manual_select = props.musicID;
             }
             props.doNext(props.musicID);

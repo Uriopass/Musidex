@@ -44,6 +44,7 @@ const SmallPlayer = (_: PlayerProps) => {
     const [player, dispatch] = useContext(Ctx.Trackplayer);
     const list = useContext(Ctx.Tracklist);
     const syncState = useContext(Ctx.SyncState);
+    const musics = useContext(Ctx.SelectedMusics);
     const [open, setOpen] = useState(true);
 
     const curTrack: number | undefined = list.last_played[list.last_played.length - 1];
@@ -68,11 +69,23 @@ const SmallPlayer = (_: PlayerProps) => {
         setTimeout(() => doNext(), 0);
     };
 
+    const onRandom = () => {
+        setTimeout(() => {
+            if (musics.list.length <= 0) {
+                return;
+            }
+            let rand = Math.floor(Math.random() * musics.list.length);
+            let music_id = musics.list[rand];
+            list.last_manual_select = music_id;
+            doNext(music_id);
+        });
+    }
+
     const onForward = () => {
-        TrackPlayer.getPosition().then((v) => TrackPlayer.seekTo(v + 10));
+        TrackPlayer.getProgress().then((v) => TrackPlayer.seekTo(v.position + 10));
     };
     const onBackward = () => {
-        TrackPlayer.getPosition().then((v) => TrackPlayer.seekTo(v - 10));
+        TrackPlayer.getProgress().then((v) => TrackPlayer.seekTo(v.position - 10));
     };
 
     const onReset = () => {
@@ -201,7 +214,11 @@ const SmallPlayer = (_: PlayerProps) => {
                               color="white"
                               name="skip-next"/>
                     </TouchableOpacity>
-                    <View style={{flexBasis: 30}}/>
+                    <TouchableOpacity onPress={onRandom}>
+                        <Icon size={32}
+                              color="white"
+                              name="casino"/>
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.temperatureContainer}>
                     <Slider style={styles.temperatureSlider}
