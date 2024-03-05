@@ -20,6 +20,11 @@ DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
+ios/.xcode.env.local
+
+.cxx/
+*.keystore
+!debug.keystore
 
 android/app/release
 

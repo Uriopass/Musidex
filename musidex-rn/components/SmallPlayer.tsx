@@ -20,12 +20,10 @@ function useTrackProgress(interval: number): [number, number] {
     useEffect(() => {
         let timeout: any;
         const f = () => {
-            TrackPlayer.getPosition().then((v) => {
-                setPosition(v);
-            });
-            TrackPlayer.getDuration().then((v) => {
-                setDuration(v);
-            });
+            TrackPlayer.getProgress().then((v) => {
+                setPosition(v.position);
+                setDuration(v.duration);
+            }).catch(() => {});
             timeout = setTimeout(f, interval);
         };
         f();

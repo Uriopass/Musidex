@@ -3,16 +3,15 @@ import {
     Animated,
     FlatList,
     StyleSheet,
-    TouchableHighlight,
     TouchableOpacity,
-    View
+    View,
 } from "react-native";
 import React, {useCallback, useContext, useMemo, useRef, useState} from "react";
 import {getTags, Tag} from "../common/entity";
 import {TextBg, TextFg, TextFgGray, TextPrimary, TextSecondary} from "./StyledText";
 import Colors from "../domain/colors";
 import Ctx from "../domain/ctx";
-import {NextTrackCallback} from "../common/tracklist";
+import Tracklist, {NextTrackCallback} from "../common/tracklist";
 import Slider from "@react-native-community/slider";
 import {isSimilarity, MusicSelect, SortBy, sortby_kind_eq, SortByKind} from "../common/filters";
 import {Checkbox, SearchInput} from "./Input";
@@ -172,7 +171,7 @@ function SongList(props: {
 
     const [refreshing, setRefreshing] = useState(false);
 
-    let flatRef = useRef<FlatList>(null);
+    let flatRef: any = useRef<FlatList>(null);
     const topOpacity = useRef(new Animated.Value(0)).current;
     const [hidden, setHidden] = useState(true);
 
@@ -219,11 +218,8 @@ function SongList(props: {
         flatRef.current?.scrollToOffset({offset: 0, animated: true});
     };
 
-    const objRef = useRef();
-
     return <>
         <SwipeListView
-            ref={objRef}
             useFlatList={true}
             data={props.musics.list}
             refreshing={refreshing}
@@ -364,7 +360,7 @@ const SongElem = React.memo(React.forwardRef((props: SongElemProps, ref) => {
                 props.progress !== undefined &&
                 (
                     <View style={[styles.progress, {
-                        width: (props.progress * 100) + "%",
+                        width: `${props.progress * 100}%`,
                         backgroundColor: props.progressColor,
                     }]}/>
                 )

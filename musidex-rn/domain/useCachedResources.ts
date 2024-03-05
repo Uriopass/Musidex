@@ -1,20 +1,13 @@
 import * as React from 'react';
-import TrackPlayer, {
-    CAPABILITY_JUMP_FORWARD,
-    CAPABILITY_PAUSE,
-    CAPABILITY_PLAY,
-    CAPABILITY_SEEK_TO,
-    CAPABILITY_SKIP_TO_NEXT,
-    CAPABILITY_SKIP_TO_PREVIOUS,
-} from 'react-native-track-player';
+import TrackPlayer, {AppKilledPlaybackBehavior, Capability, IOSCategory,} from 'react-native-track-player';
 import {Platform} from "react-native";
 
 export const DEFAULT_CAPABILITIES = [
-    CAPABILITY_PLAY,
-    CAPABILITY_PAUSE,
-    CAPABILITY_SEEK_TO,
-    CAPABILITY_SKIP_TO_NEXT,
-    CAPABILITY_SKIP_TO_PREVIOUS,
+    Capability.Play,
+    Capability.Pause,
+    Capability.SeekTo,
+    Capability.SkipToNext,
+    Capability.SkipToPrevious,
 ];
 
 export default function useCachedResources() {
@@ -24,21 +17,23 @@ export default function useCachedResources() {
     React.useEffect(() => {
         async function loadResourcesAndDataAsync() {
             try {
-                await TrackPlayer.setupPlayer({iosCategory: 'playback', waitForBuffer: true, minBuffer: 5});
+                await TrackPlayer.setupPlayer({iosCategory: IOSCategory.Playback, minBuffer: 5, maxBuffer: 10});
 
                 let cap = DEFAULT_CAPABILITIES;
 
                 if (Platform.OS === "android") {
-                    cap = cap.concat([CAPABILITY_JUMP_FORWARD]);
+                    cap = cap.concat([Capability.JumpForward]);
                 }
 
                 await TrackPlayer.updateOptions({
-                    stopWithApp: true,
+                    android: {
+                        appKilledPlaybackBehavior: AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
+                    },
                     // Media controls capabilities
                     capabilities: cap,
 
                     // Capabilities that will show up when the notification is in the compact form on Android
-                    compactCapabilities: [CAPABILITY_PLAY, CAPABILITY_PAUSE, CAPABILITY_SKIP_TO_NEXT, CAPABILITY_JUMP_FORWARD],
+                    compactCapabilities: [Capability.Play, Capability.Pause, Capability.SkipToNext, Capability.JumpForward],
                 });
             } catch (e) {
                 // We might want to provide this error information to an error reporting service

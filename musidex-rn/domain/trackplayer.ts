@@ -1,6 +1,6 @@
 import {Dispatch, RefObject, useEffect} from "react";
 import {NextTrackCallback, PrevTrackCallback, TrackPlayerAction} from "../common/tracklist";
-import TrackPlayer, {State, STATE_PAUSED, STATE_PLAYING, STATE_READY, Track} from "react-native-track-player";
+import TrackPlayer, {Event, State, Track} from "react-native-track-player";
 import API from "../common/api";
 import RNFetchBlob from "rn-fetch-blob";
 import {getMusicPath, getThumbnailPath} from "./sync";
@@ -26,9 +26,9 @@ export function newTrackPlayer(lastPosition: RefObject<PositionStorage>): Trackp
 
 export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<TrackPlayerAction>, doNext: NextTrackCallback, doPrev: PrevTrackCallback) {
     useEffect(() => {
-        const v = TrackPlayer.addEventListener("playback-state", (data) => {
+        const v = TrackPlayer.addEventListener(Event.PlaybackState, (data) => {
             let state: State = data.state;
-            let loaded = state === STATE_PAUSED || state === STATE_PLAYING || state === STATE_READY;
+            let loaded = state === State.Paused || state === State.Playing || state === State.Ready;
             if (trackplayer.loading !== loaded) {
                 trackplayer.loading = loaded;
                 dispatch({action: "audioTick"});
@@ -42,7 +42,7 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
     }, [trackplayer, dispatch]);
 
     useEffect(() => {
-        const v = TrackPlayer.addEventListener("remote-play", (_) => {
+        const v = TrackPlayer.addEventListener(Event.RemotePlay, () => {
             console.log("remote play", trackplayer.current);
             doNext(trackplayer.current);
         });
@@ -50,7 +50,7 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
     }, [doNext, trackplayer]);
 
     useEffect(() => {
-        const v = TrackPlayer.addEventListener("remote-pause", (_) => {
+        const v = TrackPlayer.addEventListener(Event.RemotePause, () => {
             console.log("remote pause", trackplayer.current);
             doNext(trackplayer.current);
         });
@@ -58,7 +58,7 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
     }, [doNext, trackplayer]);
 
     useEffect(() => {
-        const v = TrackPlayer.addEventListener("playback-queue-ended", (_) => {
+        const v = TrackPlayer.addEventListener(Event.PlaybackQueueEnded, (_) => {
             console.log("playback ended");
             doNext();
         });
@@ -66,7 +66,7 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
     }, [doNext]);
 
     useEffect(() => {
-        const v = TrackPlayer.addEventListener("remote-next", (_) => {
+        const v = TrackPlayer.addEventListener(Event.RemoteNext, () => {
             console.log("remote next");
             doNext();
         });
@@ -74,7 +74,7 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
     }, [doNext]);
 
     useEffect(() => {
-        const v = TrackPlayer.addEventListener("remote-previous", (_) => {
+        const v = TrackPlayer.addEventListener(Event.RemotePrevious, () => {
             console.log("remote previous");
             doPrev();
         });
@@ -82,7 +82,7 @@ export function useSetupListeners(trackplayer: Trackplayer, dispatch: Dispatch<T
     }, [doPrev]);
 
     useEffect(() => {
-        const v = TrackPlayer.addEventListener("playback-error", (data) => {
+        const v = TrackPlayer.addEventListener(Event.PlaybackError, (data) => {
             console.log(data);
         });
         return () => v.remove();
