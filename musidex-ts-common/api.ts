@@ -48,7 +48,7 @@ export const API = {
         return fetch(parseURL(localApiUrl) + "/api/ping").then((v) => v.ok).catch(() => false);
     },
 
-    async metadataFromWSMsg(m: MessageEvent, oldMeta: MusidexMetadata): Promise<[MusidexMetadata, string]> {
+    async metadataFromWSMsg(m: any, oldMeta: MusidexMetadata): Promise<[MusidexMetadata, string]> {
         let vv = new Uint8Array(m.data);
         const s = Pako.inflateRaw(vv, {to: 'string'});
         let v: RawMusidexMetadata = JSON.parse(s);
