@@ -102,7 +102,7 @@ export function setupListeners(trackplayer: TrackPlayer, metadata: MusidexMetada
                 doNext();
                 return;
             }
-            dispatch({action: "play", id: trackplayer.current});
+            dispatch({action: "play", id: trackplayer.current, force: false});
         }
         if (e.code === "ArrowRight") {
             e.preventDefault();
