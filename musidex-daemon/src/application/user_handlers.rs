@@ -52,6 +52,7 @@ pub async fn delete(req: Request<Body>) -> Result<Response<Body>> {
     let tx = c.transaction().context("transaction begin failed")?;
     db_log(&tx, DbLog {
         user_id: UserID(id),
+        ip: req.headers().get("x-real-ip").and_then(|x| x.to_str().ok()).map(|x| x.to_string()).unwrap_or_default(),
         type_: LogType::User,
         action: LogAction::Delete,
         music_id: None,

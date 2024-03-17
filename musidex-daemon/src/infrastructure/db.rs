@@ -63,15 +63,16 @@ pub enum LogType {
     Music,
 }
 
+#[allow(dead_code)]
 pub enum LogAction {
     Create,
-    #[allow(dead_code)]
     Update,
     Delete,
 }
 
 pub struct DbLog {
     pub user_id: UserID,
+    pub ip: String,
     pub type_: LogType,
     pub action: LogAction,
     pub music_id: Option<MusicID>,

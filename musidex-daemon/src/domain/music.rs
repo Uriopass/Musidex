@@ -2,7 +2,6 @@ use crate::domain::entity::{Music, MusicID, Tag, TagKey, UserID};
 use anyhow::{Context, Result};
 use hyper::StatusCode;
 use rusqlite::Connection;
-use crate::infrastructure::db::{db_log, DbLog, LogAction, LogType};
 
 impl Music {
     pub fn mk(c: &Connection) -> Result<MusicID> {
@@ -62,15 +61,6 @@ impl Music {
 }
 
 pub fn delete_music(c: &Connection, uid: UserID, id: MusicID) -> Result<StatusCode> {
-    db_log(c, DbLog {
-        user_id: uid,
-        type_: LogType::Music,
-        action: LogAction::Delete,
-        music_id: Some(id),
-        target_key: None,
-        target_value: None,
-    });
-
     let tags = Tag::by_id(&c, id)?;
     let owners: Vec<_> = tags
         .iter()

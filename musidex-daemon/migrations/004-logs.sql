@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS logs (
     id integer primary key autoincrement,
+    ip text not null,
     timestamp text not null,
     user_id integer not null,
     type text not null, -- "user",  "tag", "music"

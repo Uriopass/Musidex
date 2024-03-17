@@ -109,6 +109,7 @@ pub async fn delete_tag(mut req: Request<Body>) -> Result<Response<Body>> {
     let tx = c.transaction().context("transaction begin failed")?;
     db_log(&tx, DbLog {
         user_id: uid,
+        ip: req.headers().get("x-real-ip").and_then(|x| x.to_str().ok()).map(|x| x.to_string()).unwrap_or_default(),
         type_: LogType::Tag,
         action: LogAction::Delete,
         music_id: Some(tag.music_id),
@@ -155,6 +156,16 @@ pub async fn delete_music_handler(req: Request<Body>) -> Result<Response<Body>> 
     let uid = User::from_req(&req).context("no user id")?;
 
     let tx = c.transaction().context("transaction begin failed")?;
+    db_log(&tx, DbLog {
+        user_id: uid,
+        ip: req.headers().get("x-real-ip").and_then(|x| x.to_str().ok()).map(|x| x.to_string()).unwrap_or_default(),
+        type_: LogType::Music,
+        action: LogAction::Delete,
+        music_id: Some(id),
+        target_key: None,
+        target_value: None,
+    });
+
     let code = delete_music(&tx, uid, id)?;
     tx.commit().context("transaction commit failed")?;
 
