@@ -66,14 +66,15 @@ pub fn delete_music(c: &Connection, uid: UserID, id: MusicID) -> Result<StatusCo
         .iter()
         .filter_map(|x| x.key.as_user_library())
         .collect();
+    // Check even if there is only one user as when the "all user" filter is off in app then user is "-1"
+    if !owners.contains(&&*uid.to_string()) {
+        return Ok(StatusCode::FORBIDDEN);
+    }
     match owners.len() {
         1 | 0 => {
             Music::delete(&c, id).context("couldn't delete music from db")?;
         },
         _ => {
-            if !owners.contains(&&*uid.to_string()) {
-                return Ok(StatusCode::FORBIDDEN);
-            }
             Tag::remove(&c, id, TagKey::UserLibrary(uid.to_string()))?;
         },
     };

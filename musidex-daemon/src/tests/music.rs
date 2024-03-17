@@ -3,6 +3,7 @@ use crate::domain::entity::{Music, Tag, TagKey, UserID};
 use crate::domain::music::delete_music;
 use crate::domain::sync::fetch_metadata;
 use anyhow::Result;
+use hyper::StatusCode;
 
 #[test_log::test(tokio::test)]
 pub async fn test_mk_music() -> Result<()> {
@@ -112,6 +113,24 @@ pub async fn test_delete_request_one_user() -> Result<()> {
 
     let meta = fetch_metadata(&c)?;
     assert_eq!(meta.musics.len(), 0);
+
+    Ok(())
+}
+
+#[test_log::test(tokio::test)]
+pub async fn test_delete_request_one_user_wrong_user() -> Result<()> {
+    let db = mk_db().await?;
+    let c = db.get().await;
+    let v = Music::mk(&c)?;
+    Tag::insert(&c, Tag::new_key(v, TagKey::UserLibrary(s!("0"))))?;
+
+    let meta = fetch_metadata(&c)?;
+    assert_eq!(meta.musics.len(), 1);
+
+    assert_eq!(delete_music(&c, UserID(-1), v)?, StatusCode::FORBIDDEN);
+
+    let meta = fetch_metadata(&c)?;
+    assert_eq!(meta.musics.len(), 1);
 
     Ok(())
 }
