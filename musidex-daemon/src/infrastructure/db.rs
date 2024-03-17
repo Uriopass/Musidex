@@ -83,12 +83,13 @@ pub struct DbLog {
 pub fn db_log(c: &Connection, log: DbLog) {
     let mut stmt = c
         .prepare_cached(
-            "INSERT INTO logs (timestamp, user_id, type, action, music_id, target_key, target_value)
-            VALUES (DATETIME('now'), ?1, ?2, ?3, ?4, ?5, ?6);",
+            "INSERT INTO logs (timestamp, user_id, ip, type, action, music_id, target_key, target_value)
+            VALUES (DATETIME('now'), ?1, ?2, ?3, ?4, ?5, ?6, ?7);",
         )
         .unwrap();
     stmt.execute(params![
         log.user_id.0,
+        log.ip,
         match log.type_ {
             LogType::User => "user",
             LogType::Tag => "tag",
