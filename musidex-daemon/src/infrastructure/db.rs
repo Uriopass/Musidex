@@ -1,9 +1,10 @@
 use crate::utils::env_or;
 use anyhow::{Context, Result};
-use rusqlite::Connection;
+use rusqlite::{Connection, params};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use tokio::sync::{Mutex, MutexGuard};
+use crate::domain::entity::{MusicID, TagKey, UserID};
 
 #[derive(Default, Clone)]
 pub struct Db(Arc<DbInner>);
@@ -53,4 +54,53 @@ impl Db {
         let v = self.0.round_robin.fetch_add(1, Ordering::SeqCst);
         self.0.conns[v % N_CONN].lock().await
     }
+}
+
+
+pub enum LogType {
+    User,
+    Tag,
+    Music,
+}
+
+pub enum LogAction {
+    Create,
+    #[allow(dead_code)]
+    Update,
+    Delete,
+}
+
+pub struct DbLog {
+    pub user_id: UserID,
+    pub type_: LogType,
+    pub action: LogAction,
+    pub music_id: Option<MusicID>,
+    pub target_key: Option<TagKey>,
+    pub target_value: Option<String>,
+}
+
+pub fn db_log(c: &Connection, log: DbLog) {
+    let mut stmt = c
+        .prepare_cached(
+            "INSERT INTO logs (timestamp, user_id, type, action, music_id, target_key, target_value)
+            VALUES (DATETIME('now'), ?1, ?2, ?3, ?4, ?5, ?6);",
+        )
+        .unwrap();
+    stmt.execute(params![
+        log.user_id.0,
+        match log.type_ {
+            LogType::User => "user",
+            LogType::Tag => "tag",
+            LogType::Music => "music",
+        },
+        match log.action {
+            LogAction::Create => "create",
+            LogAction::Update => "update",
+            LogAction::Delete => "delete",
+        },
+        log.music_id.map(|x| x.0),
+        log.target_key,
+        log.target_value,
+    ])
+    .unwrap();
 }

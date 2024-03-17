@@ -11,6 +11,7 @@ use crate::infrastructure::router::RequestExt;
 use crate::utils::res_status;
 use crate::Db;
 use nanoserde::{DeJson, SerJson};
+use crate::infrastructure::db::{db_log, DbLog, LogAction, LogType};
 
 pub async fn metadata(req: Request<Body>) -> Result<Response<Body>> {
     let db = req.state::<Db>();
@@ -99,12 +100,23 @@ pub struct DeleteTag {
 }
 
 pub async fn delete_tag(mut req: Request<Body>) -> Result<Response<Body>> {
+    let uid = User::from_req(&req).context("no user id")?;
     let tag: DeleteTag = parse_body(&mut req).await?;
 
     let db = req.state::<Db>();
-    let c = db.get().await;
+    let mut c = db.get().await;
 
-    Tag::remove(&c, tag.music_id, tag.key)?;
+    let tx = c.transaction().context("transaction begin failed")?;
+    db_log(&tx, DbLog {
+        user_id: uid,
+        type_: LogType::Tag,
+        action: LogAction::Delete,
+        music_id: Some(tag.music_id),
+        target_key: Some(tag.key.clone()),
+        target_value: None,
+    });
+    Tag::remove(&tx, tag.music_id, tag.key)?;
+    tx.commit()?;
 
     Ok(Response::new(Body::empty()))
 }
@@ -133,7 +145,7 @@ pub async fn merge_music(mut req: Request<Body>) -> Result<Response<Body>> {
 pub async fn delete_music_handler(req: Request<Body>) -> Result<Response<Body>> {
     let music_id = req.params().get("id").context("missing parameter id")?;
     let db = req.state::<Db>();
-    let c = db.get().await;
+    let mut c = db.get().await;
 
     let id = MusicID(
         music_id
@@ -142,7 +154,11 @@ pub async fn delete_music_handler(req: Request<Body>) -> Result<Response<Body>> 
     );
     let uid = User::from_req(&req).context("no user id")?;
 
-    Ok(res_status(delete_music(&c, uid, id)?))
+    let tx = c.transaction().context("transaction begin failed")?;
+    let code = delete_music(&tx, uid, id)?;
+    tx.commit().context("transaction commit failed")?;
+
+    Ok(res_status(code))
 }
 
 pub async fn retry_on_error(req: Request<Body>) -> Result<Response<Body>> {

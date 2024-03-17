@@ -1,6 +1,6 @@
 use crate::application::handlers::parse_body;
 use crate::domain::entity::{User, UserID};
-use crate::infrastructure::db::Db;
+use crate::infrastructure::db::{Db, db_log, DbLog, LogAction, LogType};
 use crate::infrastructure::router::RequestExt;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
@@ -40,7 +40,7 @@ pub async fn delete(req: Request<Body>) -> Result<Response<Body>> {
     let id: i32 = id.parse().context("invalid id")?;
 
     let db = req.state::<Db>();
-    let c = db.get().await;
+    let mut c = db.get().await;
 
     if User::n_users(&c)? == 1 {
         return Ok(Response::builder()
@@ -49,7 +49,17 @@ pub async fn delete(req: Request<Body>) -> Result<Response<Body>> {
             .unwrap());
     }
 
-    User::delete(&c, UserID(id))?;
+    let tx = c.transaction().context("transaction begin failed")?;
+    db_log(&tx, DbLog {
+        user_id: UserID(id),
+        type_: LogType::User,
+        action: LogAction::Delete,
+        music_id: None,
+        target_key: None,
+        target_value: None,
+    });
+    User::delete(&tx, UserID(id))?;
+    tx.commit().context("transaction commit failed")?;
 
     Ok(Response::new(Body::empty()))
 }

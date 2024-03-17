@@ -3,6 +3,7 @@ use crate::infrastructure::youtube_dl::{ytdl_run_with_args, SingleVideo, Youtube
 use anyhow::{Context, Result};
 use hyper::StatusCode;
 use rusqlite::Connection;
+use crate::infrastructure::db::{db_log, DbLog, LogAction, LogType};
 
 pub async fn youtube_upload(c: &mut Connection, url: String, uid: UserID) -> Result<StatusCode> {
     let metadata = ytdl_run_with_args(vec!["--no-playlist", "-J", "--", &url])
@@ -17,7 +18,15 @@ pub async fn youtube_upload(c: &mut Connection, url: String, uid: UserID) -> Res
         if Tag::has(&c, mid, k.clone())? {
             return Ok(StatusCode::CONFLICT);
         }
-        Tag::insert(&c, Tag::new_key(mid, k.clone()))?;
+        db_log(c, DbLog {
+            user_id: uid,
+            type_: LogType::Tag,
+            action: LogAction::Create,
+            music_id: Some(mid),
+            target_key: Some(k.clone()),
+            target_value: None,
+        });
+        Tag::insert(&c, Tag::new_key(mid, k))?;
         return Ok(StatusCode::OK);
     }
     let wp = v.webpage_url.take().context("no webpage url")?;
@@ -41,6 +50,14 @@ fn id_exists(c: &Connection, id: &str) -> Result<Option<MusicID>> {
 
 fn push_for_treatment(c: &Connection, v: Box<SingleVideo>, url: String, uid: UserID) -> Result<()> {
     let id = Music::mk(&c)?;
+    db_log(c, DbLog {
+        user_id: uid,
+        type_: LogType::Music,
+        action: LogAction::Create,
+        music_id: Some(id),
+        target_key: None,
+        target_value: None,
+    });
 
     let mk_tag = |key, v| Tag::insert(&c, Tag::new_text(id, key, v));
 
