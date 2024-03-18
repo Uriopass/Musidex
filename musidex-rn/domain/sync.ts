@@ -1,7 +1,6 @@
-import RNFetchBlob from "rn-fetch-blob";
+import RNFetchBlob, {FetchBlobResponse} from "rn-fetch-blob";
 import API from "../common/api";
 import {MusidexMetadata, Tags} from "../common/entity";
-import {LocalSettings} from "./localsettings";
 
 export type SyncState = {
     files: Set<String>,
@@ -17,19 +16,21 @@ export async function fetchSong(metadata: MusidexMetadata, id: number): Promise<
     if (await RNFetchBlob.fs.exists(path)) {
         return new Promise((resolve => resolve(true)));
     }
-    return RNFetchBlob.config({
-        path: path + ".part",
-    }).fetch('GET', API.getStreamSrc(id))
-        .catch((err) => {
-            console.log("error fetching", err);
-            return false;
-        })
-        .then(() => RNFetchBlob.fs.mv(path + ".part", path))
-        .then(() => true)
-        .catch((err) => {
-            console.log("error mving", err);
-            return false;
-        });
+    try {
+        let res = await RNFetchBlob.config({
+            path: path + ".part",
+        }).fetch('GET', API.getStreamSrc(id));
+        let code = res.info().status;
+        if (code >= 200 && code < 300) {
+            await RNFetchBlob.fs.mv(path + ".part", path);
+            return true;
+        }
+        console.log("error fetching, code is not 2xx:", code);
+        return false;
+    } catch(e) {
+        console.log("error fetching song", e);
+        return false;
+    }
 }
 
 export async function fetchThumbnail(thumbTag: string): Promise<boolean> {
