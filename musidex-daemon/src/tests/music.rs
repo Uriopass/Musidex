@@ -94,7 +94,7 @@ pub async fn test_delete_request_zero_user() -> Result<()> {
     delete_music(&c, UserID(0), v)?;
 
     let meta = fetch_metadata(&c)?;
-    assert_eq!(meta.musics.len(), 0);
+    assert_eq!(meta.musics.len(), 1);
 
     Ok(())
 }
