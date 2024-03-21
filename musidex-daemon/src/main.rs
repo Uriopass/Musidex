@@ -86,6 +86,7 @@ async fn start() -> anyhow::Result<()> {
         .delete("/api/user/:id", user_handlers::delete)
         .static_files("/storage/", "./storage/")
         .static_files("/", "./web/")
+        .index_html(&["/users", "/settings", "/merge", "/music_map", "/explorer"])
         .nocors(env_or("NO_CORS", false));
 
     let port = env_or("PORT", 3200);

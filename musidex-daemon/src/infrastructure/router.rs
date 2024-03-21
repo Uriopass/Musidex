@@ -23,7 +23,7 @@
 
 use anyhow::Context as _c;
 use anyhow::Result;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 use std::future::Future;
@@ -50,6 +50,7 @@ use tokio::time::Instant;
 
 #[derive(Default)]
 pub(crate) struct Router {
+    index_html: HashSet<String>,
     inner: HashMap<Method, InnerRouter<Box<dyn Handler>>>,
     not_found: Option<Box<dyn Handler>>,
     state: Arc<Extensions>,
@@ -71,6 +72,14 @@ impl Router {
 
     pub(crate) fn nocors(&mut self, nocors: bool) -> &mut Self {
         self.nocors = nocors;
+        self
+    }
+
+    /// Register a path that will serve index.html
+    pub(crate) fn index_html(&mut self, path: &[&str]) -> &mut Self {
+        for path in path {
+            self.index_html.insert(path.to_string());
+        }
         self
     }
 
@@ -151,7 +160,8 @@ impl Router {
         &self,
         mut req: Request<Body>,
     ) -> Pin<Box<dyn Future<Output = Result<Response<Body>>> + Send>> {
-        if req.uri().path() == "/" {
+        let path = req.uri().path();
+        if path == "/" || self.index_html.contains(path) {
             return Box::pin(async { serve_file("./web/index.html".as_ref()).await });
         }
         match self.inner.get(req.method()) {
