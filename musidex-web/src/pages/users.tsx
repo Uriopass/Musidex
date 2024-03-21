@@ -131,6 +131,8 @@ type UserCardProps = {
 }
 
 const UserCard = (props: UserCardProps) => {
+    let [deleteConfirm, setDeleteConfirm] = useState(false);
+
     return <div className={"user-card " + (props.isCurrent ? " user-card-current" : "")}
                 onClick={() => props.onSelect(props.user.id)}
     >
@@ -152,10 +154,18 @@ const UserCard = (props: UserCardProps) => {
             <EditableText text={props.user.name} onRename={(v) => props.onRename(props.user.id, v)}/>
         </div>
         <div className="user-card-delete">
-            <MaterialIcon name="delete" onClick={(e: React.MouseEvent) => {
-                props.onDelete(props.user.id);
-                e.stopPropagation();
-            }} size={20}/>
+            {
+                deleteConfirm ?
+                    <div className="user-card-delete-confirm" onClick={(e: React.MouseEvent) => {
+                        props.onDelete(props.user.id);
+                        setDeleteConfirm(false);
+                        e.stopPropagation();
+                    }}>REALLY?</div>
+                : <MaterialIcon name="delete" onClick={(e: React.MouseEvent) => {
+                    setDeleteConfirm(true);
+                    e.stopPropagation();
+                }} size={20}/>
+            }
         </div>
     </div>;
 }

@@ -85,6 +85,10 @@
     color: var(--danger);
 }
 
+.user-card-delete-confirm:hover {
+    color: var(--danger);
+}
+
 .user-card-name {
     white-space: nowrap;
     justify-content: center;
