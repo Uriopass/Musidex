@@ -63,7 +63,7 @@ const Explorer = React.memo((props: ExplorerProps) => {
         } else {
             url.searchParams.set("q", s);
         }
-        window.history.replaceState({}, "", url.toString());
+        window.history.replaceState(window.history.state, "", url.toString());
 
         setSearchForm({
             ...searchForm,
@@ -455,7 +455,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
                     <div className="small-pad-left flex-center" title={
                         userList.map((u) => props.metadata.user_names.get(u)).join(", ")
                     }>
-                    <MaterialIcon name={userList.length == 1 ? "person" : "group"} size={15}/>
+                    <MaterialIcon name={(userList.length === 1) ? "person" : "group"} size={15}/>
                     </div>
                     <div className="user-tags">
                         {

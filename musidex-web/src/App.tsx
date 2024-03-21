@@ -4,7 +4,7 @@ import Navbar from "./components/navbar";
 import Player from "./components/player";
 import {applyTrackPlayer, newTrackPlayer, setupListeners, TrackplayerCtx} from "./domain/trackplayer";
 import useLocalStorage from "use-local-storage";
-import PageNavigator, {Page} from "./pages/navigator";
+import PageNavigator, {usePage} from "./pages/navigator";
 import {YTSendState} from "./pages/submit";
 import Tracklist, {
     emptyTracklist,
@@ -73,7 +73,7 @@ const App = (props: { syncProblem: boolean }) => {
     const [volume, setVolume] = useLocalStorage("volume", 1, {syncData: false});
     const tp = useReducer(applyTrackPlayer, newTrackPlayer());
     const [trackplayer, dispatchPlayer] = tp;
-    const [curPage, setCurPage] = useState<Page>({path: "explorer", submit: false});
+    const [curPage, setCurPage] = usePage();
     const [list, setList] = useState<Tracklist>(emptyTracklist());
     const editableSt = useLocalStorage<boolean>("editable", false, {syncData: false});
     const selectedMusics = useMusicSelect(meta, sform, list);
