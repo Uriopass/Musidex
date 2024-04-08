@@ -429,53 +429,56 @@ export const SongElem = React.memo((props: SongElemProps) => {
             className={`song-elem ${props.playable ? "" : "song-elem-disabled"} ${(hovered && props.playable) ? "song-elem-hovered" : ""}`}
             style={{background: grad}}>
             <Thumbnail playable={props.playable} onClick={onNext} setHovered={setHovered} cover={cover}/>
-            <div style={{paddingLeft: "10px", flexGrow: 1, flexShrink: 1, flexBasis: "auto"}}>
-                <b>
-                    <EditableText text={title.text || ""}
-                                  onRename={(v) => API.insertTag({...title, text: v})}/>
-                </b>
-                <div className="small gray-fg" style={{display: "flex", alignItems: "center", flexShrink: 1}}>
-                    <EditableText text={artist.text || ""}
-                                  onRename={(v) => API.insertTag({...artist, text: v})}/>
-                    {duration &&
-                        <div className="small-pad-left flex-center">
-                            • {timeFormat(duration)}
-                        </div>
-                    }
-                    <div className="small-pad-left flex-center">
-                        <AddTag
-                            metadata={props.metadata}
-                            onAdd={(tag) => {
-                                API.insertTag({
-                                    music_id: props.musicID,
-                                    key: "user_tag:" + tag,
-                                }).then(() => props.syncMetadata());
-                            }}/>
-                    </div>
-                    <div className="small-pad-left flex-center" title={
-                        userList.map((u) => props.metadata.user_names.get(u)).join(", ")
-                    }>
-                    <MaterialIcon name={(userList.length === 1) ? "person" : "group"} size={15}/>
-                    </div>
-                    <div className="user-tags">
-                        {
-                            userTags.map((tag) => {
-                                return <div key={tag} className="small-pad-left">
-                                    <TagComp tag={tag} onDelete={() => {
-                                        API.deleteTag({
-                                            music_id: props.musicID,
-                                            key: "user_tag:" + tag
-                                        }).then(() => props.syncMetadata());
-                                    }}/>
-                                </div>
-                            })
+            <div style={{display: "flex", alignItems: "center", paddingLeft: "10px", flexGrow: 1, flexShrink: 1, flexBasis: "0", flexDirection: "row"}}>
+                <div style={{display: "flex", alignItems: "flex-start", flexDirection: "column"}}>
+                    <b>
+                        <EditableText text={title.text || ""}
+                                      onRename={(v) => API.insertTag({...title, text: v})}/>
+                    </b>
+                    <div className="small gray-fg" style={{display: "flex", alignItems: "center", flexShrink: 1}}>
+                        <EditableText text={artist.text || ""}
+                                      onRename={(v) => API.insertTag({...artist, text: v})}/>
+                        {duration &&
+                            <div className="small-pad-left flex-center">
+                                • {timeFormat(duration)}
+                            </div>
                         }
+                        <div className="small-pad-left flex-center">
+                            <AddTag
+                                metadata={props.metadata}
+                                onAdd={(tag) => {
+                                    API.insertTag({
+                                        music_id: props.musicID,
+                                        key: "user_tag:" + tag,
+                                    }).then(() => props.syncMetadata());
+                                }}/>
+                        </div>
+                        <div className="small-pad-left flex-center" title={
+                            userList.map((u) => props.metadata.user_names.get(u)).join(", ")
+                        }>
+                            <MaterialIcon name={(userList.length === 1) ? "person" : "group"} size={15}/>
+                        </div>
+                        <div className="user-tags">
+                            {
+                                userTags.map((tag) => {
+                                    return <div key={tag} className="small-pad-left">
+                                        <TagComp tag={tag} onDelete={() => {
+                                            API.deleteTag({
+                                                music_id: props.musicID,
+                                                key: "user_tag:" + tag
+                                            }).then(() => props.syncMetadata());
+                                        }}/>
+                                    </div>
+                                })
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className={`${props.playable ? "song-elem-playable" : ""} `}
-                 style={{flexBasis: 0, flexGrow: 1, flexShrink: 1, height: "100%", minHeight: 60}} onClick={onNext}
-                 onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+                <div className={`${props.playable ? "song-elem-playable" : ""} `}
+                     style={{flexBasis: 0, flexGrow: 1, flexShrink: 100, height: "100%", minHeight: 60}}
+                     onClick={onNext}
+                     onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+                </div>
             </div>
             <div className="song-elem-buttons">
                 {

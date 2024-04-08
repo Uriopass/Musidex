@@ -106,7 +106,7 @@
 }
 
 .song-elem-buttons {
-    width: calc(max(80px, 12%));
+    width: calc(max(70px, 12%));
     display: flex;
     justify-content: space-evenly;
 }
