@@ -2,4 +2,5 @@
     width: calc(100% - 20px);
     text-align: left;
     max-width: 980px;
+    padding-bottom: 20px;
 }

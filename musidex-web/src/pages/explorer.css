@@ -106,12 +106,14 @@
 }
 
 .song-elem-buttons {
-    flex: 2 0 128px;
-    max-width: 128px;
+    width: calc(max(80px, 12%));
     display: flex;
     justify-content: space-evenly;
 }
 
+.song-elem-buttons button {
+    padding: 0;
+}
 
 .user-tags {
     display: flex;
@@ -224,6 +226,7 @@
     text-align: left;
     font-size: 0.95rem;
     color: var(--color-bg);
+    white-space: nowrap;
 }
 
 .sort-by-elem {

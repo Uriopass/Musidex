@@ -60,24 +60,24 @@ const YTSubmit = (props: YTSubmitProps) => {
         <>
             <form style={{display: "flex", alignItems: "flex-end", color: "var(--color-bg)"}}>
                 <YTSendStateIcon state={sendState}/>
-                <TextInput value={url}
-                           onChange={onYTChange}
-                           name={props.placeholder}
-                           style={{flexGrow: 1}}
-                           title="Input is not a valid youtube URL"
-                           withLabel={true}/>
-                {props.showNth &&
-                    <>
-                        <span style={{paddingBottom: 7}}>
-                    Playlist index:&nbsp;&nbsp;
-                        </span>
-                        <input ref={refIndexStart} type="number" placeholder="start" className="form_field" min="0"
-                               style={{width: "5rem"}}/>
-                        &nbsp;-&nbsp;
-                        <input ref={refIndexStop} type="number" placeholder="stop" className="form_field" min="0"
-                               style={{width: "5rem"}}/>
-                    </>
-                }
+                <div style={{display: "flex", flexDirection: "row", flexGrow: 1, flexWrap: "wrap"}}>
+                    <TextInput value={url}
+                               onChange={onYTChange}
+                               name={props.placeholder}
+                               style={{flexGrow: 1}}
+                               title="Input is not a valid youtube URL"
+                               withLabel={true}/>
+                    {props.showNth &&
+                        <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                                Playlist index:&nbsp;&nbsp;
+                            <input ref={refIndexStart} type="number" placeholder="start" className="form_field" min="0"
+                                   style={{width: "5rem"}}/>
+                            &nbsp;-&nbsp;
+                            <input ref={refIndexStop} type="number" placeholder="stop" className="form_field" min="0"
+                                   style={{width: "5rem"}}/>
+                        </div>
+                    }
+                </div>
             </form>
         </>
     )
