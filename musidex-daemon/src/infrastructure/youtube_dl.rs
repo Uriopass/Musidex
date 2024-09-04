@@ -336,8 +336,10 @@ pub struct JustType {
     _type: Option<String>,
 }
 
-pub async fn ytdl_run_with_args(args: Vec<&str>) -> Result<YoutubeDlOutput> {
-    let args: Vec<_> = args.into_iter().map(ToString::to_string).collect();
+pub async fn ytdl_run_with_args(args_in: Vec<&str>) -> Result<YoutubeDlOutput> {
+    let env_args = std::env::var("YTDLP_ARGS").unwrap_or_default();
+    let env_args = env_args.split_ascii_whitespace();
+    let args: Vec<_> = env_args.chain(args_in.into_iter()).map(ToString::to_string).collect();
 
     log::info!("running yt dl with args: {}", args.join(" "));
 
