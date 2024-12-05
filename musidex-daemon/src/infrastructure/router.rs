@@ -411,8 +411,8 @@ fn set_nocors(req: &mut Response<Body>) {
 }
 
 fn set_defaultcors(origin: &str, req: &mut Response<Body>) {
-    if origin.starts_with("https://www.youtube.com")
-        || origin.starts_with("https://youtube.com")
+    if origin == "https://www.youtube.com"
+        || origin == "https://youtube.com"
         || origin.starts_with("chrome-extension")
         || origin.starts_with("moz-extension")
     {
