@@ -392,8 +392,6 @@ pub async fn ytdl_run_with_args(args_in: Vec<&str>) -> Result<YoutubeDlOutput> {
         .map(ToString::to_string)
         .collect();
 
-    log::info!("running yt dl with args: {}", args.join(" "));
-
     let mut errr = anyhow!("error running yt-dlp");
     for _ in 0..5 {
         let mut proxy = {
@@ -405,6 +403,8 @@ pub async fn ytdl_run_with_args(args_in: Vec<&str>) -> Result<YoutubeDlOutput> {
             args.insert(0, "--proxy".to_string());
             args.insert(1, std::mem::take(proxy));
         }
+        log::info!("running yt dl with args: {}", args.join(" "));
+
         let res = tokio::task::spawn_blocking(move || {
             let mut child = Command::new("yt-dlp")
                 .stdout(Stdio::piped())
