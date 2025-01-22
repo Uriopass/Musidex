@@ -1,5 +1,10 @@
 use anyhow::{Context, Result};
+use lazy_static::lazy_static;
 use nanoserde::{DeJson, DeJsonState, SerJson, SerJsonState};
+use std::io::{copy, Read};
+use std::process::{Command, Stdio};
+use std::str::Chars;
+use std::sync::Mutex;
 
 #[derive(Debug)]
 pub enum YoutubeDlOutput {
@@ -327,68 +332,147 @@ pub enum Protocol {
     HttpDashSegments,
 } */
 
-use std::io::{copy, Read};
-use std::process::{Command, Stdio};
-use std::str::Chars;
-
 #[derive(DeJson)]
 pub struct JustType {
     _type: Option<String>,
 }
 
+struct ProxyRoundRobin {
+    proxies: Vec<(String, bool)>,
+    current: usize,
+}
+
+impl Default for ProxyRoundRobin {
+    fn default() -> Self {
+        let proxy_list = std::env::var("PROXY_LIST").unwrap_or_default();
+        let proxy_list = proxy_list
+            .split(",")
+            .map(|e| (e.to_string(), true))
+            .collect::<Vec<_>>();
+
+        Self {
+            proxies: proxy_list,
+            current: 0,
+        }
+    }
+}
+
+impl ProxyRoundRobin {
+    pub fn ask_proxy(&mut self) -> Option<(String, usize)> {
+        if self.proxies.len() == 0 {
+            return None;
+        }
+        self.current = (self.current + 1) % self.proxies.len();
+        let initial_current = self.current;
+        while !self.proxies[self.current].1 {
+            self.current = (self.current + 1) % self.proxies.len();
+            if self.current == initial_current {
+                self.proxies.iter_mut().for_each(|x| x.1 = true);
+                break;
+            }
+        }
+        let (proxy, _) = &self.proxies[self.current];
+        Some((proxy.clone(), self.current))
+    }
+
+    pub fn mark_bad_proxy(&mut self, idx: usize) {
+        self.proxies[idx].1 = false;
+    }
+}
+
+lazy_static! {
+    static ref ROUND_ROBIN: Mutex<ProxyRoundRobin> = Default::default();
+}
+
 pub async fn ytdl_run_with_args(args_in: Vec<&str>) -> Result<YoutubeDlOutput> {
     let env_args = std::env::var("YTDLP_ARGS").unwrap_or_default();
     let env_args = env_args.split_ascii_whitespace();
-    let args: Vec<_> = env_args.chain(args_in.into_iter()).map(ToString::to_string).collect();
+    let args: Vec<_> = env_args
+        .chain(args_in.into_iter())
+        .map(ToString::to_string)
+        .collect();
 
     log::info!("running yt dl with args: {}", args.join(" "));
 
-    tokio::task::spawn_blocking(move || {
-        let mut child = Command::new("yt-dlp")
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .args(args)
-            .spawn()
-            .context("error starting yt-dlp, did you install it?")?;
-        // Continually read from stdout so that it does not fill up with large output and hang forever.
-        // We don't need to do this for stderr since only stdout has potentially giant JSON.
-        let mut stdout = Vec::new();
-        let child_stdout = child.stdout.take();
-        copy(&mut child_stdout.unwrap(), &mut stdout).context("error reading yt-dlp output")?;
-
-        let exit_code = child.wait().context("error while waiting for youtube-dl")?;
-
-        if exit_code.success() {
-            let out = String::from_utf8_lossy(stdout.as_slice());
-            let out = out.trim();
-            let justtype: JustType = nanoserde::DeJson::deserialize_json(out)
-                .context("error decoding yt-dlp json")?;
-
-            let is_playlist = justtype._type.as_deref() == Some("playlist");
-            if is_playlist {
-                let playlist: Box<Playlist> = Box::new(
-                    nanoserde::DeJson::deserialize_json(out).context("error decoding playlist")?,
-                );
-                Ok(YoutubeDlOutput::Playlist(playlist))
-            } else {
-                let video: Box<SingleVideo> = Box::new(
-                    nanoserde::DeJson::deserialize_json(out)
-                        .context("error decoding singlevideo")?,
-                );
-                Ok(YoutubeDlOutput::SingleVideo(video))
-            }
-        } else {
-            let mut stderr = vec![];
-            if let Some(mut reader) = child.stderr {
-                reader.read_to_end(&mut stderr)?;
-            }
-            let stderr = String::from_utf8(stderr).unwrap_or_default();
-            Err(anyhow!(
-                "error using yt-dlp: {} {}",
-                exit_code.code().unwrap_or(1),
-                stderr,
-            ))
+    let mut errr = anyhow!("error running yt-dlp");
+    for _ in 0..5 {
+        let mut proxy = {
+            let mut round_robin = ROUND_ROBIN.lock().unwrap();
+            round_robin.ask_proxy()
+        };
+        let mut args = args.clone();
+        if let Some((ref mut proxy, _)) = proxy {
+            args.insert(0, "--proxy".to_string());
+            args.insert(1, std::mem::take(proxy));
         }
-    })
-    .await?
+        let res = tokio::task::spawn_blocking(move || {
+            let mut child = Command::new("yt-dlp")
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .args(args)
+                .spawn()
+                .context("error starting yt-dlp, did you install it?")?;
+            // Continually read from stdout so that it does not fill up with large output and hang forever.
+            // We don't need to do this for stderr since only stdout has potentially giant JSON.
+            let mut stdout = Vec::new();
+            let child_stdout = child.stdout.take();
+            copy(&mut child_stdout.unwrap(), &mut stdout).context("error reading yt-dlp output")?;
+
+            let exit_code = child.wait().context("error while waiting for youtube-dl")?;
+
+            if exit_code.success() {
+                let out = String::from_utf8_lossy(stdout.as_slice());
+                let out = out.trim();
+                let justtype: JustType = nanoserde::DeJson::deserialize_json(out)
+                    .context("error decoding yt-dlp json")?;
+
+                let is_playlist = justtype._type.as_deref() == Some("playlist");
+                if is_playlist {
+                    let playlist: Box<Playlist> = Box::new(
+                        nanoserde::DeJson::deserialize_json(out)
+                            .context("error decoding playlist")?,
+                    );
+                    Ok(YoutubeDlOutput::Playlist(playlist))
+                } else {
+                    let video: Box<SingleVideo> = Box::new(
+                        nanoserde::DeJson::deserialize_json(out)
+                            .context("error decoding singlevideo")?,
+                    );
+                    Ok(YoutubeDlOutput::SingleVideo(video))
+                }
+            } else {
+                let mut stderr = vec![];
+                if let Some(mut reader) = child.stderr {
+                    reader.read_to_end(&mut stderr)?;
+                }
+                let stderr = String::from_utf8(stderr).unwrap_or_default();
+
+                Err(anyhow!(
+                    "error using yt-dlp: {} {}",
+                    exit_code.code().unwrap_or(1),
+                    stderr,
+                ))
+            }
+        })
+        .await?;
+        match res {
+            Ok(res) => return Ok(res),
+            Err(e) => {
+                if let Some((_, proxy_idx)) = proxy {
+                    if e.to_string()
+                        .contains("Sign in to confirm you’re not a bot")
+                    {
+                        log::error!("yt-dlp blocked, switching proxy");
+                        let mut round_robin = ROUND_ROBIN.lock().unwrap();
+                        round_robin.mark_bad_proxy(proxy_idx);
+                        errr = e;
+                        continue;
+                    }
+                }
+                return Err(e);
+            }
+        };
+    }
+
+    Err(errr)
 }
