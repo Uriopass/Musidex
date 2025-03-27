@@ -34,7 +34,10 @@ impl Tag {
         if let Some(v) = integer {
             if v < 2100 && v > 1000 {
                 date = Some(DateTime::from_utc(
-                    NaiveDateTime::new(NaiveDate::from_ymd_opt(v, 1, 2).unwrap(), NaiveTime::from_hms_opt(0, 0, 0).unwrap()),
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(v, 1, 2).unwrap(),
+                        NaiveTime::from_hms_opt(0, 0, 0).unwrap(),
+                    ),
                     Utc,
                 ))
             }
@@ -114,7 +117,8 @@ impl Tag {
         let mut stmt = c.prepare_cached(
             "
             SELECT * FROM tags
-            WHERE key=?1;",
+            WHERE key=?1
+            ORDER BY music_id DESC;",
         )?;
         let v = stmt.query_map([&key], |row| Ok(Tag::from(row)))?;
         collect_rows(v)
