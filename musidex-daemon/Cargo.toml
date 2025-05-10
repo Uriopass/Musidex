@@ -17,7 +17,7 @@ include_dir = "0.7.3"
 anyhow = "1.0.42"
 log = "0.4.14"
 rusqlite = "0.29.0"
-tokio = { version = "1.9.0", features = ["rt-multi-thread", "fs", "io-util", "macros"]}
+tokio = { version = "1.9.0", features = ["rt-multi-thread", "fs", "io-util", "macros"] }
 test-log = "0.2.7"
 route-recognizer = "0.3.0"
 nanoserde = "0.1.33"
@@ -28,6 +28,8 @@ dateparser = "0.2.0"
 miniz_oxide = "0.7.1"
 regex = "1.5.4"
 lazy_static = "1.4.0"
-webp = { version = "0.2.5", features=["image"]}
-image = { version = "0.24.7", default-features = false, features=["jpeg"] }
+webp = { version = "0.2.5", features = ["image"] }
+image = { version = "0.24.7", default-features = false, features = ["jpeg"] }
 hyper-tungstenite = "0.11.1"
+nalgebra = { version = "0.33.2", default-features = false, features = ["std"] }
+tinyrand = "0.5.0"

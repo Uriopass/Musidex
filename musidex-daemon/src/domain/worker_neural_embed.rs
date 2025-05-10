@@ -39,7 +39,7 @@ impl NeuralEmbedWorker {
         log::info!("some musics need embeddings");
 
         tokio::task::spawn_blocking(move || {
-            let args = vec!["musidex-neuralembed/neuralembed.py"];
+            let args = vec!["musidex-neuralembed/neuralembedv2.py"];
 
             let mut child = Command::new("python3")
                 .stdout(Stdio::piped())
@@ -90,7 +90,7 @@ pub fn needs_embedding(c: &Connection) -> Result<bool> {
     SELECT * FROM musics
     WHERE 
         (SELECT COUNT(1) FROM tags 
-         WHERE music_id = id AND key='embedding') = 0
+         WHERE music_id = id AND key='full_embedding') = 0
     AND
         (SELECT COUNT(1) FROM tags 
          WHERE music_id = id AND key='local_mp3') = 1

@@ -1,4 +1,4 @@
-use crate::domain::entity::{MusicID, Tag, TagKey};
+use crate::domain::entity::{MusicID, Tag, TagKey, Vector};
 use crate::utils::{collect_rows, row_missing_opt};
 use anyhow::{Context, Result};
 use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
@@ -28,12 +28,24 @@ impl Tag {
     }
 
     #[allow(dead_code)]
+    pub fn new_vector(id: MusicID, key: TagKey, value: Vector) -> Tag {
+        Tag {
+            music_id: id,
+            key,
+            text: None,
+            integer: None,
+            date: None,
+            vector: Some(value),
+        }
+    }
+
+    #[allow(dead_code)]
     pub fn new_parse(id: MusicID, key: TagKey, value: String) -> Tag {
         let integer = value.parse().ok();
         let mut date = dateparser::parse(&*value).ok();
         if let Some(v) = integer {
             if v < 2100 && v > 1000 {
-                date = Some(DateTime::from_utc(
+                date = Some(DateTime::from_naive_utc_and_offset(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(v, 1, 2).unwrap(),
                         NaiveTime::from_hms_opt(0, 0, 0).unwrap(),
@@ -61,10 +73,10 @@ impl Tag {
         );
         let mut stmt = c.prepare_cached(
             "
-            INSERT INTO tags (music_id, key, text, integer, date)
-            VALUES (?1, ?2, ?3, ?4, ?5)
+            INSERT INTO tags (music_id, key, text, integer, date, vector)
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6)
             ON CONFLICT (music_id, key)
-            DO UPDATE SET text=?3, integer=?4, date=?5;",
+            DO UPDATE SET text=?3, integer=?4, date=?5, vector=?6;",
         )?;
         let v = stmt
             .execute(rusqlite::params![
@@ -73,6 +85,31 @@ impl Tag {
                 tag.text,
                 tag.integer,
                 tag.date,
+                tag.vector,
+            ])
+            .context("error inserting tag")?;
+        if v == 0 {
+            bail!("no row updated")
+        }
+        Ok(())
+    }
+
+    pub fn insert_silent(c: &Connection, tag: Tag) -> Result<()> {
+        let mut stmt = c.prepare_cached(
+            "
+            INSERT INTO tags (music_id, key, text, integer, date, vector)
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+            ON CONFLICT (music_id, key)
+            DO UPDATE SET text=?3, integer=?4, date=?5, vector=?6;",
+        )?;
+        let v = stmt
+            .execute(rusqlite::params![
+                tag.music_id.0,
+                tag.key,
+                tag.text,
+                tag.integer,
+                tag.date,
+                tag.vector,
             ])
             .context("error inserting tag")?;
         if v == 0 {

@@ -2,7 +2,7 @@ import Explorer from "./explorer";
 import Users from "./users";
 import {NextTrackCallback} from "../common/tracklist";
 import SettingsPage from "./settings";
-import {Setter} from "../../../musidex-ts-common/utils";
+import {Setter} from "../common/utils";
 import React, {Suspense, useCallback, useEffect, useState} from "react";
 import Submit from "./submit";
 import {ErrorBoundary} from "react-error-boundary";

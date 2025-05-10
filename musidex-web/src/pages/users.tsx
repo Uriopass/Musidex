@@ -6,7 +6,7 @@ import {EditableText, MaterialIcon} from "../components/utils";
 import TextInput from "../components/input";
 import API from "../common/api";
 import {MetadataCtx} from "../domain/metadata";
-import {Setter} from "../../../musidex-ts-common/utils";
+import {Setter} from "../common/utils";
 import {SearchFormCtx} from "../App";
 import {timeFormatHour} from "../common/utils";
 import useLocalStorage from "use-local-storage";
@@ -161,10 +161,10 @@ const UserCard = (props: UserCardProps) => {
                         setDeleteConfirm(false);
                         e.stopPropagation();
                     }}>REALLY?</div>
-                : <MaterialIcon name="delete" onClick={(e: React.MouseEvent) => {
-                    setDeleteConfirm(true);
-                    e.stopPropagation();
-                }} size={20}/>
+                    : <MaterialIcon name="delete" onClick={(e: React.MouseEvent) => {
+                        setDeleteConfirm(true);
+                        e.stopPropagation();
+                    }} size={20}/>
             }
         </div>
     </div>;

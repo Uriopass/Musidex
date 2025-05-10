@@ -8,6 +8,7 @@ use std::sync::Arc;
 mod music;
 mod tags;
 mod user;
+mod worker_embedding_dimreduce;
 mod worker_neural_embed;
 mod worker_thumbnail_resize;
 

@@ -44,7 +44,7 @@ pub struct DateSerde(Option<String>);
 
 #[derive(Clone, Debug, PartialEq, SerJson, DeJson)]
 #[nserde(transparent)]
-pub struct Vector(Vec<f32>);
+pub struct Vector(pub Vec<f32>);
 
 #[derive(Clone, Debug, Hash, PartialEq, SerJson, DeJson)]
 pub struct Patch {
@@ -67,6 +67,16 @@ impl Hash for Vector {
         for v in &self.0 {
             state.write_u32(v.to_bits());
         }
+    }
+}
+
+impl ToSql for Vector {
+    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput<'_>> {
+        let mut v = Vec::with_capacity(self.0.len() * 4);
+        for f in &self.0 {
+            v.extend_from_slice(&f.to_ne_bytes());
+        }
+        Ok(ToSqlOutput::Owned(rusqlite::types::Value::Blob(v)))
     }
 }
 
@@ -143,6 +153,7 @@ tag_key! {
     Thumbnail => "thumbnail",
     Duration => "duration",
     Embedding => "embedding",
+    FullEmbedding => "full_embedding",
     ;
     nested UserLibrary => "user_library",
     nested UserTag => "user_tag",

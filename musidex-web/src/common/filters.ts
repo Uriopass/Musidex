@@ -1,5 +1,5 @@
 import {getTags, MusidexMetadata, Vector} from "./entity";
-import {prng, retain, dot} from "./utils";
+import {prng, retain, dotn} from "./utils";
 import Tracklist from "./tracklist";
 import {useMemo} from "react";
 import Fuse from "fuse.js";
@@ -155,7 +155,8 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
                     matches.push(v.id);
                 }
             }
-        } catch {}
+        } catch {
+        }
         return matches;
     }, [isRegex, searchQry, metadata]);
 
@@ -236,7 +237,7 @@ export function neuralScore(lastvec: Vector | undefined, id: number, metadata: M
     if (emb === undefined || lastvec === undefined) {
         return undefined;
     }
-    return dot(lastvec, emb) / (lastvec.mag * emb.mag);
+    return dotn(lastvec, emb);
 }
 
 // eslint-disable-next-line

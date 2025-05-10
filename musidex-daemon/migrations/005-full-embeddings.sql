@@ -1,0 +1,1 @@
+UPDATE tags SET key = 'full_embedding' WHERE key = 'embedding';

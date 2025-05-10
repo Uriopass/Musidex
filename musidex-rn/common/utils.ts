@@ -17,17 +17,6 @@ export function retain<T>(a: T[], condition: (x: T) => boolean): T[] {
 export type Dispatch<T> = (value: T) => void;
 export type Setter<S> = Dispatch<S | ((prevState: S) => S)>;
 
-export function dot(v1v: Vector, v2v: Vector): number {
-    let v1 = v1v.v;
-    let v2 = v2v.v;
-    let d = 0;
-    for (let i = 0; i < v1.length && i < v2.length; i++) {
-        // @ts-ignore
-        d += v1[i] * v2[i];
-    }
-    return d;
-}
-
 export function dotn(v1: number[], v2: number[]): number {
     let d = 0;
     for (let i = 0; i < v1.length && i < v2.length; i++) {
@@ -61,17 +50,19 @@ export function clamp(v: number, lower: number, upper: number) {
 
 // mulberry32
 export function prng(seed: number): () => number {
-    return function() {
+    return function () {
         let t = seed += 0x6D2B79F5;
         t = Math.imul(t ^ (t >>> 15), t | 1);
         t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
 }
+
 /* eslint-disable */
 export function useMemoProv<T>(v: T): T {
     return useMemo(() => v, v as any);
 }
+
 /* eslint-enable */
 export function useUpdate(): [number, () => void] {
     const [v, setV] = useState(0);

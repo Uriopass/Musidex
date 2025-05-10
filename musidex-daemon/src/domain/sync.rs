@@ -205,7 +205,17 @@ pub fn fetch_metadata(c: &Connection) -> Result<MusidexMetadata> {
     let tags = tags.query_map([], |r| Ok(Into::into(r)))?;
 
     let musics = collect_rows(musics.map(|x| x.map(|v: Music| v.id)))?;
-    let tags = collect_rows(tags)?;
+
+    let tags = tags.filter(|tag: &Result<Tag, _>| {
+        if let Ok(tag) = tag {
+            if tag.key == TagKey::FullEmbedding {
+                return false;
+            }
+        }
+        true
+    });
+
+    let tags: Vec<Tag> = collect_rows(tags)?;
 
     let mut users = User::list(c)?;
     let config = config::get_all(c)?;

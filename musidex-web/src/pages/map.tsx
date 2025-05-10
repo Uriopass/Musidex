@@ -48,7 +48,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
     const gfxr = useRef<GfxContext | null>(null);
     const [gfxinit, updateGfxInit] = useUpdate();
     const [algorithmBase, setAlgorithm] = useState<"tsne" | "pca">("pca");
-    const algorithm: "pca" | "tsne3D" | "tsne2D" = (algorithmBase === "pca") ? "pca" : (_3d ? "tsne3D": "tsne2D");
+    const algorithm: "pca" | "tsne3D" | "tsne2D" = (algorithmBase === "pca") ? "pca" : (_3d ? "tsne3D" : "tsne2D");
 
     if (gfxr.current) {
         gfxr.current.controls.enableRotate = _3d;
@@ -63,7 +63,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         let origdim = 0;
         const mids = [];
         for (const v of metadata.embeddings.entries()) {
-            origdim = v[1].v.length;
+            origdim = v[1].length;
             mids.push(v[0]);
         }
         console.log("recalculating projection");
@@ -72,7 +72,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             const embeddings = [];
             let avg: number[] = [];
             for (const v of metadata.embeddings.entries()) {
-                const vv = v[1].v;
+                const vv = v[1];
                 if (avg.length === 0) {
                     avg = vv.slice();
                 } else {
@@ -112,7 +112,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
 
             let i = 0;
             for (const v of metadata.embeddings) {
-                const vv = v[1].v;
+                const vv = v[1];
                 for (const vvv of vv) {
                     data[i] = vvv;
                     i++;
@@ -124,7 +124,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
             for (let i = 0; i < y.length; i += dim) {
                 const yo: [number, number, number, number] = [0, 0, 0.1, mids[i / dim] ?? -1];
                 for (let j = 0; j < dim; j++) {
-                    yo[j] = y[i+j] || 0;
+                    yo[j] = y[i + j] || 0;
                 }
                 projected.push(yo);
             }
@@ -322,7 +322,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
         }
 
         gfx.curplaying.visible = false;
-        if(list.last_played.length === 0) {
+        if (list.last_played.length === 0) {
             return;
         }
         const playing = list.last_played[list.last_played.length - 1];

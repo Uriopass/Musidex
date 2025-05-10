@@ -6,12 +6,12 @@ import struct
 conn = sqlite.connect("storage/db.db")
 
 conn.execute("PRAGMA foreign_keys = ON;")
-#conn.execute("DELETE FROM tags WHERE key='embedding'")
+#conn.execute("DELETE FROM tags WHERE key='full_embedding'")
 conn.commit()
 
 def has_embedding(id):
     cur = conn.cursor()
-    cur.execute("SELECT COUNT(1) FROM tags WHERE music_id=? AND key='embedding';", (id,))
+    cur.execute("SELECT COUNT(1) FROM tags WHERE music_id=? AND key='full_embedding';", (id,))
     return cur.fetchone()[0] == 1
 
 def is_too_long(id):
@@ -45,7 +45,7 @@ for id, name in zip(ids, names):
     blob = vecToBlob(vector)
 
     print("inserting embedding for", id, name, vector)
-    conn.execute("INSERT INTO tags (music_id, key, vector) VALUES (?, 'embedding', ?);", (id, blob))
+    conn.execute("INSERT INTO tags (music_id, key, vector) VALUES (?, 'full_embedding', ?);", (id, blob))
     conn.commit()
 
 conn.close()

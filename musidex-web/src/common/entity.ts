@@ -17,10 +17,7 @@ export type User = {
 }
 
 export type Tags = Map<string, Tag>;
-export type Vector = {
-    v: number[],
-    mag: number,
-};
+export type Vector = number[];
 
 export type IndexedMusic = {
     id: number;
@@ -112,12 +109,7 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
     meta.tags.forEach((tag) => {
         meta.music_tags_idx.get(tag.music_id)?.set(tag.key, tag);
         if (tag.key === "embedding" && tag.vector !== undefined) {
-            let mag = 0;
-            for (let v of tag.vector) {
-                mag += v * v;
-            }
-            mag = Math.sqrt(mag);
-            meta.embeddings.set(tag.music_id, {v: tag.vector, mag: mag});
+            meta.embeddings.set(tag.music_id, tag.vector);
         }
         if (tag.key.startsWith("local_")) {
             meta.playable.add(tag.music_id);
