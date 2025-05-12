@@ -38,7 +38,7 @@ impl EmbeddingReduceWorker {
         let t = std::time::Instant::now();
 
         let transac = c.transaction()?;
-        let mut all_embeddings = Tag::by_key(&transac, TagKey::FullEmbedding)?;
+        let mut all_embeddings = Tag::by_key(&transac, &TagKey::FullEmbedding)?;
 
         let mut vectors: Vec<Vector> = all_embeddings
             .iter_mut()

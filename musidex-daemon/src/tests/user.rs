@@ -55,7 +55,7 @@ pub async fn test_delete_userlibrary() -> Result<()> {
 
     User::delete(&c, u)?;
 
-    assert!(Tag::by_key(&c, k)?.is_empty());
+    assert!(Tag::by_key(&c, &k)?.is_empty());
 
     Ok(())
 }

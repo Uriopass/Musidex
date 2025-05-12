@@ -130,6 +130,15 @@ export function newMetadata(raw: RawMusidexMetadata, previous?: MusidexMetadata)
         }
     });
 
+    for (let [id, songs] of meta.user_songs.entries()) {
+        let key = `user_library:${id}`;
+        songs.sort((a, b) => {
+            let at = meta.music_tags_idx.get(a)?.get(key)?.integer || a;
+            let bt = meta.music_tags_idx.get(b)?.get(key)?.integer || b;
+            return bt - at;
+        });
+    }
+
     for (let [id, tags] of meta.music_tags_idx.entries()) {
         let user_tags = [];
 

@@ -1,10 +1,10 @@
+use crate::domain::entity::{MusicID, TagKey, UserID};
 use crate::utils::env_or;
 use anyhow::{Context, Result};
-use rusqlite::{Connection, params};
+use rusqlite::{params, Connection};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use tokio::sync::{Mutex, MutexGuard};
-use crate::domain::entity::{MusicID, TagKey, UserID};
 
 #[derive(Default, Clone)]
 pub struct Db(Arc<DbInner>);
@@ -55,7 +55,6 @@ impl Db {
         self.0.conns[v % N_CONN].lock().await
     }
 }
-
 
 pub enum LogType {
     User,

@@ -1,0 +1,1 @@
+UPDATE tags SET integer = music_id * 100 WHERE key LIKE 'user_library%';

@@ -33,7 +33,7 @@ pub struct Tag {
     pub key: TagKey,
 
     pub text: Option<String>,
-    pub integer: Option<i32>,
+    pub integer: Option<i64>,
     pub date: Option<String>,
     pub vector: Option<Vector>,
 }
@@ -239,8 +239,8 @@ mod tests {
     use super::*;
 
     fn assert_roundtrip<T: SerJson + DeJson + PartialEq + Eq + Debug>(before: T) {
-        let v = nanoserde::SerJson::serialize_json(&before);
-        let after: T = nanoserde::DeJson::deserialize_json(&*v).unwrap();
+        let v = SerJson::serialize_json(&before);
+        let after: T = DeJson::deserialize_json(&*v).unwrap();
         assert_eq!(after, before, "json was: {}", &*v);
     }
 
@@ -259,16 +259,16 @@ mod tests {
             music_id: MusicID(33333),
             key: TagKey::UserLibrary(s!(":aa11--")),
             text: Some(s!("")),
-            integer: Some(i32::MIN),
+            integer: Some(i64::MIN),
             date: Some(s!("")),
             vector: Some(Vector(vec![0.0, 0.0, 1.0, 0.0, 0.0])),
         });
 
         assert_roundtrip(Tag {
             music_id: MusicID(33333),
-            key: TagKey::UserLibrary(s!("")),
+            key: TagKey::UserLibrary(s!("yeah yeah")),
             text: None,
-            integer: None,
+            integer: Some(i64::MAX),
             date: None,
             vector: None,
         });

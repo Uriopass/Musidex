@@ -2,6 +2,21 @@ use crate::domain::entity::{Music, MusicID, Tag, TagKey, UserID};
 use anyhow::{Context, Result};
 use hyper::StatusCode;
 use rusqlite::Connection;
+use std::collections::HashMap;
+
+pub enum MoveDirection {
+    Above,
+    Below,
+}
+
+impl MoveDirection {
+    pub fn offset(&self) -> i64 {
+        match self {
+            MoveDirection::Above => 1,
+            MoveDirection::Below => -1,
+        }
+    }
+}
 
 impl Music {
     pub fn mk(c: &Connection) -> Result<MusicID> {
@@ -42,21 +57,49 @@ impl Music {
         Ok(())
     }
 
-    pub fn put_on_top(c: &mut Connection, id: MusicID) -> Result<bool> {
+    pub fn move_(
+        c: &mut Connection,
+        library: &TagKey,
+        id_base: MusicID,
+        id_to_move: MusicID,
+        direction: MoveDirection,
+    ) -> Result<bool> {
         let t = c.transaction().context("transaction begin failed")?;
 
-        let m = Music::mk(&t)?;
+        let order_taken = Tag::by_key(&t, library)?;
 
-        t.prepare_cached("UPDATE tags SET music_id = ?1 WHERE music_id = ?2;")
-            .context("error preparing put on top music")?
-            .execute([&m.0, &id.0])
-            .context("error executing put on top music")?;
+        let order_taken: HashMap<_, _> = order_taken
+            .into_iter()
+            .map(|v| (v.integer.unwrap_or(0), v.music_id))
+            .collect();
 
-        let song_exists = Music::delete(&t, id)?;
+        let Some(Tag {
+            integer: Some(order_base),
+            ..
+        }) = Tag::by_id_key(&t, id_base, library)?
+        else {
+            log::error!("couldn't find order for id_bottom");
+            return Ok(false);
+        };
+
+        let mut to_move = order_base + direction.offset();
+
+        while let Some(mid_to_move) = order_taken.get(&to_move) {
+            Tag::insert_silent(
+                &t,
+                Tag::new_integer(*mid_to_move, library.clone(), to_move + direction.offset()),
+            )
+            .context("error inserting tag for min insertion")?;
+            to_move += direction.offset();
+        }
+
+        Tag::insert_silent(
+            &t,
+            Tag::new_integer(id_to_move, library.clone(), order_base + direction.offset()),
+        )?;
 
         t.commit().context("transaction commit failed")?;
-
-        Ok(song_exists)
+        Ok(true)
     }
 }
 
@@ -73,10 +116,10 @@ pub fn delete_music(c: &Connection, uid: UserID, id: MusicID) -> Result<StatusCo
     match owners.len() {
         1 | 0 => {
             Music::delete(&c, id).context("couldn't delete music from db")?;
-        },
+        }
         _ => {
-            Tag::remove(&c, id, TagKey::UserLibrary(uid.to_string()))?;
-        },
+            Tag::remove(&c, id, &TagKey::UserLibrary(uid.to_string()))?;
+        }
     };
 
     Ok(StatusCode::OK)

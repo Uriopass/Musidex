@@ -1,5 +1,5 @@
 import {getTags, MusidexMetadata, Vector} from "./entity";
-import {prng, retain, dotn} from "./utils";
+import {prng, dotn} from "./utils";
 import Tracklist from "./tracklist";
 import {useMemo} from "react";
 import Fuse from "fuse.js";
@@ -43,14 +43,13 @@ export function newSearchForm(user: number | undefined): SearchForm {
     };
 }
 
-// in place
-export function applyFilters(filters: Filters, list: number[], metadata: MusidexMetadata) {
+export function applyFilters(filters: Filters, metadata: MusidexMetadata): number[] {
     if (filters.user !== undefined) {
-        let k = "user_library:" + filters.user;
-        retain(list, (id) => {
-            return getTags(metadata, id)?.has(k) || false;
-        });
+        return metadata.user_songs.get(filters.user) || [];
     }
+    let musics = metadata.musics.slice();
+    musics.reverse();
+    return musics;
 }
 
 const fuseOptions = {
@@ -87,10 +86,7 @@ export function useMusicSelect(metadata: MusidexMetadata, search: SearchForm, li
     }
 
     let consideredMusic: number[] = useMemo(() => {
-        let musics = metadata.musics.slice();
-        musics.reverse();
-        applyFilters(search.filters, musics, metadata);
-        return musics;
+        return applyFilters(search.filters, metadata);
     }, [metadata, search.filters]);
 
     const scoremap: Map<number, number> = useMemo(() => {

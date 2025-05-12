@@ -1,4 +1,3 @@
-import {Vector} from "./entity";
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 
 export function retain<T>(a: T[], condition: (x: T) => boolean): T[] {

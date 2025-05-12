@@ -37,7 +37,6 @@ impl YoutubeDLWorker {
         Ok(())
     }
 
-
     pub async fn youtube_dl_work(db: &Db, (id, vid_url): (MusicID, String)) -> Result<()> {
         log::info!("{}", vid_url);
 
@@ -48,20 +47,24 @@ impl YoutubeDLWorker {
             tries -= 1;
             metadata = match download(&vid_url)
                 .await
-                .context("error downloading metadata") {
+                .context("error downloading metadata")
+            {
                 Ok(v) => v,
                 Err(e) => {
                     if tries > 0 {
-                        continue
+                        continue;
                     }
                     log::error!("{:?}", e);
                     let c = db.get().await;
-                    Tag::insert(&c, Tag::new_text(id, TagKey::YoutubeDLWorkerTreated, s!("error")))?;
+                    Tag::insert(
+                        &c,
+                        Tag::new_text(id, TagKey::YoutubeDLWorkerTreated, s!("error")),
+                    )?;
                     drop(c);
                     return Ok(());
                 }
             };
-            break
+            break;
         }
         log::info!("downloaded metadata");
 
@@ -105,7 +108,7 @@ impl YoutubeDLWorker {
                     music_id: id,
                     key: TagKey::Duration,
                     text: Some((v + 0.99).to_string()),
-                    integer: Some((v + 0.99) as i32),
+                    integer: Some((v + 0.99) as i64),
                     date: None,
                     vector: None,
                 },
@@ -118,14 +121,14 @@ impl YoutubeDLWorker {
     }
 
     pub fn find_candidate(c: &Connection) -> Result<Option<(MusicID, String)>> {
-        for yt_treated in Tag::by_key(c, TagKey::YoutubeDLWorkerTreated)? {
+        for yt_treated in Tag::by_key(c, &TagKey::YoutubeDLWorkerTreated)? {
             if yt_treated.text.as_deref().unwrap_or("") != "false" {
                 continue;
             }
             let vid_url = unwrap_cont!(Tag::by_id_key(
                 c,
                 yt_treated.music_id,
-                TagKey::YoutubeDLURL
+                &TagKey::YoutubeDLURL
             )?);
             return Ok(Some((yt_treated.music_id, unwrap_cont!(vid_url.text))));
         }

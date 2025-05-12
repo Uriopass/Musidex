@@ -27,6 +27,17 @@ impl Tag {
         }
     }
 
+    pub fn new_integer(id: MusicID, key: TagKey, value: i64) -> Tag {
+        Tag {
+            music_id: id,
+            key,
+            text: None,
+            integer: Some(value),
+            date: None,
+            vector: None,
+        }
+    }
+
     #[allow(dead_code)]
     pub fn new_vector(id: MusicID, key: TagKey, value: Vector) -> Tag {
         Tag {
@@ -47,7 +58,7 @@ impl Tag {
             if v < 2100 && v > 1000 {
                 date = Some(DateTime::from_naive_utc_and_offset(
                     NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(v, 1, 2).unwrap(),
+                        NaiveDate::from_ymd_opt(v as i32, 1, 2).unwrap(),
                         NaiveTime::from_hms_opt(0, 0, 0).unwrap(),
                     ),
                     Utc,
@@ -118,18 +129,43 @@ impl Tag {
         Ok(())
     }
 
-    pub fn remove(c: &Connection, id: MusicID, key: TagKey) -> Result<()> {
-        log::info!("removing tag {} {}", id.0, &key);
+    pub fn remove(c: &Connection, id: MusicID, key: &TagKey) -> Result<()> {
+        log::info!("removing tag {} {}", id.0, key);
         let mut stmt = c.prepare_cached("DELETE FROM tags WHERE music_id=?1 AND key=?2;")?;
         let v = stmt
             .execute(rusqlite::params![id.0, key])
             .context("error deleting tag")?;
         if v == 0 {
-            log::warn!("removing tag {} {} but it didn't exist", id.0, &key);
+            log::warn!("removing tag {} {} but it didn't exist", id.0, key);
         }
         Ok(())
     }
 
+    pub fn max_integer_by_key(c: &Connection, key: &TagKey) -> Result<Option<i64>> {
+        let mut stmt = c.prepare_cached(
+            "
+            SELECT max(integer) FROM tags
+            WHERE key=?1;",
+        )?;
+        match stmt.query_row([key], |row| row.get(0)) {
+            Ok(v) => Ok(Some(v)),
+            Err(rusqlite::Error::InvalidColumnType(0, _, rusqlite::types::Type::Null)) => Ok(None),
+            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+            Err(e) => Err(e).context(format!("error getting max integer for key: {:?}", key)),
+        }
+    }
+
+    pub fn by_key_text(c: &Connection, key: &TagKey, text: &str) -> Result<Vec<Tag>> {
+        let mut stmt = c.prepare_cached(
+            "
+            SELECT * FROM tags
+            WHERE text=?1 AND key=?2;",
+        )?;
+        let v = stmt.query_map(rusqlite::params![&text, key], |row| Ok(Tag::from(row)))?;
+        collect_rows(v)
+    }
+
+    #[allow(dead_code)]
     pub fn by_text(c: &Connection, text: &str) -> Result<Vec<Tag>> {
         let mut stmt = c.prepare_cached(
             "
@@ -150,18 +186,18 @@ impl Tag {
         collect_rows(v)
     }
 
-    pub fn by_key(c: &Connection, key: TagKey) -> Result<Vec<Tag>> {
+    pub fn by_key(c: &Connection, key: &TagKey) -> Result<Vec<Tag>> {
         let mut stmt = c.prepare_cached(
             "
             SELECT * FROM tags
             WHERE key=?1
             ORDER BY music_id DESC;",
         )?;
-        let v = stmt.query_map([&key], |row| Ok(Tag::from(row)))?;
+        let v = stmt.query_map([key], |row| Ok(Tag::from(row)))?;
         collect_rows(v)
     }
 
-    pub fn by_id_key(c: &Connection, id: MusicID, key: TagKey) -> Result<Option<Tag>> {
+    pub fn by_id_key(c: &Connection, id: MusicID, key: &TagKey) -> Result<Option<Tag>> {
         let mut stmt = c.prepare_cached(
             "
             SELECT * FROM tags
@@ -173,7 +209,7 @@ impl Tag {
         .context("error getting tag by id key")
     }
 
-    pub fn has(c: &Connection, id: MusicID, key: TagKey) -> Result<bool> {
+    pub fn has(c: &Connection, id: MusicID, key: &TagKey) -> Result<bool> {
         let mut stmt =
             c.prepare_cached("SELECT count(1) FROM tags WHERE music_id=?1 AND key=?2;")?;
         let v: i32 = stmt.query_row(rusqlite::params![id.0, key], |row| row.get(0))?;

@@ -4,14 +4,14 @@ use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
 
 use crate::domain::entity::{Music, MusicID, Tag, TagKey, User, UserID};
-use crate::domain::music::delete_music;
+use crate::domain::music::{delete_music, MoveDirection};
 use crate::domain::sync::{compress_meta, serve_sync_websocket, SyncBroadcastSubscriber};
 use crate::domain::{stream, sync, upload};
+use crate::infrastructure::db::{db_log, DbLog, LogAction, LogType};
 use crate::infrastructure::router::RequestExt;
 use crate::utils::res_status;
 use crate::Db;
 use nanoserde::{DeJson, SerJson};
-use crate::infrastructure::db::{db_log, DbLog, LogAction, LogType};
 
 pub async fn metadata(req: Request<Body>) -> Result<Response<Body>> {
     let db = req.state::<Db>();
@@ -69,24 +69,63 @@ pub async fn subscribe_sync(request: Request<Body>) -> Result<Response<Body>> {
 }
 
 pub async fn create_tag(mut req: Request<Body>) -> Result<Response<Body>> {
-    let tag: Tag = parse_body(&mut req).await?;
-
-    let db = req.state::<Db>();
-    let c = db.get().await;
-
-    Tag::insert(&c, tag)?;
-
-    Ok(Response::new(Body::empty()))
-}
-
-pub async fn put_on_top(req: Request<Body>) -> Result<Response<Body>> {
-    let id = req.params().get("id").context("no id in url")?;
-    let id: i32 = id.parse().context("invalid id")?;
+    let mut tag: Tag = parse_body(&mut req).await?;
 
     let db = req.state::<Db>();
     let mut c = db.get().await;
 
-    if !Music::put_on_top(&mut c, MusicID(id))? {
+    let tx = c.transaction().context("transaction begin failed")?;
+    if let TagKey::UserLibrary(_) = tag.key {
+        if tag.integer.is_none() {
+            tag.integer = Some(Tag::max_integer_by_key(&tx, &tag.key)?.unwrap_or(0) + 100);
+        }
+    }
+    Tag::insert(&tx, tag)?;
+    tx.commit()?;
+
+    Ok(Response::new(Body::empty()))
+}
+
+pub async fn move_(req: Request<Body>) -> Result<Response<Body>> {
+    let id_library = req
+        .params()
+        .get("id_library")
+        .context("no id_library in url")?;
+
+    let id_base = req.params().get("id_base").context("no id_base in url")?;
+    let id_base: i32 = id_base.parse().context("invalid id")?;
+
+    let id_to_move = req
+        .params()
+        .get("id_to_move")
+        .context("no id_to_move in url")?;
+    let id_to_move: i32 = id_to_move.parse().context("invalid id")?;
+
+    let direction = req
+        .params()
+        .get("direction")
+        .context("no direction in url")?;
+
+    let direction = match direction {
+        "above" => MoveDirection::Above,
+        "below" => MoveDirection::Below,
+        _ => return Ok(res_status(StatusCode::BAD_REQUEST)),
+    };
+
+    let db = req.state::<Db>();
+    let mut c = db.get().await;
+
+    let key = TagKey::UserLibrary(id_library.to_string());
+
+    log::info!("move: {key:?} id_base: {id_base:?}, id_to_move: {id_to_move}",);
+
+    if !Music::move_(
+        &mut c,
+        &key,
+        MusicID(id_base),
+        MusicID(id_to_move),
+        direction,
+    )? {
         return Ok(res_status(StatusCode::NOT_FOUND));
     }
 
@@ -107,16 +146,24 @@ pub async fn delete_tag(mut req: Request<Body>) -> Result<Response<Body>> {
     let mut c = db.get().await;
 
     let tx = c.transaction().context("transaction begin failed")?;
-    db_log(&tx, DbLog {
-        user_id: uid,
-        ip: req.headers().get("x-real-ip").and_then(|x| x.to_str().ok()).map(|x| x.to_string()).unwrap_or_default(),
-        type_: LogType::Tag,
-        action: LogAction::Delete,
-        music_id: Some(tag.music_id),
-        target_key: Some(tag.key.clone()),
-        target_value: None,
-    });
-    Tag::remove(&tx, tag.music_id, tag.key)?;
+    db_log(
+        &tx,
+        DbLog {
+            user_id: uid,
+            ip: req
+                .headers()
+                .get("x-real-ip")
+                .and_then(|x| x.to_str().ok())
+                .map(|x| x.to_string())
+                .unwrap_or_default(),
+            type_: LogType::Tag,
+            action: LogAction::Delete,
+            music_id: Some(tag.music_id),
+            target_key: Some(tag.key.clone()),
+            target_value: None,
+        },
+    );
+    Tag::remove(&tx, tag.music_id, &tag.key)?;
     tx.commit()?;
 
     Ok(Response::new(Body::empty()))
@@ -156,15 +203,23 @@ pub async fn delete_music_handler(req: Request<Body>) -> Result<Response<Body>> 
     let uid = User::from_req(&req).context("no user id")?;
 
     let tx = c.transaction().context("transaction begin failed")?;
-    db_log(&tx, DbLog {
-        user_id: uid,
-        ip: req.headers().get("x-real-ip").and_then(|x| x.to_str().ok()).map(|x| x.to_string()).unwrap_or_default(),
-        type_: LogType::Music,
-        action: LogAction::Delete,
-        music_id: Some(id),
-        target_key: None,
-        target_value: None,
-    });
+    db_log(
+        &tx,
+        DbLog {
+            user_id: uid,
+            ip: req
+                .headers()
+                .get("x-real-ip")
+                .and_then(|x| x.to_str().ok())
+                .map(|x| x.to_string())
+                .unwrap_or_default(),
+            type_: LogType::Music,
+            action: LogAction::Delete,
+            music_id: Some(id),
+            target_key: None,
+            target_value: None,
+        },
+    );
 
     let code = delete_music(&tx, uid, id)?;
     tx.commit().context("transaction commit failed")?;

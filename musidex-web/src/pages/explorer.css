@@ -1,3 +1,22 @@
+@media (pointer: coarse), (hover: none) {
+    [title] {
+        position: relative;
+        display: inline-flex;
+        justify-content: center;
+    }
+
+    [title]:focus::after {
+        content: attr(title);
+        position: absolute;
+        top: 90%;
+        color: #000;
+        background-color: #fff;
+        border: 1px solid;
+        width: fit-content;
+        padding: 3px;
+    }
+}
+
 .explorer {
     width: 100%;
     text-align: center;
@@ -31,8 +50,8 @@
     content: "";
     --a: 0deg;
     background-image: conic-gradient(
-        var(--primary) var(--a),
-        transparent calc(var(--a) + 1deg)
+            var(--primary) var(--a),
+            transparent calc(var(--a) + 1deg)
     );
     width: 300%;
     height: 300%;
@@ -44,7 +63,7 @@
     animation: filling 4s linear;
 }
 
-@property --a{
+@property --a {
     syntax: '<angle>'; /* its type */
     inherits: false;
     initial-value: 0deg; /* the initial value */
@@ -68,7 +87,7 @@
 }
 
 .deleting:after {
-    content:"Cancel";
+    content: "Cancel";
     position: absolute;
     background-color: var(--fg);
     z-index: 1;

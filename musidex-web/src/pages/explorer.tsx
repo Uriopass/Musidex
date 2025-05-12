@@ -1,6 +1,6 @@
 import './explorer.css'
 import API from "../common/api";
-import React, {useCallback, useContext, useMemo, useRef, useState} from "react";
+import React, {Ref, useCallback, useContext, useMemo, useRef, useState} from "react";
 import {EditableText, MaterialIcon} from "../components/utils";
 import {getTags, MusidexMetadata, Tag, User} from "../common/entity";
 import {NextTrackCallback} from "../common/tracklist";
@@ -13,7 +13,7 @@ import {clamp, prng, timeFormat, useDebouncedEffect, useUpdate} from "../common/
 import noCoverImg from "../no_cover.jpg";
 import {enableNoSleep} from "../index";
 import AutoSizer from "react-virtualized-auto-sizer";
-import {FixedSizeList as List} from 'react-window';
+import {ChildrenProps, SortableFixedSizeList} from "../components/sortable";
 
 export interface ExplorerProps extends PageProps {
     title?: string;
@@ -95,6 +95,59 @@ const Explorer = React.memo((props: ExplorerProps) => {
         }
     }, [searchForm, setSimilarityParam, localTemp], 50);
 
+
+    const Row = React.forwardRef(({data, index, style, onSortMouseDown}: ChildrenProps, ref: Ref<any>) => {
+        let id = toShow.list[index] || -1;
+        let tags = getTags(metadata, id);
+        if (tags === undefined) {
+            tags = new Map();
+        }
+        let progress = toShow.scoremap.get(id);
+        let progressColor;
+        if (id === curTrack) {
+            progress = 1.0;
+            progressColor = colorCur;
+        }
+        return <div ref={ref} style={style}>
+            <SongElem musicID={id}
+                      tags={tags}
+                      curUser={props.curUser}
+                      filters={searchForm.filters}
+                      deleting={deleteSet.current.has(id)}
+                      syncMetadata={syncMetadata}
+                      onDelete={onDelete}
+                      cancelDelete={cancelDelete}
+                      doNext={props.doNext}
+                      progress={progress}
+                      playable={metadata.playable.has(id)}
+                      progressColor={progressColor}
+                      metadata={metadata}
+                      curSortBy={searchForm.sort}
+                      onSortMouseDown={onSortMouseDown}
+            />
+        </div>;
+    });
+
+    let onSortOrderChanged = ({originalIndex, newIndex}: { originalIndex: number, newIndex: number }) => {
+        if (!searchForm.filters.user || originalIndex === newIndex) {
+            return;
+        }
+        let id_to_move = toShow.list[originalIndex] as number;
+
+        let id_base = toShow.list[newIndex] as number;
+        let direction = (searchForm.sort.descending === (newIndex < originalIndex)) ? "above" : "below";
+
+        if (id_to_move === id_base) {
+            return;
+        }
+        toShow.list.splice(originalIndex, 1);
+        toShow.list.splice(newIndex, 0, id_to_move);
+        setDeleteUpdate();
+        API.move(searchForm.filters.user, id_base, id_to_move, direction).then(() => {
+            syncMetadata();
+        });
+    };
+
     return (
         <div className={"explorer color-fg" + (props.hidden ? " hidden" : "")}>
             <div className="explorer-search-form">
@@ -138,44 +191,17 @@ const Explorer = React.memo((props: ExplorerProps) => {
             </div>
             <div className="explorer-musics">
                 <AutoSizer>
-                    {({height, width}) =>
-                        <List height={height}
-                              width={width}
-                              itemCount={toShow.list.length}
-                              itemSize={65}
-                              overscanCount={10}
+                    {({height, width}) => {
+                        return <SortableFixedSizeList height={height}
+                                                      width={width}
+                                                      itemCount={toShow.list.length}
+                                                      itemSize={65}
+                                                      overscanCount={10}
+                                                      onSortOrderChanged={onSortOrderChanged}
                         >
-                            {({index, style}) => {
-                                let id = toShow.list[index] || -1;
-                                let tags = getTags(metadata, id);
-                                if (tags === undefined) {
-                                    tags = new Map();
-                                }
-                                let progress = toShow.scoremap.get(id);
-                                let progressColor;
-                                if (id === curTrack) {
-                                    progress = 1.0;
-                                    progressColor = colorCur;
-                                }
-                                return <div style={style}>
-                                    <SongElem musicID={id}
-                                              tags={tags}
-                                              curUser={props.curUser}
-                                              deleting={deleteSet.current.has(id)}
-                                              syncMetadata={syncMetadata}
-                                              onDelete={onDelete}
-                                              cancelDelete={cancelDelete}
-                                              doNext={props.doNext}
-                                              progress={progress}
-                                              playable={metadata.playable.has(id)}
-                                              progressColor={progressColor}
-                                              metadata={metadata}
-                                              curSortBy={searchForm.sort}
-                                    />
-                                </div>
-
-                            }}
-                        </List>
+                            {Row}
+                        </SortableFixedSizeList>;
+                    }
                     }
                 </AutoSizer>
             </div>
@@ -282,7 +308,7 @@ export const Thumbnail = (props: ThumbnailProps) => {
         {
             (props.cover) ?
                 // @ts-ignore
-                <img src={"storage/" + props.cover} alt="album or video cover" loading="lazy" fetchpriority="low" /> :
+                <img src={"storage/" + props.cover} alt="album or video cover" loading="lazy" fetchpriority="low"/> :
                 <img src={noCoverImg} alt="album or video cover"/>
         }
     </div>
@@ -303,6 +329,8 @@ type SongElemProps = {
     playable: boolean;
     metadata: MusidexMetadata;
     curSortBy: SortBy;
+    filters: Filters,
+    onSortMouseDown: (e: React.MouseEvent) => void;
 }
 
 function hashCode(str: string) {
@@ -381,12 +409,9 @@ export const SongElem = React.memo((props: SongElemProps) => {
         }
         API.insertTag({music_id: props.musicID, key: "user_library:" + props.curUser}).then(() => props.syncMetadata());
     }
-    const onPutOnTop = () => {
-        API.putOnTop(props.musicID).then(() => props.syncMetadata());
-    };
 
-    const showAddToLibrary = props.curUser !== undefined && !tags.has("user_library:" + props.curUser);
-    const showPutOnTop = props.curSortBy.kind.kind === "creation_time";
+    const showAddToLibrary = props.curUser !== undefined && !tags.has(`user_library:${props.curUser}`);
+    const showMove = props.curSortBy.kind.kind === "creation_time" && props.filters.user !== undefined;
 
     const title = tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
@@ -424,12 +449,21 @@ export const SongElem = React.memo((props: SongElemProps) => {
         enableNoSleep();
     }
 
+    let user_list_names = userList.map((u) => props.metadata.user_names.get(u)).join(", ");
     return (
         <div
             className={`song-elem ${props.playable ? "" : "song-elem-disabled"} ${(hovered && props.playable) ? "song-elem-hovered" : ""}`}
             style={{background: grad}}>
             <Thumbnail playable={props.playable} onClick={onNext} setHovered={setHovered} cover={cover}/>
-            <div style={{display: "flex", alignItems: "center", paddingLeft: "10px", flexGrow: 1, flexShrink: 1, flexBasis: "0", flexDirection: "row"}}>
+            <div style={{
+                display: "flex",
+                alignItems: "center",
+                paddingLeft: "10px",
+                flexGrow: 1,
+                flexShrink: 1,
+                flexBasis: "0",
+                flexDirection: "row"
+            }}>
                 <div style={{display: "flex", alignItems: "flex-start", flexDirection: "column"}}>
                     <b>
                         <EditableText text={title.text || ""}
@@ -453,9 +487,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
                                     }).then(() => props.syncMetadata());
                                 }}/>
                         </div>
-                        <div className="small-pad-left flex-center" title={
-                            userList.map((u) => props.metadata.user_names.get(u)).join(", ")
-                        }>
+                        <div className="small-pad-left flex-center" title={user_list_names} tabIndex={0}>
                             <MaterialIcon name={(userList.length === 1) ? "person" : "group"} size={15}/>
                         </div>
                         <div className="user-tags">
@@ -488,12 +520,6 @@ export const SongElem = React.memo((props: SongElemProps) => {
                     </button>
                 }
                 {
-                    showPutOnTop &&
-                    <button className="player-button" onClick={onPutOnTop} title="Put back on top">
-                        <MaterialIcon name="vertical_align_top"/>
-                    </button>
-                }
-                {
                     hasYT &&
                     <button className="player-button" onClick={goToYT}>
                         <img src="yt_icon.png" width={20} height={20} alt="Go to Youtube"/>
@@ -507,6 +533,12 @@ export const SongElem = React.memo((props: SongElemProps) => {
                             <MaterialIcon name="delete"/>
                     }
                 </button>
+                {
+                    showMove &&
+                    <button className="player-button" onMouseDown={props.onSortMouseDown} title="Drag element">
+                        <MaterialIcon name="drag_handle"/>
+                    </button>
+                }
             </div>
         </div>
     )

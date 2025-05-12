@@ -1,6 +1,6 @@
 use crate::application::handlers::parse_body;
 use crate::domain::entity::{User, UserID};
-use crate::infrastructure::db::{Db, db_log, DbLog, LogAction, LogType};
+use crate::infrastructure::db::{db_log, Db, DbLog, LogAction, LogType};
 use crate::infrastructure::router::RequestExt;
 use anyhow::{Context, Result};
 use hyper::{Body, Request, Response, StatusCode};
@@ -50,15 +50,23 @@ pub async fn delete(req: Request<Body>) -> Result<Response<Body>> {
     }
 
     let tx = c.transaction().context("transaction begin failed")?;
-    db_log(&tx, DbLog {
-        user_id: UserID(id),
-        ip: req.headers().get("x-real-ip").and_then(|x| x.to_str().ok()).map(|x| x.to_string()).unwrap_or_default(),
-        type_: LogType::User,
-        action: LogAction::Delete,
-        music_id: None,
-        target_key: None,
-        target_value: None,
-    });
+    db_log(
+        &tx,
+        DbLog {
+            user_id: UserID(id),
+            ip: req
+                .headers()
+                .get("x-real-ip")
+                .and_then(|x| x.to_str().ok())
+                .map(|x| x.to_string())
+                .unwrap_or_default(),
+            type_: LogType::User,
+            action: LogAction::Delete,
+            music_id: None,
+            target_key: None,
+            target_value: None,
+        },
+    );
     User::delete(&tx, UserID(id))?;
     tx.commit().context("transaction commit failed")?;
 

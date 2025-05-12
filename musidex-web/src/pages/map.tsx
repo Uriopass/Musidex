@@ -144,8 +144,7 @@ function MusicMap(props: MusicMapProps): JSX.Element {
     }, [metadata, algorithm]);
 
     const [projected, projectedDisabled]: [[number, number, number, number][], [number, number, number][]] = useMemo(() => {
-        const musics = metadata.musics.slice();
-        applyFilters(searchForm.filters, musics, metadata);
+        const musics = applyFilters(searchForm.filters, metadata);
 
         const musicSet = new Set(musics);
 

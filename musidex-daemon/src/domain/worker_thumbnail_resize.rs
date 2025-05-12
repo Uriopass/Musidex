@@ -37,7 +37,7 @@ impl SmallThumbnailWorker {
         let c = self.db.get().await;
         let candidate = unwrap_ret!(find_candidate(&c)?, Ok(()));
 
-        let thumb = unwrap_ret!(Tag::by_id_key(&c, candidate, TagKey::Thumbnail)?, Ok(()));
+        let thumb = unwrap_ret!(Tag::by_id_key(&c, candidate, &TagKey::Thumbnail)?, Ok(()));
         let thumb_p = unwrap_ret!(thumb.text, Ok(()));
 
         let buf = tokio::fs::read(format!("storage/{}", thumb_p)).await?;
@@ -59,7 +59,10 @@ impl SmallThumbnailWorker {
         let img = img.resize(256, 256, FilterType::Lanczos3);
 
         let mut buf = vec![];
-        img.write_to(&mut std::io::Cursor::new(&mut buf), ImageOutputFormat::Jpeg(70))?;
+        img.write_to(
+            &mut std::io::Cursor::new(&mut buf),
+            ImageOutputFormat::Jpeg(70),
+        )?;
         let compressedfname = format!("compressed.{}", thumb_p);
         tokio::fs::write(&format!("storage/{}", compressedfname), &buf).await?;
 

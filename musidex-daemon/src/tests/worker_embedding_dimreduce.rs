@@ -28,13 +28,13 @@ pub async fn test_dimreduce() -> Result<()> {
 
     assert!(needs_reembed(&c)?);
 
-    let tags = Tag::by_key(&c, TagKey::FullEmbedding)?;
+    let tags = Tag::by_key(&c, &TagKey::FullEmbedding)?;
     for tag in tags {
         log::info!("{:?}", tag.vector);
     }
     EmbeddingReduceWorker::step(&mut c)?;
 
-    let tags = Tag::by_key(&c, TagKey::Embedding)?;
+    let tags = Tag::by_key(&c, &TagKey::Embedding)?;
 
     for tag in tags {
         log::info!("{:?}", tag.vector);

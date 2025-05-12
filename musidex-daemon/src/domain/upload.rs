@@ -14,10 +14,11 @@ pub async fn youtube_upload(c: &mut Connection, url: String, uid: UserID) -> Res
     };
     if let Some(mid) = id_exists(c, &v.id)? {
         let k = TagKey::UserLibrary(s!(uid));
-        if Tag::has(&c, mid, k.clone())? {
+        if Tag::has(&c, mid, &k)? {
             return Ok(StatusCode::CONFLICT);
         }
-        Tag::insert(&c, Tag::new_key(mid, k))?;
+        let max_id = Tag::max_integer_by_key(c, &k)?.unwrap_or(0);
+        Tag::insert(&c, Tag::new_integer(mid, k, max_id + 100))?;
         return Ok(StatusCode::OK);
     }
     let wp = v.webpage_url.take().context("no webpage url")?;
@@ -28,11 +29,11 @@ pub async fn youtube_upload(c: &mut Connection, url: String, uid: UserID) -> Res
 }
 
 fn id_exists(c: &Connection, id: &str) -> Result<Option<MusicID>> {
-    Ok(Tag::by_text(c, id)
+    Ok(Tag::by_key_text(c, &TagKey::YoutubeDLVideoID, id)
         .context("error getting ids")?
         .into_iter()
         .find_map(|t| {
-            if t.key == TagKey::YoutubeDLVideoID && t.text.as_deref() == Some(id) {
+            if t.text.as_deref() == Some(id) {
                 return Some(t.music_id);
             }
             None
@@ -56,7 +57,7 @@ fn push_for_treatment(c: &Connection, v: Box<SingleVideo>, url: String, uid: Use
                 music_id: id,
                 key: TagKey::Duration,
                 text: Some((v + 0.99).to_string()),
-                integer: Some((v + 0.99) as i32),
+                integer: Some((v + 0.99) as i64),
                 date: None,
                 vector: None,
             },
@@ -69,7 +70,11 @@ fn push_for_treatment(c: &Connection, v: Box<SingleVideo>, url: String, uid: Use
         mk_tag(TagKey::Artist, artist)?;
     }
     mk_tag(TagKey::YoutubeDLOriginalTitle, v.title)?;
-    Tag::insert(&c, Tag::new_key(id, TagKey::UserLibrary(s!(uid))))?;
+
+    let ul_key = TagKey::UserLibrary(s!(uid));
+    let max_id = Tag::max_integer_by_key(c, &ul_key)?.unwrap_or(0);
+    let tag = Tag::new_integer(id, ul_key, max_id + 100);
+    Tag::insert(&c, tag)?;
     Ok(())
 }
 
@@ -145,7 +150,13 @@ pub async fn youtube_upload_playlist(
         args.push(&stops);
     }
 
-    args.extend_from_slice(&["--flat-playlist", "--yes-playlist", "--ignore-errors", "-J", "--"]);
+    args.extend_from_slice(&[
+        "--flat-playlist",
+        "--yes-playlist",
+        "--ignore-errors",
+        "-J",
+        "--",
+    ]);
     args.push(&url);
 
     let metadata = ytdl_run_with_args(args)
@@ -171,7 +182,7 @@ pub async fn youtube_upload_playlist(
                 }
                 if let Some(mid) = id_exists(c, &entry.id)? {
                     let k = TagKey::UserLibrary(s!(uid));
-                    if Tag::has(&c, mid, k.clone())? {
+                    if Tag::has(&c, mid, &k)? {
                         log::info!("music from playlist was already in library: {}", &entry.id);
                         continue;
                     }

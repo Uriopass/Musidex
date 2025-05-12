@@ -94,8 +94,8 @@ export const API = {
         });
     },
 
-    async putOnTop(id: number): Promise<Response> {
-        return fetch(apiURL + "/api/putontop/" + id, {
+    async move(user_id: number, id_base: number, id_to_move: number, direction: string): Promise<Response> {
+        return fetch(apiURL + `/api/move/${user_id}/${id_base}/${id_to_move}/${direction}`, {
             method: "put",
         });
     },
