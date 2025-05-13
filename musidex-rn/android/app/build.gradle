@@ -79,8 +79,8 @@ android {
         applicationId "com.musidex"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8005
-        versionName "1.8"
+        versionCode 8006
+        versionName "1.9"
     }
     signingConfigs {
         debug {
