@@ -411,7 +411,7 @@ export const SongElem = React.memo((props: SongElemProps) => {
     }
 
     const showAddToLibrary = props.curUser !== undefined && !tags.has(`user_library:${props.curUser}`);
-    const showMove = props.curSortBy.kind.kind === "creation_time" && props.filters.user !== undefined;
+    const showMove = props.curSortBy.kind.kind === "creation_time" && props.filters.user !== undefined && props.filters.searchQry === "";
 
     const title = tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = tags.get("artist") || {music_id: props.musicID, key: "artist", text: "Unknown Artist"};
