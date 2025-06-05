@@ -344,6 +344,18 @@ struct ProxyRoundRobin {
 
 impl Default for ProxyRoundRobin {
     fn default() -> Self {
+        if let Some(v) = std::env::var("PROXY_LIST_JSON_FILE").ok() {
+            let file_content = std::fs::read_to_string(v)
+                .unwrap_or_else(|_| panic!("Failed to read proxy list JSON file"));
+            let proxies: Vec<String> = DeJson::deserialize_json(&file_content)
+                .expect("Failed to deserialize proxy list JSON");
+            let proxy_list = proxies.into_iter().map(|e| (e, true)).collect::<Vec<_>>();
+            return Self {
+                proxies: proxy_list,
+                current: 0,
+            };
+        }
+
         let proxy_list = std::env::var("PROXY_LIST").unwrap_or_default();
         let proxy_list = proxy_list
             .split(",")
