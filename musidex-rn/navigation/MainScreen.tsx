@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Explorer from "../components/Explorer";
-import {BackHandler, SafeAreaView, StyleSheet} from "react-native";
+import {BackHandler, StyleSheet} from "react-native";
+import {SafeAreaView} from "react-native-safe-area-context";
 import SmallPlayer from "../components/SmallPlayer";
 import Colors from "../domain/colors";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
