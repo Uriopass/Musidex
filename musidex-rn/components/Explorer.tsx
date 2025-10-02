@@ -159,6 +159,8 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 const hiddenOpacity = new Animated.Value(0);
 let prevRow: string;
 
+const emptyMap = new Map<string, Tag>();
+
 function SongList(props: {
     musics: MusicSelect,
     topComp: any,
@@ -191,12 +193,13 @@ function SongList(props: {
         return <SongElem musicID={item}
                          isSynced={isMusicSynced(syncState, metadata, item)}
                          thumbSynced={isThumbSynced(syncState, metadata, item)}
-                         tags={getTags(metadata, item) || new Map()}
+                         tags={getTags(metadata, item) || emptyMap}
                          doNext={doNext}
                          tracklist={tracklist}
                          progress={progress}
                          progressColor={color}
                          sortType={searchForm.sort.kind}
+                         isSearching={searchForm.filters.searchQry !== ""}
         />;
     }, [metadata, doNext, tracklist, curTrack, searchForm.sort.kind.kind, searchForm.filters.searchQry]);
 
@@ -342,9 +345,10 @@ type SongElemProps = {
     isSynced: boolean;
     thumbSynced: boolean;
     sortType: SortByKind;
+    isSearching: boolean;
 }
 
-const SongElem = React.memo(React.forwardRef((props: SongElemProps, ref) => {
+const SongElem = React.memo(React.forwardRef((props: SongElemProps) => {
     const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = props.tags.get("artist");
     const duration = props.tags.get("duration")?.integer;
@@ -354,7 +358,7 @@ const SongElem = React.memo(React.forwardRef((props: SongElemProps, ref) => {
             props.tracklist.last_manual_select = props.musicID;
             props.doNext(props.musicID);
         }} onPress={() => {
-            if (props.tracklist.last_manual_select === undefined || props.sortType.kind !== "similarity") {
+            if (props.tracklist.last_manual_select === undefined || props.sortType.kind !== "similarity" || props.isSearching) {
                 props.tracklist.last_manual_select = props.musicID;
             }
             props.doNext(props.musicID);

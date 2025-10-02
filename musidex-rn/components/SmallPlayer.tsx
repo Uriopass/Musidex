@@ -95,6 +95,7 @@ const SmallPlayer = (_: PlayerProps) => {
 
     const onSeek = (v: number) => {
         seekID += 1;
+        console.log("seeking");
         const localSeek = seekID;
         setSeekCur(v);
         setTimeout(() => {
@@ -227,7 +228,9 @@ const SmallPlayer = (_: PlayerProps) => {
                             tapToSeek={true}
                             maximumTrackTintColor={Colors.colorbg}
                             value={seekCur ?? position} minimumValue={0} maximumValue={duration}
-                            onValueChange={onSeek}/>
+                            step={1}
+                            onValueChange={onSeek}
+                    />
                 </View>
             </View>}
         </View>
@@ -240,7 +243,9 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "column",
     },
-    temperatureSlider: {},
+    temperatureSlider: {
+        zIndex: 1,
+    },
     temperatureContainer: {
         flexGrow: 1,
         justifyContent: "center",

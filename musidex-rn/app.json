@@ -1,4 +1,5 @@
 {
   "name": "Musidex",
-  "displayName": "Musidex"
+  "displayName": "Musidex",
+  "reactCanary": true
 }
