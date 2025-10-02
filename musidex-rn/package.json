@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "android-prod": "react-native run-android --mode=release",
     "ios": "react-native run-ios",
     "start": "react-native start",
     "link": "react-native link",
