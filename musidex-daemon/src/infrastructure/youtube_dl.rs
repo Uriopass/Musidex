@@ -360,6 +360,7 @@ impl Default for ProxyRoundRobin {
         let proxy_list = proxy_list
             .split(",")
             .map(|e| (e.to_string(), true))
+            .filter(|e| !e.0.is_empty())
             .collect::<Vec<_>>();
 
         Self {
@@ -473,6 +474,11 @@ pub async fn ytdl_run_with_args(args_in: Vec<&str>) -> Result<YoutubeDlOutput> {
                 if let Some((_, proxy_idx)) = proxy {
                     if e.to_string()
                         .contains("Sign in to confirm you’re not a bot")
+                        || e.to_string().contains("general SOCKS server failure")
+                        || e.to_string().contains("SocksHTTPSConnection")
+                        || e.to_string()
+                            .contains("Failed to establish a new connection")
+                        || e.to_string().contains("timed out")
                     {
                         log::error!("yt-dlp blocked, switching proxy");
                         let mut round_robin = ROUND_ROBIN.lock().unwrap();
