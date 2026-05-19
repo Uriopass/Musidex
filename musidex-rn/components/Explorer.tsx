@@ -348,7 +348,7 @@ type SongElemProps = {
     isSearching: boolean;
 }
 
-const SongElem = React.memo(React.forwardRef((props: SongElemProps) => {
+const SongElem = React.memo((props: SongElemProps) => {
     const title = props.tags.get("title") || {music_id: props.musicID, key: "title", text: "No Title"};
     const artist = props.tags.get("artist");
     const duration = props.tags.get("duration")?.integer;
@@ -387,7 +387,7 @@ const SongElem = React.memo(React.forwardRef((props: SongElemProps) => {
             </View>
         </TouchableOpacity>
     );
-}));
+});
 
 const styles = StyleSheet.create({
     sortFilterSelect: {

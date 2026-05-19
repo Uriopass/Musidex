@@ -81,8 +81,8 @@ android {
         applicationId "com.musidex"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8009
-        versionName "1.12"
+        versionCode 8010
+        versionName "1.13"
     }
     signingConfigs {
         debug {
@@ -93,14 +93,16 @@ android {
         }
         release {
             storeFile file('release.keystore')
-            storePassword MYAPP_UPLOAD_STORE_PASSWORD
+            storePassword System.getenv("MYAPP_UPLOAD_STORE_PASSWORD")
             keyAlias 'my-key-alias'
-            keyPassword MYAPP_UPLOAD_STORE_PASSWORD
+            keyPassword System.getenv("MYAPP_UPLOAD_STORE_PASSWORD")
         }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            applicationIdSuffix ".debug"
+            resValue "string", "app_name", "Musidex (debug)"
         }
         release {
             signingConfig signingConfigs.release
@@ -113,6 +115,7 @@ android {
     }
     packaging {
         resources.excludes.add("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
+        jniLibs.useLegacyPackaging = true
     }
 }
 
